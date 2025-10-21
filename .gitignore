@@ -1,0 +1,14 @@
+/*.Rcheck/
+/.Rhistory
+/.Rprofile
+/*_*.tar.gz
+/docs
+core
+/vignettes/.*
+/vignettes/*.R
+/vignettes/*.html
+/vignettes/articles/*.R
+/vignettes/articles/*.html
+/vignettes/WGTS/
+/vignettes/figs/
+/vignettes/*_files/
