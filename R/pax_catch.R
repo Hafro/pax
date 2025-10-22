@@ -1,4 +1,10 @@
-pax_catch <- function(pcon) UseMethod("pax_catch")
+pax_catch <- function(
+  pcon,
+  species,
+  year_end = lubridate::year(Sys.Date())
+) {
+  UseMethod("pax_catch")
+}
 
 pax_add_cpue <- function(tbl) UseMethod("pax_add_cpue", as_pax(tbl))
 
