@@ -28,8 +28,7 @@ ok_group("R/01-plots_and_tables.R:catch_agg", {
     dplyr::arrange(year, mfdb_gear_code, region, depth_class) |>
     dplyr::collect()
   )
-  df_hafropax <- pax_catch(pcon) |>
-    dplyr::filter(species == species_code) |>
+  df_hafropax <- pax_catch(pcon, species_code) |>
     pax_add_depth_labels(breaks = c(0,100,200,300)) |>
     pax_add_regions(regions = list(W=101,NW = 102, NE=c(103,104,105),
                                SE=c(107,106),
