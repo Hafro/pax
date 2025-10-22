@@ -18,7 +18,7 @@ pax_map_base <- function(
   faroes <- map_data('world', 'Faroe Islands')
 
   dd <-
-    pax_depth_noaa(pcon) |>
+    pax_dat_noaa_bathymetry(pcon) |>
     dplyr::filter(
       longitude < local(max(xlim)),
       longitude > local(min(xlim)),

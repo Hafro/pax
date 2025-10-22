@@ -1,3 +1,4 @@
+pax_dat_noaa_bathymetry <- function(pcon) UseMethod("pax_dat_noaa_bathymetry")
 pax_dat_reitmapping <- function(pcon) UseMethod("pax_dat_reitmapping")
 
 # Was: tidypax::add_regions (data)

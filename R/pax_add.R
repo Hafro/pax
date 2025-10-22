@@ -70,7 +70,7 @@ pax_add_depth_labels.pax <- function(tbl, breaks = c(0, 100, 200, 300)) {
 
   tbl |>
     dplyr::left_join(
-      pax_depth_noaa(as_pax(tbl)) |>
+      pax_dat_noaa_bathymetry(as_pax(tbl)) |>
         dplyr::group_by(gridcell) |>
         dplyr::summarise(noaa_depth = mean(noaa_depth)),
       by = 'gridcell'
