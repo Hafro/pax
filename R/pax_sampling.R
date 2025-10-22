@@ -23,7 +23,7 @@ pax_samplingpos.hafropax <- function(
       year = ar,
       sampling_type = synaflokkur_nr,
       data_type = maeling_teg,
-      species_code = tegund_nr, # TODO: Should this have a vocab and/or consistent name?
+      species = tegund_nr,
       mfdb_gear_code = ifelse(is.na(gear), local(na_gear), mfdb_gear_code),
       trip = leidangur
     ) |>
@@ -36,7 +36,7 @@ pax_samplingpos.hafropax <- function(
       # TODO: This was %in%, but year_range was the final year?
       year < local(year_end),
       sampling_type %in% local(sampling_type),
-      species_nr == local(species),
+      species == local(species),
       data_type %in% local(data_type),
       mfdb_gear_code %in% local(mfdb_gear_code)
     ) |>
