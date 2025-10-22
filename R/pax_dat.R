@@ -39,3 +39,8 @@ if (FALSE) {
       smareitur = geo::d2sr(y, x)
     )
 }
+
+pax_dat_lw_coeffs.hafropax <- function(pcon) {
+  # TODO: Generation, but where is lwcoeff.csv? https://gitlab.hafogvatn.is/dag/00-setup/-/blob/master/SI_db_setup/01b-dbsetup.R#L477
+  mar::lw_coeffs(pcon$dbcon)
+}

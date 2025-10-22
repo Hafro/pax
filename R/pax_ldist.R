@@ -41,19 +41,3 @@ pax_ldist_scale_abund.hafropax <- function(tbl) {
     dplyr::left_join(ratio) |>
     dplyr::mutate(count = count * r)
 }
-
-pax_ldist_add_weight.hafropax <- function(tbl) {
-  a <- NULL # Mask NSE variable
-  b <- NULL # Mask NSE variable
-
-  pcon <- pax::as_pax(tbl)
-  tbl |>
-    # TODO: Generation, but where is lwcoeff.csv? https://gitlab.hafogvatn.is/dag/00-setup/-/blob/master/SI_db_setup/01b-dbsetup.R#L477
-    dplyr::left_join(mar::lw_coeffs(pcon$dbcon), by = "species") |>
-    dplyr::mutate(
-      a = ifelse(is.na(a), 0.01, a),
-      b = ifelse(is.na(b), 3.00, b),
-      weight = a * length^b
-    ) |>
-    dplyr::select(-a, -b)
-}

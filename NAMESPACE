@@ -8,7 +8,6 @@ S3method(pax::pax_disconnect, hafropax)
 S3method(pax::pax_ldist, hafropax)
 S3method(pax::pax_aldist, hafropax)
 S3method(pax::pax_ldist_scale_abund, hafropax)
-S3method(pax::pax_ldist_add_weight, hafropax)
 
 # R/pax_strata.R
 S3method(pax::pax_si_strata_stations, hafropax)
@@ -34,3 +33,4 @@ S3method(pax::pax_add_sampling_type_desc, hafropax)
 
 # R/pax_dat.R
 S3method(pax::pax_dat_noaa_bathymetry, hafropax)
+S3method(pax::pax_dat_lw_coeffs, hafropax)
