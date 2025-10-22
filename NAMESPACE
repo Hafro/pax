@@ -16,9 +16,6 @@ S3method(pax_add_strata, pax)
 # R/pax_catch.R
 S3method(pax_add_cpue, pax)
 
-# R/pax_dat.R
-S3method(pax_dat_reitmapping, pax)
-
 # R/pax_quotatransfer.R
 S3method(pax_quotatransfer_summary, pax)
 
