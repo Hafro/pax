@@ -1,6 +1,6 @@
 # TODO: Just 'depth'?
 # Was tidypax::depth_layer()
-pax_depth_noaa.hafropax <- function(pcon) {
+pax_dat_noaa_bathymetry.hafropax <- function(pcon) {
   x <- NULL # Mask NSE variable
   y <- NULL # Mask NSE variable
   z <- NULL # Mask NSE variable

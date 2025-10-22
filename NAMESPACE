@@ -32,5 +32,5 @@ S3method(pax::pax_measurement_detail, hafropax)
 # R/pax_vocab.R
 S3method(pax::pax_add_sampling_type_desc, hafropax)
 
-# R/pax_depth.R
-S3method(pax::pax_depth_noaa, hafropax)
+# R/pax_dat.R
+S3method(pax::pax_dat_noaa_bathymetry, hafropax)
