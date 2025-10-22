@@ -1,10 +1,9 @@
 pax_catch <- function(pcon) UseMethod("pax_catch")
 
-pax_catch_add_cpue <- function(tbl) UseMethod("pax_catch_add_cpue", as_pax(tbl))
+pax_add_cpue <- function(tbl) UseMethod("pax_add_cpue", as_pax(tbl))
 
-# TODO: Naming, add, but only for pax_catch?
 # Was: tidypax::cpue_plot (first half)
-pax_catch_add_cpue.pax <- function(tbl) {
+pax_add_cpue.pax <- function(tbl) {
   tbl |>
     dplyr::mutate(
       effort = nvl(towtime / 60, nvl(hooks / 1000, nvl(nr_net, 1)))
