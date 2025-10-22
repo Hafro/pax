@@ -13,6 +13,21 @@ pax_ldist_scale_round <- function(tbl) {
   tbl |> dplyr::mutate(length = round(length))
 }
 
+pax_ldist_add_weight.pax <- function(tbl) {
+  a <- NULL # Mask NSE variable
+  b <- NULL # Mask NSE variable
+
+  pcon <- pax::as_pax(tbl)
+  tbl |>
+    dplyr::left_join(pax_dat_lw_coeffs(pcon), by = "species") |>
+    dplyr::mutate(
+      a = ifelse(is.na(a), 0.01, a),
+      b = ifelse(is.na(b), 3.00, b),
+      weight = a * length^b
+    ) |>
+    dplyr::select(-a, -b)
+}
+
 # must result in fjoldi/square nautical mile
 # Was: tidypax::scale_by_tow_area
 pax_ldist_scale_tow_area <-
