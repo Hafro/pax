@@ -9,11 +9,6 @@ S3method(pax::pax_ldist, hafropax)
 S3method(pax::pax_aldist, hafropax)
 S3method(pax::pax_ldist_scale_abund, hafropax)
 
-# R/pax_strata.R
-S3method(pax::pax_si_strata_stations, hafropax)
-S3method(pax::pax_si_strata_attributes, hafropax)
-S3method(pax::pax_si_strata_areas, hafropax)
-
 # R/pax_catch.R
 S3method(pax::pax_catch, hafropax)
 
@@ -34,3 +29,7 @@ S3method(pax::pax_add_sampling_type_desc, hafropax)
 # R/pax_dat.R
 S3method(pax::pax_dat_noaa_bathymetry, hafropax)
 S3method(pax::pax_dat_lw_coeffs, hafropax)
+S3method(pax::pax_dat_reitmapping, hafropax)
+S3method(pax::pax_dat_strata_stations, hafropax)
+S3method(pax::pax_dat_strata_attributes, hafropax)
+S3method(pax::pax_dat_strata_areas, hafropax)
