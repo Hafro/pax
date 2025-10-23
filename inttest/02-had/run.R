@@ -2,7 +2,6 @@
 # Test converted versions of queries from 02-had
 library(unittest)
 
-library(magrittr)
 library(pax)
 library(hafropax)
 
