@@ -13,6 +13,30 @@ echo -n "User (e.g. \'ops$user\'): " ; read MAR_USER ; echo -n "Password: " ; re
 mar <- mar::connect_mar()
 pcon <- hafropax::hpax_connect()
 
+ok_group("R/01-plots_and_tables.R:sampling_position", {
+  species_code <- 2
+  tyr <- lubridate::year(Sys.Date()) - 2
+  df_tidypax <- tidypax:::sampling_position(mar,species_nr = species_code, year_range = tyr) |>
+    dplyr::arrange(lat, lon, year, mfdb_gear_code) |> as.data.frame()
+  df_hafropax <-
+    pax_sampling(pcon, species_code, year_range = tyr, include_stomach = TRUE) |>
+    pax_sampling_position_summary() |>
+    dplyr::arrange(lat, lon, year, mfdb_gear_code) |> as.data.frame()
+  ok(ut_cmp_equal(df_tidypax, df_hafropax), "data frames match")
+})
+
+ok_group("R/01-plots_and_tables.R:sampling_tables", {
+  species_code <- 2
+  df_tidypax <- tidypax:::sampling_tables(mar,species_nr = species_code) |>
+    dplyr::filter(Year %in% 2010:2020) |>
+    dplyr::collect()
+  df_hafropax <-
+    pax_sampling(pcon, species_code, year_range = 2010:2020) |>
+    pax_sampling_detail() |>
+    dplyr::collect()
+  ok(ut_cmp_equal(df_tidypax, df_hafropax), "data frames match")
+})
+
 ok_group("R/01-plots_and_tables.R:catch_agg", {
   species_code <- 2
   df_tidypax <- suppressWarnings(tidypax::catch_data(mar,species_code) |>

@@ -16,12 +16,10 @@ S3method(pax::pax_catch, hafropax)
 S3method(pax::pax_si, hafropax)
 
 # R/pax_sampling.R
-S3method(pax::pax_samplingpos, hafropax)
+S3method(pax::pax_sampling, hafropax)
 
 # R/pax_measurement.R
-S3method(pax::pax_measurement_agelen, hafropax)
-S3method(pax::pax_measurement_typesummary, hafropax)
-S3method(pax::pax_measurement_detail, hafropax)
+S3method(pax::pax_measurement, hafropax)
 
 # R/pax_vocab.R
 S3method(pax::pax_add_sampling_type_desc, hafropax)
