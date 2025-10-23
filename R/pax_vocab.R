@@ -1,8 +1,8 @@
 pax_add_sampling_type_desc <- function(tbl, lang = getOption('tidypax.lang')) {
-  UseMethod("pax_add_sampling_type_desc")
+  UseMethod("pax_add_sampling_type_desc", as_pax(tbl))
 }
 pax_add_mfdb_gear_code_desc <- function(tbl, lang = getOption('tidypax.lang')) {
-  UseMethod("pax_add_mfdb_gear_code_desc")
+  UseMethod("pax_add_mfdb_gear_code_desc", as_pax(tbl))
 }
 
 pax_add_sampling_type_desc.pax <- function(
@@ -17,13 +17,16 @@ pax_add_mfdb_gear_code_desc.pax <- function(
   tbl,
   lang = getOption('tidypax.lang')
 ) {
+  pcon <- as_pax(tbl)
   # TODO: Switch to new gear code table and store it locally
-  # TODO: Should be a pax_temptbl, but is too big atm
-  gc_tbl <- mfdb::gear |>
-    dplyr::select(
-      mfdb_gear_code = as.character(gear),
-      mfdb_gear_code_desc = tools::toTitleCase(as.character(description)),
-    )
+  # TODO: Far too big for a pax_temptbl, but currently doing it anyway
+  gc_tbl <- data.frame(
+    mfdb_gear_code = as.character(mfdb::gear$name),
+    mfdb_gear_code_desc = tools::toTitleCase(as.character(
+      mfdb::gear$description
+    )),
+    stringsAsFactors = FALSE
+  )
 
-  tbl |> dplyr::left_join(gc_tbl, by = c('mfdb_gear_code'))
+  tbl |> dplyr::left_join(pax_temptbl(pcon, gc_tbl), by = c('mfdb_gear_code'))
 }

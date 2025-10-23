@@ -16,6 +16,10 @@ S3method(pax_add_strata, pax)
 # R/pax_catch.R
 S3method(pax_add_cpue, pax)
 
+# R/pax_measurement.R
+S3method(pax_measurement_agelen_summary, pax)
+S3method(pax_measurement_type_summary, pax)
+
 # R/pax_quotatransfer.R
 S3method(pax_quotatransfer_summary, pax)
 
