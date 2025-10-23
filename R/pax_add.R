@@ -20,8 +20,8 @@ pax_add_yearly_grouping <- function(tbl, ygroup = NULL) {
 pax_add_strata <- function(
   tbl,
   use_total_area = 0,
-  strata_stations = pax_si_strata_stations(as_pax(tbl)),
-  strata_attributes = pax_si_strata_attributes(as_pax(tbl))
+  strata_stations = pax_dat_strata_stations(as_pax(tbl)),
+  strata_attributes = pax_dat_strata_attributes(as_pax(tbl))
 ) {
   UseMethod("pax_add_strata", as_pax(tbl))
 }
@@ -141,8 +141,8 @@ pax_add_yearly_grouping.pax <- function(tbl, ygroup = NULL) {
 pax_add_strata.pax <- function(
   tbl,
   use_total_area = 0,
-  strata_stations = pax_si_strata_stations(as_pax(tbl)),
-  strata_attributes = pax_si_strata_attributes(as_pax(tbl))
+  strata_stations = pax_dat_strata_stations(as_pax(tbl)),
+  strata_attributes = pax_dat_strata_attributes(as_pax(tbl))
 ) {
   tbl |>
     dplyr::left_join(strata_stations) |>
