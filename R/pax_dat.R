@@ -49,7 +49,7 @@ pax_dat_lw_coeffs.hafropax <- function(pcon) {
 pax_dat_reitmapping.hafropax <- function(pcon) {
   # TODO: reitmapping *data* is ~iceland-specific, but not hafropax-specific
   # TODO: Generation: https://gitlab.hafogvatn.is/dag/00-setup/-/blob/master/SI_db_setup/01b-dbsetup.R#L440
-  mar::tbl_mar(pcon$dbcon, 'ops$bthe."reitmapping"') |> pax_tbl(pcon = pcon)
+  mar::tbl_mar(pcon$dbcon, 'ops$bthe."reitmapping"') |> pax::pax_tbl(pcon = pcon)
 }
 
 # TODO: Generation script https://gitlab.hafogvatn.is/dag/00-setup/-/blob/master/SI_db_setup/01b-dbsetup.R
