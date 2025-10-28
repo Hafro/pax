@@ -18,6 +18,7 @@ pax_catch.hafropax <- function(
   species,
   year_end = lubridate::year(Sys.Date())
 ) {
+  # Produced with https://gitlab.hafogvatn.is/dag/00-setup/-/blob/master/logbooks/catch.R
   mar::tbl_mar(pcon$dbcon, 'ops$bthe."logbooks_compiled"') |>
     pax::pax_tbl(pcon = pcon) |>
     dplyr::filter(
