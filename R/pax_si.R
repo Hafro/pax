@@ -1,3 +1,17 @@
+comment('
+> pax_si(pcon) |> dplyr::filter(year == 2000) |> head()
+# Source:   SQL [?? x 23]
+# Database: OraConnection
+  sample_id  year month station trip    gridcell begin_lat begin_lon end_lat end_lon depth mfdb_gear_code rectangle tow_number gear_id tow_length sampling_type smareitur tow_start tow_end skiki fjardarreitur fixed
+  <chr>     <dbl> <dbl>   <dbl> <chr>      <dbl>     <dbl>     <dbl>   <dbl>   <dbl> <dbl> <chr>              <dbl>      <dbl>   <dbl>      <dbl>         <dbl>     <dbl> <dttm>    <dttm>  <dbl>         <dbl> <dbl>
+1 274398     2000     3      NA MRK.ERL       NA      59.1      5.27    59.1    5.27    NA PSE                   NA         NA      10         NA            90        NA NA        NA         NA            NA     0
+2 274399     2000     3      NA MRK.ERL       NA      59.4      5.25    59.4    5.25    NA PSE                   NA         NA      10         NA            90        NA NA        NA         NA            NA     0
+3 274400     2000     3      NA MRK.ERL       NA      59.4      5.25    59.4    5.25    NA PSE                   NA         NA      10         NA            90        NA NA        NA         NA            NA     0
+4 274401     2000     3      NA MRK.ERL       NA      60.6      4.87    60.6    4.87    NA PSE                   NA         NA      10         NA            90        NA NA        NA         NA            NA     0
+5 274402     2000     3      NA MRK.ERL       NA      60.9      4.42    60.9    4.42    NA PSE                   NA         NA      10         NA            90        NA NA        NA         NA            NA     0
+6 274403     2000     3      NA MRK.ERL       NA      60.4      4.72    60.4    4.72    NA PSE                   NA         NA      10         NA            90        NA NA        NA         NA            NA     0
+')
+
 #' @title MFRI survey indices
 #'
 #' @description

@@ -1,3 +1,17 @@
+comment('
+> pax_sampling(pcon, 2) |> head()
+# Source:   SQL [?? x 9]
+# Database: OraConnection
+  sample_id   lat   lon  year month sampling_type species mfdb_gear_code trip
+  <chr>     <dbl> <dbl> <dbl> <dbl>         <dbl>   <dbl> <chr>          <chr>
+1 551231     66.0 -18.3  2024     9             1       2 LLN            EF110-2024
+2 551231     66.0 -18.3  2024     9             1       2 LLN            EF110-2024
+3 551231     66.0 -18.3  2024     9             1       2 LLN            EF110-2024
+4 551231     66.0 -18.3  2024     9             1       2 LLN            EF110-2024
+5 551231     66.0 -18.3  2024     9             1       2 LLN            EF110-2024
+6 551231     66.0 -18.3  2024     9             1       2 LLN            EF110-2024
+')
+
 # Was: tidypax::sampling_position
 pax_sampling.hafropax <- function(
   pcon,

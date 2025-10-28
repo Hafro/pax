@@ -1,3 +1,30 @@
+comment('
+> pax_ldist(pcon) |> head()
+Joining with `by = join_by(synis_id, tegund_nr)`
+# Source:   SQL [?? x 5]
+# Database: OraConnection
+  sample_id species length   sex count
+  <chr>       <dbl>  <dbl> <dbl> <dbl>
+1 7228            9     62     1     1
+2 7228            9     69     1     1
+3 7228            9     67     1     1
+4 7228            9     65     1     1
+5 7228            9     64     1     1
+6 7228            9     61     1     1
+
+> pax_aldist(pcon) |> head()
+# Source:   SQL [?? x 4]
+# Database: OraConnection
+  sample_id species length   age
+  <chr>       <dbl>  <dbl> <dbl>
+1 7228            9     62    10
+2 7228            9     69     9
+3 7228            9     67     9
+4 7228            9     65     9
+5 7228            9     64     9
+6 7228            9     61     9
+')
+
 pax_ldist.hafropax <- function(pcon) {
   mar::les_lengd(pcon$dbcon) |>
     pax::pax_tbl(pcon = pcon) |>
