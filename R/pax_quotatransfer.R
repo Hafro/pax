@@ -1,4 +1,4 @@
-pax_quotatransfer <- function(pcon) UseMethod("pax_quotatransfer")
+pax_quotatransfer <- function(pcon, species) UseMethod("pax_quotatransfer")
 
 pax_quotatransfer_summary <- function(tbl) {
   UseMethod("pax_quotatransfer_summary", as_pax(tbl))
