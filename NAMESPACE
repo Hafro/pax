@@ -2,35 +2,3 @@ importFrom("stats", "median", "quantile", "sd")
 importFrom("utils", "head")
 
 exportPattern("^pax_")
-export("as_pax")
-
-# R/pax_add.R
-S3method(pax_add_lgroups, pax)
-S3method(pax_add_regions, pax)
-S3method(pax_add_depth_labels, pax)
-S3method(pax_add_gear_group, pax)
-S3method(pax_add_temporal_grouping, pax)
-S3method(pax_add_yearly_grouping, pax)
-S3method(pax_add_strata, pax)
-
-# R/pax_catch.R
-S3method(pax_add_cpue, pax)
-
-# R/pax_measurement.R
-S3method(pax_measurement_agelen_summary, pax)
-S3method(pax_measurement_type_summary, pax)
-
-# R/pax_quotatransfer.R
-S3method(pax_quotatransfer_summary, pax)
-
-# R/pax_si.R
-S3method(pax_si_by_age, pax)
-S3method(pax_si_by_length, pax)
-S3method(pax_si_winsorize, pax)
-S3method(pax_si_by_strata, pax)
-S3method(pax_si_by_year, pax)
-S3method(pax_si_fix_faroe_ridge, pax)
-
-# R/pax_vocab.R
-S3method(pax_add_sampling_type_desc, pax)
-S3method(pax_add_mfdb_gear_code_desc, pax)

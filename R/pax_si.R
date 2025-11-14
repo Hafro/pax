@@ -1,40 +1,4 @@
-pax_si <- function(pcon) UseMethod("pax_si")
-
-# NB: Switching on the embedded pax object, not the table
 pax_si_by_age <- function(
-  tbl,
-  species = 1,
-  lgroups = seq(0, 200, 5),
-  regions = list(all = 101:115),
-  tgroup = NULL,
-  ygroup = NULL,
-  gear_group = NULL,
-  pre_scaling = pax_add_strata, # TODO: Can we just tell people to call pax_add_strata?
-  post_scaling = function(x, ...) x,
-  alk,
-  ...
-) {
-  UseMethod("pax_si_by_age", as_pax(tbl))
-}
-pax_si_by_length <- function(
-  tbl,
-  species = 1:100,
-  ldist = pax_ldist(as_pax(tbl) |> pax_ldist_add_weight())
-) {
-  UseMethod("pax_si_by_length", as_pax(tbl))
-}
-pax_si_winsorize <- function(tbl, q = 0.95) {
-  UseMethod("pax_si_winsorize", as_pax(tbl))
-}
-pax_si_by_strata <- function(tbl, length_range = c(5, 500), std.cv = 0.2) {
-  UseMethod("pax_si_by_strata", as_pax(tbl))
-}
-pax_si_by_year <- function(tbl) UseMethod("pax_si_by_age", as_pax(tbl))
-pax_si_fix_faroe_ridge <- function(tbl, action = 'remove') {
-  UseMethod("pax_si_fix_faroe_ridge", as_pax(tbl))
-}
-
-pax_si_by_age.pax <- function(
   tbl,
   species = 1,
   lgroups = seq(0, 200, 5),
@@ -80,7 +44,7 @@ pax_si_make_alk <- function(
   ),
   tgroup = NULL,
   ygroup = NULL,
-  aldist = pax_aldist(as_pax(tbl))
+  aldist = pax_aldist(dplyr::remote_con(tbl))
 ) {
   # NB: This did rename gear -> mfdb_gear_code, moved to pax_si.hafropax()
   # TODO: Validate it's the right kind of tbl?
@@ -107,6 +71,8 @@ pax_si_make_alk <- function(
 pax_si_scale_by_landings <- function(
   tbl,
   species,
+  landings_tbl = dplyr::tbl(dplyr::remote_con(tbl), "landings"),
+  catch_tbl = dplyr::tbl(dplyr::remote_con(tbl), "catch"),
   regions = list(all = 101:115),
   ices_area = '5a%',
   gear_group = list(
@@ -117,19 +83,19 @@ pax_si_scale_by_landings <- function(
   ),
   tgroup = list(t1 = 1:6, t2 = 7:12)
 ) {
+  pcon <- dplyr::remote_con(tbl)
   area_filter <-
     sprintf('ices_area %%like%% \'%s\'', ices_area) |>
     paste(collapse = '|')
 
   landings <-
-    pax_landings(as_pax(tbl)) |>
+    pax_landings(tbl) |>
     dplyr::filter(!!rlang::parse_expr(area_filter)) |>
     ## assume unknown months are all in month 6
     dplyr::mutate(month = nvl(month, 6)) |>
     ## assume landings from unknown gears are from bottom trawls
     dplyr::mutate(mfdb_gear_code = nvl(mfdb_gear_code, 'BMT')) |>
 
-    # TODO: Safer to clone the functions, or have a generic pax_add?
     pax_add_gear_group(gear_group) |>
     pax_add_temporal_grouping(tgroup) |>
     dplyr::group_by(species, year, tgroup, gear_name) |>
@@ -137,7 +103,7 @@ pax_si_scale_by_landings <- function(
 
   if (length(regions) > 1) {
     catch_by_region <- # TODO: Was a whole separate function, needed?
-      pax_catch(as_pax(tbl)) |>
+      catch_tbl |>
       dplyr::filter(species %in% local(species)) |>
       pax_add_regions(regions) |>
       pax_add_gear_group(gear_group) |>
@@ -171,9 +137,10 @@ pax_si_scale_by_landings <- function(
     )
 }
 
-pax_si_by_length.pax <- function(
+pax_si_by_length <- function(
   tbl,
   species = 1:100,
+  # TODO: nonsense
   ldist = pax_ldist(as_pax(tbl) |> pax_ldist_add_weight())
 ) {
   # TODO: this should be a helper function
@@ -204,7 +171,7 @@ pax_si_by_length.pax <- function(
     dplyr::select(-c(count, weight))
 }
 
-pax_si_winsorize.pax <- function(tbl, q = 0.95) {
+pax_si_winsorize <- function(tbl, q = 0.95) {
   winsor_table_b <-
     tbl |>
     dplyr::filter(B > 0) |>
@@ -223,7 +190,7 @@ pax_si_winsorize.pax <- function(tbl, q = 0.95) {
     dplyr::select(-B_scalar)
 }
 
-pax_si_by_strata.pax <- function(tbl, length_range = c(5, 500), std.cv = 0.2) {
+pax_si_by_strata <- function(tbl, length_range = c(5, 500), std.cv = 0.2) {
   # TODO: Check that columns exist
   tbl |>
     dplyr::mutate(
@@ -270,7 +237,7 @@ pax_si_by_strata.pax <- function(tbl, length_range = c(5, 500), std.cv = 0.2) {
     )
 }
 
-pax_si_by_year.pax <- function(tbl) {
+pax_si_by_year <- function(tbl) {
   # TODO: nvl2 is an oracle-ism, this needs fixing
   ff <- "sqrt(sum(nvl(%1$s_sd, 0)^2 * nvl2(%1$s_sd, area,0)^2/nvl2(%1$s_sd, s_N,1)))/sum(nvl2(%1$s_sd, area,1))* sum(area)/sum(nvl2(%1$s_sd, %1$s_m,1) * nvl2(%1$s_sd, area,1))"
 
@@ -296,7 +263,7 @@ pax_si_by_year.pax <- function(tbl) {
 #' @describeIn si_stations Adjusts indices for the exclusion of the Faroe ridge (placeholder)
 #' @return adjusted query
 #' @export
-pax_si_fix_faroe_ridge.pax <- function(tbl, action = 'remove') {
+pax_si_fix_faroe_ridge <- function(tbl, action = 'remove') {
   if (action == 'remove') {
     tbl |>
       dplyr::filter(

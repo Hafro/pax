@@ -1,43 +1,52 @@
-pax_new <- function(dbcon, class_name) {
-  pcon <- list(dbcon = dbcon)
-  class(pcon) <- c(class_name, "pax", class(pcon))
+pax_connect <- function (dbdir = ":memory:") {
+  pcon <- DBI::dbConnect(duckdb::duckdb(), dbdir)
+
+  # TODO: Pre-define common schema items? If per-package, where do they hang?
+
   return(pcon)
 }
 
-pax_disconnect <- function(pcon) UseMethod("pax_disconnect")
+pax_import <- function(pcon, tbl, name = attr(tbl, "pax_name"), cite = attr(tbl, "pax_cite")) {
+  tbl_colnames <- colnames(head(tbl, 0))
 
-pax_tbl <- function(pcon, tbl) {
-  stopifnot("tbl_sql" %in% class(tbl))
+  if (!startsWith(name, "paxdat_")) {
+    # TODO: Check schema
+    # TODO: Populate lookup tables
+    # TODO: unique_indexes / indexes arguments
+  }
 
-  tbl$src$pcon <- pcon
-  class(tbl) <- c("tbl_pax", class(tbl))
+  dplyr::copy_to(pcon, tbl, name = name, temporary = FALSE)
+
+  if (!startsWith(name, "paxdat_")) {
+    # Populate ancillary tables
+    # TODO: Eventually these will hang of the schema definition
+    if ("gridcell" %in% tbl_colnames) {
+      pax_dat_gridcell(pcon, dplyr::tbl(pcon, name) |> dplyr::distinct(gridcell) |> dplyr::pull(gridcell))
+    }
+    if (all(c("lat", "lon") %in% tbl_colnames)) {
+      # TODO: Separately to gridcell, fetch noaa depth for maps?
+    }
+    if ("sampling_type" %in% tbl_colnames) {
+      pax_dat_sampling_type_desc(pcon)
+    }
+    if ("mfdb_gear_code" %in% tbl_colnames) {
+      pax_dat_mfdb_gear_code_desc(pcon)
+    }
+    
+  }
+
+  if (!is.null(cite)) {
+    # TODO: Copy citation to citation table
+  }
+}
+
+pax_decorate <- function (tbl, cite = NULL, name = NULL) {
+  if (!is.null(cite)) attr(tbl, "pax_cite") <- cite
+  if (!is.null(name)) attr(tbl, "pax_name") <- name
   return(tbl)
 }
 
-as_pax <- function(pcon_or_tbl) {
-  if ("pax" %in% class(pcon_or_tbl)) {
-    return(pcon_or_tbl)
-  }
-
-  if ("tbl_pax" %in% class(pcon_or_tbl)) {
-    # Pull out embedded pax object
-    return(pcon_or_tbl$src$pcon)
-  }
-
-  stop(
-    sys.call(-1)[[1]],
-    " needs either a pax connection or pax table, got ",
-    deparse1(class(pcon_or_tbl))
-  )
-}
-
-pax_temptbl <- function(pcon_or_tbl, df) {
-  pcon <- as_pax(pcon_or_tbl)
-
-  # Small tables just get copied inline
-  if (nrow(df) < 1000) {
-    return(pax_tbl(pcon, dbplyr::copy_inline(pcon$dbcon, df)))
-  }
-
-  stop("TODO: Use copy_to() into a temporary table")
+pax_temptbl <- function(pcon, tbl) {
+  # TODO: If lots of rows, store as temp tbl first and return that
+  dbplyr::copy_inline(pcon, tbl)
 }

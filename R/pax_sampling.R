@@ -1,16 +1,3 @@
-pax_sampling <- function(
-  pcon,
-  species,
-  # TODO: Saying 0:2025 is very inefficient, should we have start/end instead?
-  year_range = lubridate::year(Sys.Date()) - 1,
-  mfdb_gear_code = c('BMT', 'LLN', 'DSE'),
-  na_gear = 'BMT',
-  sampling_type = c(1, 2, 3, 4, 8),
-  include_stomach = FALSE
-) {
-  UseMethod("pax_sampling", pcon)
-}
-
 pax_sampling_position_summary <- function(tbl) {
   tbl |>
     dplyr::select(lat, lon, year, mfdb_gear_code) |>
@@ -20,8 +7,9 @@ pax_sampling_position_summary <- function(tbl) {
 # TODO: Generic?
 # NB: translate option now "option(tidypax.lang)"
 # Was: tidypax::sampling_overview_plot
-pax_sampling_overview_plot <- function(tbl) {
-  pcon <- as_pax(tbl)
+pax_sampling_overview_plot <- function(tbl, landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings")) {
+  pcon <- dbplyr::remote_con(tbl)
+
   tbl |>
     dplyr::group_by(year, month, mfdb_gear_code, sampling_type) |>
     dplyr::summarise(n = dplyr::n_distinct(sample_id)) |>
@@ -32,7 +20,7 @@ pax_sampling_overview_plot <- function(tbl) {
     dplyr::mutate(n = sum(n), pp = sum(p)) |>
     dplyr::full_join(
       # TODO: Was using mar::lods_oslaegt directly rather than mar::landadur_afli. Okay?
-      pax_landings(as_pax(pcon)) |>
+      landings_tbl |>
         dplyr::filter(species = species) |>
         # Landings by gear
         dplyr::group_by(species, year, month, mfdb_gear_code) |>
@@ -72,16 +60,21 @@ pax_sampling_overview_plot <- function(tbl) {
     )
 }
 
+# Was: tidypax::sampling_tables
 pax_sampling_detail <- function(
-  tbl,
+  tbl,  # sampling joined to measurement
+  mfdb_gear_code = c('BMT', 'LLN', 'DSE'),
+  sampling_type = c(1, 2, 3, 4, 8),
   measurement_type = c('LEN', 'LENM', 'OTOL') # NB: Was data_type
 ) {
-  pcon <- as_pax(tbl)
+  pcon <- dbplyr::remote_con(tbl)
 
   tbl |>
-    # TODO: Why not pax_add_measurement_type?
-    dplyr::left_join(pax_measurement(pcon), by = "sample_id") |>
-    dplyr::filter(measurement_type %in% local(measurement_type)) |>
+    dplyr::filter(
+      mfdb_gear_code %in% local(mfdb_gear_code),
+      sampling_type %in% local(sampling_type),
+      measurement_type %in% local(measurement_type)
+    ) |>
     dplyr::mutate(
       otol = ifelse(measurement_type == 'OTOL', 1, 0)
     ) |>
@@ -91,30 +84,27 @@ pax_sampling_detail <- function(
       n_lengths = sum(count),
       n_otol = sum(count * otol)
     ) |>
-    # TODO: Still broken
-    #pax_add_mfdb_gear_code_desc(pcon) |>
-    #dplyr::select(-mfdb_gear_code) |>
+    pax_add_mfdb_gear_code_desc(pcon) |>
+    dplyr::select(-mfdb_gear_code) |>
     tidyr::pivot_wider(
-      names_from = mfdb_gear_code,
+      names_from = mfdb_gear_code_desc,
       values_from = c(n, n_lengths, n_otol),
       values_fill = 0,
-      names_glue = "{mfdb_gear_code}__{.value}",
+      names_glue = "{mfdb_gear_code_desc}__{.value}",
       names_sort = TRUE
     ) |>
     dplyr::select(sort(tidyselect::peek_vars())) |>
-    dplyr::arrange(year) # |>
-  #purrr::set_names(gsub('_n.+|_n','',names(.)))
+    dplyr::arrange(year)
 }
 
+# Was: tidypax::age_reading_status
 pax_sampling_age_reading_status <- function(
-  tbl,
+  tbl,  # sampling joined to measurement
   measurement_type = c('OTOL')
 ) {
-  pcon <- as_pax(tbl)
+  pcon <- dbplyr::remote_con(tbl)
 
   tbl |>
-    # TODO: Why not pax_add_measurement_type?
-    dplyr::left_join(pax_measurement(pcon), by = "sample_id") |>
     dplyr::filter(measurement_type %in% local(measurement_type)) |>
     dplyr::mutate(read = nvl2(age, 1, 0)) |>
     dplyr::group_by(year, species, sampling_type) |>

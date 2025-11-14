@@ -1,25 +1,14 @@
-pax_ldist <- function(pcon) UseMethod("pax_ldist")
-pax_aldist <- function(pcon) UseMethod("pax_aldist")
-
-pax_ldist_add_weight <- function(tbl) {
-  UseMethod("pax_ldist_add_weight", as_pax(tbl))
-}
-
-pax_ldist_scale_abund <- function(tbl) {
-  UseMethod("pax_ldist_scale_abund", as_pax(tbl))
-}
-
 pax_ldist_scale_round <- function(tbl) {
   tbl |> dplyr::mutate(length = round(length))
 }
 
-pax_ldist_add_weight.pax <- function(tbl) {
+pax_ldist_add_weight <- function(tbl) {
   a <- NULL # Mask NSE variable
   b <- NULL # Mask NSE variable
+  con <- dbplyr::remote_con(tbl)
 
-  pcon <- pax::as_pax(tbl)
   tbl |>
-    dplyr::left_join(pax_dat_lw_coeffs(pcon), by = "species") |>
+    dplyr::left_join(pax_dat_lw_coeffs(con), by = "species") |>
     dplyr::mutate(
       a = ifelse(is.na(a), 0.01, a),
       b = ifelse(is.na(b), 3.00, b),
@@ -33,8 +22,8 @@ pax_ldist_add_weight.pax <- function(tbl) {
 pax_ldist_scale_tow_area <-
   function(
     tbl,
-    towdims = pax_dat_towdims(as_pax(tbl)),
-    vfadj = pax_dat_vfadj(as_pax(tbl))
+    towdims = dplyr::tbl(dbplyr::remote_con(tbl), "towdims"),
+    vfadj = pax_dat_vfadj(dbplyr::remote_con(tbl))
   ) {
     max_towlength <- NULL # Mask NSE variable
     std_towlength <- NULL # Mask NSE variable
@@ -64,12 +53,12 @@ pax_ldist_scale_tow_area <-
   }
 
 # Was: tidypax::vf_adj
-pax_dat_vfadj <- function(pcon) {
-  tibble::tibble(gear_id = 78, vf_adj = 1.25) |> pax_temptbl(pcon_or_tbl = pcon)
+pax_dat_vfadj <- function(con) {
+  tibble::tibble(gear_id = 78, vf_adj = 1.25) |> pax_temptbl(con = con)
 }
 
 # Was: tidypax::tow_dims
-pax_dat_towdims <- function(pcon) {
+pax_dat_towdims <- function(con) {
   tibble::tibble(
     sampling_type = c(30, 35, 31, 37, 19, 34),
     min_towlength = c(2, 2, 0.5, 0.5, 0.5, 0.5),
@@ -84,17 +73,19 @@ pax_dat_towdims <- function(pcon) {
       50
     )
   ) |>
-    pax_temptbl(pcon_or_tbl = pcon)
+    pax_temptbl(con = con)
 }
 
 # Was: tidypax::ldist_by_year
 pax_ldist_by_year <- function(
-  pcon,
+  tbl,
   sampling_type,
   species,
-  ldist = pax_ldist(pcon) |> pax_ldist_scale_round() |> pax_ldist_scale_abund()
+  ldist = pax_ldist(con) |> pax_ldist_scale_round() |> pax_ldist_scale_abund()
 ) {
-  pax_si(pcon) |>
+  con <- dbplyr::remote_con(tbl)
+
+  tbl |>  # TODO: Was pax_si(con)
     dplyr::filter(
       sampling_type %in% local(sampling_type),
       species %in% local(species)
@@ -114,24 +105,28 @@ pax_ldist_by_year <- function(
 }
 
 # Was: tidypax::ldist_plot
-pax_ldist_plot <- function(ldist, scale = 1, expand = FALSE) {
+pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
+  con <- dbplyr::remote_con(tbl)
+
   summ.dat <-
-    ldist |>
+    tbl |>
     dplyr::group_by(year) |>
     dplyr::summarise(mL = sum(length * n) / sum(n), n = sum(n))
 
   if (expand) {
     ldist <-
-      ldist |>
+      tbl |>
       dplyr::full_join(
-        ldist |>
+        tbl |>
           dplyr::select(year, length) |>
           dplyr::distinct() |>
           dplyr::collect() |>
           tidyr::expand(year, length) |>
-          pax_temptbl(pcon_or_tbl = as_pax(ldist)),
+          pax_temptbl(con = con),
         by = c('year', 'length')
       )
+  } else {
+    ldist <- tbl
   }
 
   ldist |>

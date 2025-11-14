@@ -1,14 +1,7 @@
-pax_quotatransfer <- function(pcon, species) UseMethod("pax_quotatransfer")
-
-pax_quotatransfer_summary <- function(tbl) {
-  UseMethod("pax_quotatransfer_summary", as_pax(tbl))
-}
-pax_quotatransfer_plot <- function(tbl) {
-  UseMethod("pax_quotatransfer_plot", as_pax(tbl))
-}
-
 # Was: tidypax::quota_transfer_table
-pax_quotatransfer_summary.pax <- function(tbl) {
+pax_quotatransfer_summary <- function(tbl) {
+  con <- dbplyr::remote_con(tbl)
+
   tbl |>
     dplyr::mutate(
       diff = varanlegt - afli,
@@ -27,7 +20,9 @@ pax_quotatransfer_summary.pax <- function(tbl) {
 }
 
 # Was: quota_transfer_plot
-pax_quotatransfer_plot.pax <- function(tbl) {
+pax_quotatransfer_plot <- function(tbl) {
+  con <- dbplyr::remote_con(tbl)
+
   tbl |>
     head(-1) |>
     dplyr::ungroup() |>

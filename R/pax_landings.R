@@ -1,5 +1,3 @@
-pax_landings <- function(pcon) UseMethod("pax_landings")
-
 # Was: tidypax::landings_by_gear
 pax_landings_by_gear <- function(
   tbl,

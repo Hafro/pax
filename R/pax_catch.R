@@ -1,15 +1,7 @@
-pax_catch <- function(
-  pcon,
-  species,
-  year_end = lubridate::year(Sys.Date())
-) {
-  UseMethod("pax_catch")
-}
-
-pax_add_cpue <- function(tbl) UseMethod("pax_add_cpue", as_pax(tbl))
-
 # Was: tidypax::cpue_plot (first half)
-pax_add_cpue.pax <- function(tbl) {
+pax_add_cpue <- function(tbl) {
+  con <- dbplyr::remote_con(tbl)
+
   tbl |>
     dplyr::mutate(
       effort = nvl(towtime / 60, nvl(hooks / 1000, nvl(nr_net, 1)))

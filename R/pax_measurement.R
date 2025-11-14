@@ -1,13 +1,5 @@
-pax_measurement <- function(pcon) UseMethod("pax_measurement")
-pax_measurement_agelen_summary <- function(tbl) {
-  UseMethod("pax_measurement_agelen_summary")
-}
-pax_measurement_type_summary <- function(tbl) {
-  UseMethod("pax_measurement_typesummary")
-}
-
 # Was: 02-had:maturity_key
-pax_measurement_agelen_summary.pax <- function(tbl) {
+pax_measurement_agelen_summary <- function(tbl) {
   tbl |>
     dplyr::filter(
       measurement_type == 'OTOL',
@@ -26,7 +18,7 @@ pax_measurement_agelen_summary.pax <- function(tbl) {
     )
 }
 
-pax_measurement_type_summary.pax <- function(tbl) {
+pax_measurement_type_summary <- function(tbl) {
   tbl |>
     dplyr::group_by(sample_id) |>
     dplyr::summarise(

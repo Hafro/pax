@@ -1,5 +1,6 @@
 pax_map_base <- function(
-  pcon,
+  con,
+  bathymetry = pax_dat_noaa_bathymetry(con),
   # TODO: Could we have a map_region & auto-chosem xlim/ylim?
   plot_greenland = FALSE,
   plot_faroes = FALSE,
@@ -18,7 +19,7 @@ pax_map_base <- function(
   faroes <- map_data('world', 'Faroe Islands')
 
   dd <-
-    pax_dat_noaa_bathymetry(pcon) |>
+    bathymetry |>
     dplyr::filter(
       longitude < local(max(xlim)),
       longitude > local(min(xlim)),

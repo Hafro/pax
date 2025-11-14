@@ -12,3 +12,5 @@ core
 /vignettes/WGTS/
 /vignettes/figs/
 /vignettes/*_files/
+
+/marmap*.csv
