@@ -22,13 +22,18 @@ pax_add_lgroups <- function(tbl, lgroups, dl = 1) {
 }
 
 # Was: tidypax::add_regions
-pax_add_regions <- function(tbl, regions = list(all = 101:115), default = NULL) {
+pax_add_regions <- function(
+  tbl,
+  regions = list(all = 101:115),
+  default = NULL
+) {
   pcon <- dbplyr::remote_con(tbl)
 
   regions_tbl <- data.frame(
     # Repeat the region name from the regions list, one per entry
     region = rep(names(regions), sapply(regions, length)),
-    division = unlist(regions) )
+    division = unlist(regions)
+  )
 
   out <- tbl |>
     dplyr::left_join(
@@ -38,7 +43,12 @@ pax_add_regions <- function(tbl, regions = list(all = 101:115), default = NULL) 
       by = c("gridcell"),
       suffix = c("", ".gridcell")
     )
-  if (!is.null(default)) out <- dplyr::mutate(out, region = ifelse(is.na(region), local(default), region))
+  if (!is.null(default)) {
+    out <- dplyr::mutate(
+      out,
+      region = ifelse(is.na(region), local(default), region)
+    )
+  }
   return(out)
 }
 
@@ -61,13 +71,21 @@ pax_add_ocean_depth_class <- function(tbl, breaks = c(0, 100, 200, 300)) {
     ) |>
     dplyr::mutate(
       # TODO: This assumes there's both incoming ocean_depth & ocean_depth.gridcell
-      ocean_depth = ifelse(is.na(ocean_depth), ocean_depth.gridcell, ocean_depth),
+      ocean_depth = ifelse(
+        is.na(ocean_depth),
+        ocean_depth.gridcell,
+        ocean_depth
+      ),
       ocean_depth_class = case_when(
         is.na(ocean_depth) ~ 'Unknown',
         ocean_depth > local(b_max) ~ b_labs_plusgroup,
         TRUE ~ cut(ocean_depth, breaks, labels = b_labs, include.lowest = TRUE)
       ),
-      ocean_depth_class = ifelse(is.na(ocean_depth_class), b_labs_plusgroup, ocean_depth_class)
+      ocean_depth_class = ifelse(
+        is.na(ocean_depth_class),
+        b_labs_plusgroup,
+        ocean_depth_class
+      )
     )
 }
 
@@ -182,7 +200,7 @@ pax_add_sampling_type_desc <- function(
   lang = getOption('pax.lang')
 ) {
   pcon <- dbplyr::remote_con(tbl)
-  
+
   st_tbl <- dplyr::tbl(pcon, "paxdat_sampling_type_desc")
   if (lang == 'is') {
     st_tbl <- st_tbl |>
@@ -201,7 +219,7 @@ pax_add_mfdb_gear_code_desc <- function(
   lang = getOption('pax.lang')
 ) {
   pcon <- dbplyr::remote_con(tbl)
-  
+
   st_tbl <- dplyr::tbl(pcon, "paxdat_mfdb_gear_code_desc")
 
   tbl |>

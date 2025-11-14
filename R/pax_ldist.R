@@ -85,7 +85,7 @@ pax_ldist_by_year <- function(
 ) {
   con <- dbplyr::remote_con(tbl)
 
-  tbl |>  # TODO: Was pax_si(con)
+  tbl |> # TODO: Was pax_si(con)
     dplyr::filter(
       sampling_type %in% local(sampling_type),
       species %in% local(species)

@@ -1,4 +1,4 @@
-decorate_mar <- function (tbl) {
+decorate_mar <- function(tbl) {
   # Figure out the pax_mar_* call in the stack
   mar_call <- NULL
   for (parent_call in rev(sys.calls())) {
@@ -14,7 +14,10 @@ decorate_mar <- function (tbl) {
       parent_call <- call(deparse1(parent_call[[2]]), "TODO")
     }
     if (!is.symbol(parent_fn)) {
-      if (identical(parent_fn[[1]], as.symbol("::")) && identical(parent_fn[[2]], as.symbol("pax"))) {
+      if (
+        identical(parent_fn[[1]], as.symbol("::")) &&
+          identical(parent_fn[[2]], as.symbol("pax"))
+      ) {
         # This is a pax::x call, strip outer
         parent_fn <- parent_fn[[3]]
       } else {
@@ -22,12 +25,16 @@ decorate_mar <- function (tbl) {
         next
       }
     }
-    if (is.symbol(parent_fn) && startsWith(as.character(parent_fn), "pax_mar_")) {
+    if (
+      is.symbol(parent_fn) && startsWith(as.character(parent_fn), "pax_mar_")
+    ) {
       mar_call <- parent_call
       break
     }
   }
-  if (is.null(mar_call)) stop("No pax_mar_* call found in call stack")
+  if (is.null(mar_call)) {
+    stop("No pax_mar_* call found in call stack")
+  }
 
   # Citation is mar citation but with the pax call inserted
   cite <- citation("mar")[[1]]
@@ -60,8 +67,12 @@ pax_mar_catch <- function(
       ocean_depth = depth,
     )
 
-  if (!is.null(year_start)) out <- dplyr::filter(out, year >= local(year_start))
-  if (!is.null(year_end)) out <- dplyr::filter(out, year <= local(year_end))
+  if (!is.null(year_start)) {
+    out <- dplyr::filter(out, year >= local(year_start))
+  }
+  if (!is.null(year_end)) {
+    out <- dplyr::filter(out, year <= local(year_end))
+  }
   return(out |> decorate_mar())
 }
 
@@ -155,17 +166,27 @@ pax_mar_measurement <- function(
       liver_weight = lifur,
       count = fjoldi
     )
-  if (!is.null(species)) out <- dplyr::filter(out, species %in% local(species))
-  if (!is.null(measurement_type)) out <- dplyr::filter(out, measurement_type %in% local(measurement_type))
+  if (!is.null(species)) {
+    out <- dplyr::filter(out, species %in% local(species))
+  }
+  if (!is.null(measurement_type)) {
+    out <- dplyr::filter(out, measurement_type %in% local(measurement_type))
+  }
 
   if (!is.null(year_start) || !is.null(year_end)) {
-    station_tbl <- mar::les_stod(mar) |> dplyr::left_join(mar::les_syni(mar), by = 'stod_id') |> dplyr::select(
-      sample_id = synis_id,
-      year = ar
-    )
-    if (!is.null(year_start)) station_tbl <- dplyr::filter(station_tbl, year >= local(year_start))
-    if (!is.null(year_end)) station_tbl <- dplyr::filter(station_tbl, year <= local(year_end))
-    out <- dplyr::semi_join(out, station_tbl, by = "sample_id")  # Filter by extant rows
+    station_tbl <- mar::les_stod(mar) |>
+      dplyr::left_join(mar::les_syni(mar), by = 'stod_id') |>
+      dplyr::select(
+        sample_id = synis_id,
+        year = ar
+      )
+    if (!is.null(year_start)) {
+      station_tbl <- dplyr::filter(station_tbl, year >= local(year_start))
+    }
+    if (!is.null(year_end)) {
+      station_tbl <- dplyr::filter(station_tbl, year <= local(year_end))
+    }
+    out <- dplyr::semi_join(out, station_tbl, by = "sample_id") # Filter by extant rows
   }
   return(out |> decorate_mar())
 }
@@ -235,14 +256,18 @@ pax_mar_sampling <- function(
       sampling_type %in% local(sampling_type),
       mfdb_gear_code %in% local(mfdb_gear_code)
     ) -> out
-  if (!is.null(year_start)) out <- dplyr::filter(out, year >= local(year_start))
-  if (!is.null(year_end)) out <- dplyr::filter(out, year <= local(year_end))
+  if (!is.null(year_start)) {
+    out <- dplyr::filter(out, year >= local(year_start))
+  }
+  if (!is.null(year_end)) {
+    out <- dplyr::filter(out, year <= local(year_end))
+  }
 
   out |>
     dplyr::semi_join(
       mar::les_lengd(mar) |>
-      dplyr::select(sample_id = synis_id, species = tegund_nr) |>
-      dplyr::filter(species %in% local(species)),
+        dplyr::select(sample_id = synis_id, species = tegund_nr) |>
+        dplyr::filter(species %in% local(species)),
       by = 'sample_id'
     ) |>
     decorate_mar()
@@ -335,8 +360,14 @@ pax_mar_si <- function(
       )
     )
 
-  if (!is.null(species)) out <- dplyr::filter(out, species %in% local(species))
-  if (!is.null(year_start)) out <- dplyr::filter(out, year >= local(year_start))
-  if (!is.null(year_end)) out <- dplyr::filter(out, year <= local(year_end))
+  if (!is.null(species)) {
+    out <- dplyr::filter(out, species %in% local(species))
+  }
+  if (!is.null(year_start)) {
+    out <- dplyr::filter(out, year >= local(year_start))
+  }
+  if (!is.null(year_end)) {
+    out <- dplyr::filter(out, year <= local(year_end))
+  }
   return(out |> decorate_mar())
 }

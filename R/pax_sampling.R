@@ -6,7 +6,10 @@ pax_sampling_position_summary <- function(tbl) {
 
 # NB: translate option now "option(tidypax.lang)"
 # Was: tidypax::sampling_overview_plot
-pax_sampling_overview_plot <- function(tbl, landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings")) {
+pax_sampling_overview_plot <- function(
+  tbl,
+  landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings")
+) {
   pcon <- dbplyr::remote_con(tbl)
 
   tbl |>
@@ -60,7 +63,7 @@ pax_sampling_overview_plot <- function(tbl, landings_tbl = dplyr::tbl(dbplyr::re
 
 # Was: tidypax::sampling_tables
 pax_sampling_detail <- function(
-  tbl,  # sampling joined to measurement
+  tbl, # sampling joined to measurement
   mfdb_gear_code = c('BMT', 'LLN', 'DSE'),
   sampling_type = c(1, 2, 3, 4, 8),
   measurement_type = c('LEN', 'LENM', 'OTOL') # NB: Was data_type
@@ -97,7 +100,7 @@ pax_sampling_detail <- function(
 
 # Was: tidypax::age_reading_status
 pax_sampling_age_reading_status <- function(
-  tbl,  # sampling joined to measurement
+  tbl, # sampling joined to measurement
   measurement_type = c('OTOL')
 ) {
   pcon <- dbplyr::remote_con(tbl)

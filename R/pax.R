@@ -1,4 +1,4 @@
-pax_connect <- function (dbdir = ":memory:") {
+pax_connect <- function(dbdir = ":memory:") {
   pcon <- DBI::dbConnect(duckdb::duckdb(), dbdir)
 
   # TODO: Pre-define common schema items? If per-package, where do they hang?
@@ -6,7 +6,12 @@ pax_connect <- function (dbdir = ":memory:") {
   return(pcon)
 }
 
-pax_import <- function(pcon, tbl, name = attr(tbl, "pax_name"), cite = attr(tbl, "pax_cite")) {
+pax_import <- function(
+  pcon,
+  tbl,
+  name = attr(tbl, "pax_name"),
+  cite = attr(tbl, "pax_cite")
+) {
   tbl_colnames <- colnames(head(tbl, 0))
 
   if (!startsWith(name, "paxdat_")) {
@@ -21,7 +26,12 @@ pax_import <- function(pcon, tbl, name = attr(tbl, "pax_name"), cite = attr(tbl,
     # Populate ancillary tables
     # TODO: Eventually these will hang of the schema definition
     if ("gridcell" %in% tbl_colnames) {
-      pax_dat_gridcell(pcon, dplyr::tbl(pcon, name) |> dplyr::distinct(gridcell) |> dplyr::pull(gridcell))
+      pax_dat_gridcell(
+        pcon,
+        dplyr::tbl(pcon, name) |>
+          dplyr::distinct(gridcell) |>
+          dplyr::pull(gridcell)
+      )
     }
     if (all(c("lat", "lon") %in% tbl_colnames)) {
       # TODO: Separately to gridcell, fetch noaa depth for maps?
@@ -32,7 +42,6 @@ pax_import <- function(pcon, tbl, name = attr(tbl, "pax_name"), cite = attr(tbl,
     if ("mfdb_gear_code" %in% tbl_colnames) {
       pax_dat_mfdb_gear_code_desc(pcon)
     }
-    
   }
 
   if (!is.null(cite)) {
@@ -40,9 +49,13 @@ pax_import <- function(pcon, tbl, name = attr(tbl, "pax_name"), cite = attr(tbl,
   }
 }
 
-pax_decorate <- function (tbl, cite = NULL, name = NULL) {
-  if (!is.null(cite)) attr(tbl, "pax_cite") <- cite
-  if (!is.null(name)) attr(tbl, "pax_name") <- name
+pax_decorate <- function(tbl, cite = NULL, name = NULL) {
+  if (!is.null(cite)) {
+    attr(tbl, "pax_cite") <- cite
+  }
+  if (!is.null(name)) {
+    attr(tbl, "pax_name") <- name
+  }
   return(tbl)
 }
 
