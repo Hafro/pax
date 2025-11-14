@@ -13,8 +13,6 @@ Description: Calculate surveyindices and catch at age
 URL: https://github.com/hafro/pax/
 Encoding: UTF-8
 Depends: R (>= 4.2.0)
-# mapdata, metR - for pax_map, see tidypax::base_plot
-# marmap, geo - for generating noaa_depth(TODO: This is a hafropax thing currently)
 Imports:
     mapdata,
     metR,  

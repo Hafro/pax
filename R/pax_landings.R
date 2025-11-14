@@ -150,5 +150,3 @@ pax_landings_summary_significantboats_plot <- function(tbl) {
 
   p2 + p1
 }
-
-# TODO: landing_status_calendar_year / landing_status_fishing_year? Seemingly unused

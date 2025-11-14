@@ -2,7 +2,6 @@
 intpax_dat <- function(pcon, name, df) {
   tbl_name <- paste0("paxdat_", name)
 
-  # TODO: This is kinda late.
   if (!(tbl_name %in% DBI::dbListTables(pcon))) {
     env <- new.env(parent = emptyenv())
     data(list = name, package = "pax", envir = env)
@@ -81,7 +80,7 @@ dat_from_pkg <- function(pcon, name) {
 
   if (!(tbl_name %in% DBI::dbListTables(pcon))) {
     pax_import(pcon, env[[name]], name = tbl_name, cite = list(
-      # TODO:
+      # TODO: Replace name with data name
       citation("pax")
     ))
   }

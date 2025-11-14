@@ -4,7 +4,6 @@ pax_sampling_position_summary <- function(tbl) {
     dplyr::distinct()
 }
 
-# TODO: Generic?
 # NB: translate option now "option(tidypax.lang)"
 # Was: tidypax::sampling_overview_plot
 pax_sampling_overview_plot <- function(tbl, landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings")) {
@@ -19,7 +18,6 @@ pax_sampling_overview_plot <- function(tbl, landings_tbl = dplyr::tbl(dbplyr::re
     dplyr::group_by(mfdb_gear_code, year, month) |>
     dplyr::mutate(n = sum(n), pp = sum(p)) |>
     dplyr::full_join(
-      # TODO: Was using mar::lods_oslaegt directly rather than mar::landadur_afli. Okay?
       landings_tbl |>
         dplyr::filter(species = species) |>
         # Landings by gear

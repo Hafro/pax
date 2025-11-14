@@ -57,8 +57,6 @@ pax_mar_catch <- function(
     ) |>
     dplyr::rename(
       mfdb_gear_code = gear,
-      # TODO: There'll be others to think about
-      # TODO: What is this depth actually?
       ocean_depth = depth,
     )
 
@@ -135,7 +133,6 @@ pax_mar_measurement <- function(
   kvarna_nr <- NULL # Mask NSE variable
 
   out <- mar::les_maelingu(mar) |>
-    # TODO: From tidypax::sampling_tables - good idea, or should we expose it & let pax_sampling_detail do it, if so, what is it?
     dplyr::mutate(
       maeling_teg = ifelse(
         maeling_teg == 'OTOL' & is.na(kvarna_nr),
@@ -209,7 +206,6 @@ pax_mar_sampling <- function(
   year_start = NULL,
   year_end = NULL,
   mfdb_gear_code = c('BMT', 'LLN', 'DSE'),
-  na_gear = 'BMT',
   sampling_type = c(1, 2, 3, 4, 8)
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
@@ -229,7 +225,7 @@ pax_mar_sampling <- function(
       year = ar,
       month = man,
       sampling_type = synaflokkur_nr,
-      mfdb_gear_code = gear, # TODO: ifelse(is.na(gear), local(na_gear), gear),
+      mfdb_gear_code = gear,
       trip = leidangur
     ) |>
     dplyr::filter(
@@ -256,7 +252,7 @@ pax_mar_sampling <- function(
 pax_mar_si <- function(
   mar,
   species,
-  year_start = NULL,  # TODO: My table has no filter
+  year_start = NULL,
   year_end = NULL
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {

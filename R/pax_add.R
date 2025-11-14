@@ -42,7 +42,6 @@ pax_add_regions <- function(tbl, regions = list(all = 101:115), default = NULL) 
   return(out)
 }
 
-# TODO: pax_add_depth_class should add a "depth_class" column, etc.
 # Was: tidypax::add_depth_labels
 pax_add_ocean_depth_class <- function(tbl, breaks = c(0, 100, 200, 300)) {
   pcon <- dbplyr::remote_con(tbl)

@@ -31,7 +31,6 @@ pax_si_by_age <- function(
     )
 }
 
-# TODO: Generic?
 pax_si_make_alk <- function(
   tbl,
   lgroups = seq(0, 200, 5),
