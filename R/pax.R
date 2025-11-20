@@ -47,6 +47,8 @@ pax_import <- function(
   if (!is.null(cite)) {
     # TODO: Copy citation to citation table
   }
+
+  invisible(NULL)
 }
 
 pax_decorate <- function(tbl, cite = NULL, name = NULL) {
