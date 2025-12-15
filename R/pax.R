@@ -15,7 +15,7 @@ pax_import <- function(
   name = attr(tbl, "pax_name"),
   cite = attr(tbl, "pax_cite")
 ) {
-  tbl_colnames <- colnames(head(tbl, 0))
+  tbl_colnames <- pax_tbl_colnames(tbl)
 
   field.types <- c()
 
@@ -140,4 +140,8 @@ pax_decorate <- function(tbl, cite = NULL, name = NULL) {
 pax_temptbl <- function(pcon, tbl) {
   # TODO: If lots of rows, store as temp tbl first and return that
   dbplyr::copy_inline(pcon, tbl)
+}
+
+pax_tbl_colnames <- function (tbl) {
+  tbl |> dplyr::filter(0 == 1) |> colnames()
 }
