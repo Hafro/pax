@@ -1,8 +1,36 @@
 pax_connect <- function(dbdir = ":memory:") {
   pcon <- DBI::dbConnect(duckdb::duckdb(), dbdir)
 
-  # Ensure spatial extensions are available
-  duckdbfs::load_spatial(conn = pcon, force = FALSE)
+  # Install required extensions
+  extensions <- DBI::dbGetQuery(pcon, "
+    SELECT wanted.extension_name
+         , wanted.source
+         , duckdb_extensions.loaded
+         , duckdb_extensions.installed
+      FROM (
+           VALUES ('spatial', ''), ('h3', 'community')
+           ) AS wanted(extension_name, source)
+      LEFT JOIN duckdb_extensions() ON wanted.extension_name = duckdb_extensions.extension_name;
+  ")
+  for (i in seq_len(nrow(extensions))) {
+    if (!isTRUE(extensions[i, "installed"])) {
+      DBI::dbExecute(pcon, dbplyr::build_sql(
+        "INSTALL ",
+        dplyr::ident(extensions[i, "extension_name"]),
+        dplyr::sql(if (nzchar(extensions[i, "source"])) " FROM " else ""),
+        dplyr::sql(extensions[i, "source"]),
+        ";",
+        con = pcon
+      ))
+    }
+    if (!isTRUE(extensions[i, "loaded"])) {
+      DBI::dbExecute(pcon, dbplyr::build_sql(
+        "LOAD ",
+        extensions[i, "extension_name"],
+        con = pcon
+      ))
+    }
+  }
 
   # TODO: Pre-define common schema items? If per-package, where do they hang?
 
