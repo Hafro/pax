@@ -53,12 +53,12 @@ pax_ldist_scale_tow_area <-
   }
 
 # Was: tidypax::vf_adj
-pax_dat_vfadj <- function(con) {
-  tibble::tibble(gear_id = 78, vf_adj = 1.25) |> pax_temptbl(con = con)
+pax_dat_vfadj <- function(pcon) {
+  tibble::tibble(gear_id = 78, vf_adj = 1.25) |> pax_temptbl(pcon = pcon)
 }
 
 # Was: tidypax::tow_dims
-pax_dat_towdims <- function(con) {
+pax_dat_towdims <- function(pcon) {
   tibble::tibble(
     sampling_type = c(30, 35, 31, 37, 19, 34),
     min_towlength = c(2, 2, 0.5, 0.5, 0.5, 0.5),
@@ -73,7 +73,7 @@ pax_dat_towdims <- function(con) {
       50
     )
   ) |>
-    pax_temptbl(con = con)
+    pax_temptbl(pcon = pcon)
 }
 
 # Was: tidypax::ldist_by_year
@@ -106,7 +106,7 @@ pax_ldist_by_year <- function(
 
 # Was: tidypax::ldist_plot
 pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
-  con <- dbplyr::remote_con(tbl)
+  pcon <- dbplyr::remote_con(tbl)
 
   summ.dat <-
     tbl |>
@@ -122,7 +122,7 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
           dplyr::distinct() |>
           dplyr::collect() |>
           tidyr::expand(year, length) |>
-          pax_temptbl(con = con),
+          pax_temptbl(pcon = pcon),
         by = c('year', 'length')
       )
   } else {

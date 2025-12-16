@@ -142,6 +142,7 @@ pax_si_by_length <- function(
   # TODO: nonsense
   ldist = pax_ldist(as_pax(tbl) |> pax_ldist_add_weight())
 ) {
+  pcon <- dplyr::remote_con(tbl)
   # TODO: this should be a helper function
   species_tbl <- tibble::tibble(species = species, dummy = 1)
 
@@ -149,7 +150,7 @@ pax_si_by_length <- function(
     ##  2. get length data
     dplyr::mutate(dummy = 1) |>
     dplyr::left_join(
-      pax_temptbl(as_pax(tbl), species_tbl),
+      pax_temptbl(pcon, species_tbl),
       by = 'dummy'
     ) |>
     dplyr::select(-dummy) |>
