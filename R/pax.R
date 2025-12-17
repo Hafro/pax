@@ -185,6 +185,6 @@ pax_temptbl <- function(pcon, tbl) {
   dbplyr::copy_inline(pcon, tbl)
 }
 
-pax_tbl_colnames <- function (tbl) {
+pax_tbl_colnames <- function(tbl) {
   tbl |> dplyr::filter(0 == 1) |> colnames()
 }
