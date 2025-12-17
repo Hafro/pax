@@ -75,7 +75,7 @@ ok_group("R/01-plots_and_tables.R:catch_agg", {
           SW = 108
         )
       ) |>
-      dplyr::mutate(region = nvl(region, 'Other')) |>
+      dplyr::mutate(region = coalesce(region, 'Other')) |>
       dplyr::group_by(year, mfdb_gear_code, region, depth_class) |>
       dplyr::summarise(c = sum(catch) / 1e6) |>
       dplyr::ungroup() |>
@@ -129,7 +129,7 @@ ok_group("assessment_model/00-setup/input_data.R:maturity_key", {
           N = c(102, 103, 104, 105, 111, 113)
         )
       ) |>
-      dplyr::mutate(region = nvl(region, 'S')) |>
+      dplyr::mutate(region = coalesce(region, 'S')) |>
       dplyr::filter(
         year >= local(import_defs$year_start),
         year <= local(import_defs$year_end)
