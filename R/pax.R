@@ -40,10 +40,25 @@ pax_connect <- function(dbdir = ":memory:") {
 pax_import <- function(
   pcon,
   tbl,
+  overwrite = FALSE,
   name = attr(tbl, "pax_name"),
   cite = attr(tbl, "pax_cite")
 ) {
   tbl_colnames <- pax_tbl_colnames(tbl)
+
+  if (DBI::dbExistsTable(pcon, name)) {
+    if (!isTRUE(overwrite)) {
+      stop("A table ", name, " already exists")
+    }
+    DBI::dbExecute(
+      pcon,
+      dbplyr::build_sql(
+        "DROP TABLE ",
+        dbplyr::ident(name),
+        con = pcon
+      )
+    )
+  }
 
   field.types <- c()
 
