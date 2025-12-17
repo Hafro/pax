@@ -20,7 +20,10 @@ pax_si_by_age <- function(
     pax_add_temporal_grouping(tgroup) |>
     pax_add_yearly_grouping(ygroup) |>
     dplyr::left_join(alk) |>
-    dplyr::mutate(adj_N = nvl(agep, 0) * N, adj_B = nvl(agep, 0) * B) |>
+    dplyr::mutate(
+      adj_N = coalesce(agep, 0) * N,
+      adj_B = coalesce(agep, 0) * B
+    ) |>
     dplyr::filter(adj_B > 0, N > 0) |>
     post_scaling(
       regions = regions,
@@ -54,7 +57,7 @@ pax_si_make_alk <- function(
     pax_add_yearly_grouping(ygroup) |>
     dplyr::left_join(aldist, by = c('sample_id')) |>
     pax_add_lgroups(lgroups = lgroups) |>
-    dplyr::mutate(count = nvl2(age, 1, 0), region = nvl(region, 'all')) |>
+    dplyr::mutate(count = nvl2(age, 1, 0), region = coalesce(region, 'all')) |>
     dplyr::filter(count > 0) |>
     dplyr::group_by(ygroup, gear_name, region, species, tgroup, lgroup, age) |>
     dplyr::summarise(n = sum(count, na.rm = TRUE)) |>
@@ -91,9 +94,9 @@ pax_si_scale_by_landings <- function(
     pax_landings(tbl) |>
     dplyr::filter(!!rlang::parse_expr(area_filter)) |>
     ## assume unknown months are all in month 6
-    dplyr::mutate(month = nvl(month, 6)) |>
+    dplyr::mutate(month = coalesce(month, 6)) |>
     ## assume landings from unknown gears are from bottom trawls
-    dplyr::mutate(mfdb_gear_code = nvl(mfdb_gear_code, 'BMT')) |>
+    dplyr::mutate(mfdb_gear_code = coalesce(mfdb_gear_code, 'BMT')) |>
 
     pax_add_gear_group(gear_group) |>
     pax_add_temporal_grouping(tgroup) |>
@@ -111,7 +114,8 @@ pax_si_scale_by_landings <- function(
       dplyr::summarise(catch = sum(catch)) |>
       dplyr::group_by(species, year, tgroup, gear_name) |>
       dplyr::mutate(
-        catch_proportion = pmax(nvl(catch, 0), 1) / sum(pmax(nvl(catch, 1), 1))
+        catch_proportion = pmax(coalesce(catch, 0), 1) /
+          sum(pmax(coalesce(catch, 1), 1))
       ) |>
       dplyr::select(-catch)
 
@@ -121,18 +125,18 @@ pax_si_scale_by_landings <- function(
         catch_by_region,
         by = c("species", "year", "tgroup", "gear_name")
       ) |>
-      dplyr::mutate(catch = catch * nvl(catch_proportion, 1))
+      dplyr::mutate(catch = catch * coalesce(catch_proportion, 1))
   } else {
     landings <- landings |> dplyr::mutate(region = 'all')
   }
 
   tbl |>
-    dplyr::mutate(region = nvl(region, 'all')) |> ## this will cause problems down the road.. need to do something more sensible
+    dplyr::mutate(region = coalesce(region, 'all')) |> ## this will cause problems down the road.. need to do something more sensible
     dplyr::left_join(landings) |>
     dplyr::group_by(species, year, tgroup, gear_name, region) |>
     dplyr::mutate(
-      adj_N = adj_N * nvl(catch, sum(adj_B)) / sum(adj_B),
-      adj_B = adj_B * nvl(catch, sum(adj_B)) / sum(adj_B)
+      adj_N = adj_N * coalesce(catch, sum(adj_B)) / sum(adj_B),
+      adj_B = adj_B * coalesce(catch, sum(adj_B)) / sum(adj_B)
     )
 }
 
@@ -167,7 +171,7 @@ pax_si_by_length <- function(
     # 7. calculate_biomass from numbers, length and a and b
     # 7.a get the length weight coefficients
     dplyr::mutate(B = ifelse(is.na(N), 0, N) * weight / 1000) |>
-    dplyr::mutate(N = nvl(N, 0), B = nvl(B, 0)) |>
+    dplyr::mutate(N = coalesce(N, 0), B = coalesce(B, 0)) |>
     dplyr::select(-c(count, weight))
 }
 
@@ -186,7 +190,10 @@ pax_si_winsorize <- function(tbl, q = 0.95) {
 
   tbl |>
     dplyr::left_join(winsor_table_b) |>
-    dplyr::mutate(B = nvl(B_scalar, 1) * B, N = nvl(B_scalar, 1) * N) |>
+    dplyr::mutate(
+      B = coalesce(B_scalar, 1) * B,
+      N = coalesce(B_scalar, 1) * N
+    ) |>
     dplyr::select(-B_scalar)
 }
 
@@ -239,7 +246,7 @@ pax_si_by_strata <- function(tbl, length_range = c(5, 500), std.cv = 0.2) {
 
 pax_si_by_year <- function(tbl) {
   # TODO: nvl2 is an oracle-ism, this needs fixing
-  ff <- "sqrt(sum(nvl(%1$s_sd, 0)^2 * nvl2(%1$s_sd, area,0)^2/nvl2(%1$s_sd, s_N,1)))/sum(nvl2(%1$s_sd, area,1))* sum(area)/sum(nvl2(%1$s_sd, %1$s_m,1) * nvl2(%1$s_sd, area,1))"
+  ff <- "sqrt(sum(coalesce(%1$s_sd, 0)^2 * nvl2(%1$s_sd, area,0)^2/nvl2(%1$s_sd, s_N,1)))/sum(nvl2(%1$s_sd, area,1))* sum(area)/sum(nvl2(%1$s_sd, %1$s_m,1) * nvl2(%1$s_sd, area,1))"
 
   tmp <-
     sprintf(ff, c('n', 'b')) |>
@@ -303,8 +310,12 @@ pax_si_summary_locations <- function(
     ) |>
     dplyr::summarise(
       bio = sum(
-        abs(nvl(count, 0) * nvl(a, 0.01) * abs(nvl(length, 0))^nvl(b, 3)) /
-          abs(nvl(pmax(tow_length, 0.1), 4)),
+        abs(
+          coalesce(count, 0) *
+            coalesce(a, 0.01) *
+            abs(coalesce(length, 0))^coalesce(b, 3)
+        ) /
+          abs(coalesce(pmax(tow_length, 0.1), 4)),
         na.rm = TRUE
       ) /
         1e3
