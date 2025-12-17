@@ -97,12 +97,15 @@ pax_mar_landings <- function(mar) {
     decorate_mar()
 }
 
-pax_mar_ldist <- function(mar) {
+pax_mar_ldist <- function(
+  mar,
+  species
+) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
 
-  mar::les_lengd(mar) |>
+  out <- mar::les_lengd(mar) |>
     mar::skala_med_taldir() |>
     dplyr::select(
       sample_id = synis_id,
@@ -110,23 +113,65 @@ pax_mar_ldist <- function(mar) {
       length = lengd,
       sex = kyn_nr,
       count = fjoldi
-    ) |>
-    decorate_mar()
+    )
+
+  if (!is.null(species)) {
+    out <- dplyr::filter(out, species %in% local(species))
+  }
+  # NB: Would need to join to mar::les_syni -> mar::les_stod to filter by year, worth it?
+  return(
+    out |>
+      # Re-group by columns we selected, ignoring maturity stage e.g.
+      # TODO: Previously this didn't happen. Why?
+      dplyr::group_by(sample_id, species, length, sex) |>
+      dplyr::summarize(count = sum(count)) |>
+      decorate_mar()
+  )
 }
 
-pax_mar_aldist <- function(mar) {
+pax_mar_aldist <- function(
+  mar,
+  species
+) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
 
-  mar::les_aldur(mar) |>
+  out <- mar::les_aldur(mar) |>
     dplyr::select(
       sample_id = synis_id,
       species = tegund_nr,
       length = lengd,
       age = aldur
-    ) |>
-    decorate_mar()
+    )
+  if (!is.null(species)) {
+    out <- dplyr::filter(out, species %in% local(species))
+  }
+  # NB: Would need to join to mar::les_syni -> mar::les_stod to filter by year, worth it?
+  return(
+    out |>
+      # Re-group by columns we selected, ignoring maturity stage e.g.
+      dplyr::group_by(sample_id, species, length, age) |>
+      dplyr::summarize(count = sum(count)) |>
+      decorate_mar()
+  )
+}
+
+pax_mar_lw_coeffs <- function(
+  mar,
+  species
+) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+
+  # TODO: What is generating lw_coeffs?
+  out <- mar::lw_coeffs(mar)
+
+  if (!is.null(species)) {
+    out <- dplyr::filter(out, species %in% local(species))
+  }
+  return(out |> decorate_mar())
 }
 
 # Was: tidypax::sampling_tables, tidypax::age_reading_status

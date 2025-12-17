@@ -190,6 +190,16 @@ pax_decorate <- function(tbl, cite = NULL, name = NULL) {
 }
 
 pax_temptbl <- function(pcon, tbl) {
+  # If it's already a table, don't do anything. Let dplyr::join worry if the source matches
+  if (dplyr::is.tbl(tbl)) {
+    return(tbl)
+  }
+
+  # If a character scalar, assume it's a table name
+  if (is.character(tbl) && length(tbl) == 1) {
+    return(dplyr::tbl(pcon, tbl))
+  }
+
   # TODO: If lots of rows, store as temp tbl first and return that
   dbplyr::copy_inline(pcon, tbl)
 }

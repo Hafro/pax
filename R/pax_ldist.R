@@ -2,13 +2,15 @@ pax_ldist_scale_round <- function(tbl) {
   tbl |> dplyr::mutate(length = round(length))
 }
 
-pax_ldist_add_weight <- function(tbl) {
+pax_ldist_add_weight <- function(
+  tbl,
+  lw_coeffs_tbl = "lw_coeffs"
+) {
   a <- NULL # Mask NSE variable
   b <- NULL # Mask NSE variable
-  con <- dbplyr::remote_con(tbl)
 
   tbl |>
-    dplyr::left_join(pax_dat_lw_coeffs(con), by = "species") |>
+    dplyr::left_join(pax_temptbl(pcon, lw_coeffs_tbl), by = "species") |>
     dplyr::mutate(
       a = ifelse(is.na(a), 0.01, a),
       b = ifelse(is.na(b), 3.00, b),
@@ -22,9 +24,26 @@ pax_ldist_add_weight <- function(tbl) {
 pax_ldist_scale_tow_area <-
   function(
     tbl,
-    towdims = dplyr::tbl(dbplyr::remote_con(tbl), "towdims"),
-    vfadj = pax_dat_vfadj(dbplyr::remote_con(tbl))
+    towdims_tbl = data.frame(
+      sampling_type = c(30, 35, 31, 37, 19, 34),
+      min_towlength = c(2, 2, 0.5, 0.5, 0.5, 0.5),
+      max_towlength = c(8, 8, 4, 4, 4, 0.5),
+      std_towlength = c(4, 4, 1, 1, 2, 0.5),
+      std_width = c(
+        17 / 1852,
+        17 / 1852,
+        17 / 1852,
+        27.595 / 1.852^2 / 1000,
+        4 / 1852,
+        50
+      )
+    ),
+    vfadj_tbl = data.frame(
+      gear_id = 78,
+      vf_adj = 1.25
+    )
   ) {
+    pcon <- dbplyr::remote_con(tbl)
     max_towlength <- NULL # Mask NSE variable
     std_towlength <- NULL # Mask NSE variable
     min_towlength <- NULL # Mask NSE variable
@@ -32,8 +51,8 @@ pax_ldist_scale_tow_area <-
     vf_adj <- NULL # Mask NSE variable
 
     tbl |>
-      dplyr::left_join(towdims(tbl$src$con)) |>
-      dplyr::left_join(vfadj(tbl$src$con)) |>
+      dplyr::left_join(pax_temptbl(pcon, towdims_tbl)) |>
+      dplyr::left_join(pax_temptbl(pcon, vfadj_tbl)) |>
       dplyr::mutate(
         vf_adj = ifelse(species == 19, 1, coalesce(vf_adj, 1)), #temp fix for GSS until index redefined
         std_width = coalesce(std_width, 1)
@@ -52,30 +71,6 @@ pax_ldist_scale_tow_area <-
         -c(vf_adj, min_towlength, max_towlength, std_towlength, std_width)
       )
   }
-
-# Was: tidypax::vf_adj
-pax_dat_vfadj <- function(pcon) {
-  tibble::tibble(gear_id = 78, vf_adj = 1.25) |> pax_temptbl(pcon = pcon)
-}
-
-# Was: tidypax::tow_dims
-pax_dat_towdims <- function(pcon) {
-  tibble::tibble(
-    sampling_type = c(30, 35, 31, 37, 19, 34),
-    min_towlength = c(2, 2, 0.5, 0.5, 0.5, 0.5),
-    max_towlength = c(8, 8, 4, 4, 4, 0.5),
-    std_towlength = c(4, 4, 1, 1, 2, 0.5),
-    std_width = c(
-      17 / 1852,
-      17 / 1852,
-      17 / 1852,
-      27.595 / 1.852^2 / 1000,
-      4 / 1852,
-      50
-    )
-  ) |>
-    pax_temptbl(pcon = pcon)
-}
 
 # Was: tidypax::ldist_by_year
 pax_ldist_by_year <- function(

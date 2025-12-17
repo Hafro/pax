@@ -24,6 +24,8 @@ if (!file.exists("/tmp/camel.duckdb")) {
   pax_import(pcon, do.call(pax_mar_measurement, import_defs))
   pax_import(pcon, do.call(pax_mar_catch, import_defs))
   pax_import(pcon, do.call(pax_mar_sampling, import_defs))
+  pax_import(pcon, pax_mar_ldist(mar, species = import_defs$species))
+  pax_import(pcon, pax_mar_lw_coeffs(mar, species = import_defs$species))
 } else {
   pcon <- pax::pax_connect("/tmp/camel.duckdb")
 }

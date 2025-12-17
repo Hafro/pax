@@ -140,25 +140,16 @@ pax_si_scale_by_landings <- function(
     )
 }
 
+# NB: Removing the species filtering, and assume that the ldist table is pre-filtered
 pax_si_by_length <- function(
   tbl,
-  species = 1:100,
-  # TODO: nonsense
-  ldist = pax_ldist(as_pax(tbl) |> pax_ldist_add_weight())
+  ldist = dplyr::tbl(dbplyr::remote_con(tbl), "ldist") |> pax_ldist_add_weight()
 ) {
-  pcon <- dplyr::remote_con(tbl)
-  # TODO: this should be a helper function
-  species_tbl <- tibble::tibble(species = species, dummy = 1)
+  pcon <- dbplyr::remote_con(tbl)
 
   tbl |>
     ##  2. get length data
-    dplyr::mutate(dummy = 1) |>
-    dplyr::left_join(
-      pax_temptbl(pcon, species_tbl),
-      by = 'dummy'
-    ) |>
-    dplyr::select(-dummy) |>
-    dplyr::left_join(ldist, by = c("sample_id", "species")) |>
+    dplyr::left_join(ldist, by = c("sample_id")) |>
 
     dplyr::mutate(
       length = dplyr::if_else(is.na(length), 0, length), # 0 lengths are 0 counts at stations
