@@ -86,10 +86,13 @@ pax_import <- function(
   }
 
   if (!startsWith(name, "paxdat_")) {
-    if (is.null(geom_crs) && "geom" %in% tbl_colnames) {
+    if (
+      is.null(geom_crs) && "geom" %in% tbl_colnames && "crs" %in% tbl_colnames
+    ) {
       # Force geom into known binary format, let sf complain if it can't
       tbl[["geom"]] <- sf::st_as_binary(tbl[["geom"]])
-      geom_crs <- attr(tbl, "crs") # TODO: Made up
+      stopifnot(length(unique(tbl[["crs"]])) != 1)
+      geom_crs <- sf::st_crs(as.character(tbl["crs", 1]))
     }
     # TODO: Check schema
     # TODO: Populate lookup tables
