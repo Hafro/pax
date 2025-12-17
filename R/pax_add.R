@@ -103,7 +103,7 @@ pax_add_gear_group <- function(tbl, gear_group = NULL) {
 
   tbl |>
     dplyr::left_join(pax_temptbl(pcon, gear_tbl)) |>
-    dplyr::mutate(gear_name = nvl(gear_name, 'Other'))
+    dplyr::mutate(gear_name = coalesce(gear_name, 'Other'))
 }
 
 # Was: tidypax::add_temporal_grouping
@@ -123,7 +123,7 @@ pax_add_temporal_grouping <- function(
 
   tbl |>
     dplyr::left_join(pax_temptbl(pcon, tgroup_tbl), by = "month") |>
-    dplyr::mutate(tgroup = nvl(tgroup, 'Other'))
+    dplyr::mutate(tgroup = coalesce(tgroup, 'Other'))
 }
 
 # Was: tidypax::add_yearly_grouping
@@ -140,7 +140,7 @@ pax_add_yearly_grouping <- function(tbl, ygroup = NULL) {
 
   tbl |>
     dplyr::left_join(pax_temptbl(pcon, ygroup_tbl), by = 'year') |>
-    dplyr::mutate(ygroup = nvl(ygroup, year))
+    dplyr::mutate(ygroup = coalesce(ygroup, year))
 }
 
 # Was: tidypax::si_add_strata
@@ -195,6 +195,7 @@ pax_add_strata <- function(
     )
 }
 
+# TODO: This interface is a bit of an anacronysm now
 pax_add_sampling_type_desc <- function(
   tbl,
   lang = getOption('pax.lang')
