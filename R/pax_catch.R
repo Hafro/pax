@@ -4,7 +4,10 @@ pax_add_cpue <- function(tbl) {
 
   tbl |>
     dplyr::mutate(
-      effort = nvl(towtime / 60, nvl(hooks / 1000, nvl(nr_net, 1)))
+      effort = coalesce(
+        towtime / 60,
+        coalesce(hooks / 1000, coalesce(nr_net, 1))
+      )
     ) |>
     dplyr::mutate(effort = ifelse(mfdb_gear_code == 'DSE', 1, effort)) |>
     dplyr::filter(effort > 0) |>
