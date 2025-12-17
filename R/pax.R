@@ -1,4 +1,8 @@
-pax_connect <- function(dbdir = ":memory:") {
+# https://h3geo.org/docs/api/indexing/
+# https://github.com/isaacbrodsky/h3-duckdb
+# https://duckdb.org/docs/stable/core_extensions/spatial/functions
+
+pax_connect <- function(dbdir = ":memory:", h3_resolution = 6) {
   pcon <- DBI::dbConnect(duckdb::duckdb(), dbdir)
 
   # Install required extensions
@@ -42,6 +46,17 @@ pax_connect <- function(dbdir = ":memory:") {
   }
 
   # TODO: Pre-define common schema items? If per-package, where do they hang?
+
+  # Default h3 resolution for actions
+  # https://h3geo.org/docs/core-library/restable
+  if (!DBI::dbExistsTable(pcon, "h3_resolution")) {
+    DBI::dbWriteTable(
+      pcon,
+      "h3_resolution",
+      data.frame(res = as.integer(h3_resolution)),
+      overwrite = TRUE
+    )
+  }
 
   return(pcon)
 }
