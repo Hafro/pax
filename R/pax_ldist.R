@@ -35,15 +35,16 @@ pax_ldist_scale_tow_area <-
       dplyr::left_join(towdims(tbl$src$con)) |>
       dplyr::left_join(vfadj(tbl$src$con)) |>
       dplyr::mutate(
-        vf_adj = ifelse(species == 19, 1, nvl(vf_adj, 1)), #temp fix for GSS until index redefined
-        std_width = nvl(std_width, 1)
+        vf_adj = ifelse(species == 19, 1, coalesce(vf_adj, 1)), #temp fix for GSS until index redefined
+        std_width = coalesce(std_width, 1)
       ) |> ## for all other gears
       dplyr::mutate(
         tow_length = case_when(
           tow_length == 0 ~ 1,
-          tow_length > nvl(max_towlength, 1e6) ~ nvl(max_towlength, 1),
-          tow_length < nvl(min_towlength, 0) ~ nvl(min_towlength, 1),
-          TRUE ~ nvl(tow_length, 1)
+          tow_length > coalesce(max_towlength, 1e6) ~
+            coalesce(max_towlength, 1),
+          tow_length < coalesce(min_towlength, 0) ~ coalesce(min_towlength, 1),
+          TRUE ~ coalesce(tow_length, 1)
         )
       ) |>
       dplyr::mutate(count = count / (tow_length * std_width * vf_adj)) |>
