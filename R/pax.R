@@ -74,25 +74,32 @@ pax_import <- function(
   if (inherits(tbl, "sf")) {
     # Convert to data.frame, with geometry column in right place
     # https://github.com/Cidree/duckspatial/blob/b6e6bc842b1494d1cd8bfb4f73b6c8609b6ebddc/R/db_write.R#L77-L83
+    # Make sure we're using the same CRS, which also needs to match H3
+    tbl <- sf::st_transform(tbl, crs = pax_def_crs())
     geom_data <- sf::st_as_binary(sf::st_geometry(tbl), EWKB = TRUE)
-    geom_crs <- sf::st_crs(tbl, parameters = TRUE)
+    stopifnot(sf::st_crs(tbl, parameters = TRUE)$srid == pax_def_crs()$srid)
+    geom_types <- sf::st_geometry_type(tbl)
     tbl <- as.data.frame(sf::st_drop_geometry(tbl))
     # NB: Force geometry column to be called "geom", since this is what duckdbfs assumes
     tbl[["geom"]] <- geom_data
     field.types["geom"] <- "BLOB"
     tbl_colnames <- colnames(head(tbl, 0))
   } else {
-    geom_crs <- NULL
+    geom_types <- NULL
   }
 
   if (!startsWith(name, "paxdat_")) {
     if (
-      is.null(geom_crs) && "geom" %in% tbl_colnames && "crs" %in% tbl_colnames
+      is.null(geom_types) && "geom" %in% tbl_colnames && "crs" %in% tbl_colnames
     ) {
       # Force geom into known binary format, let sf complain if it can't
       tbl[["geom"]] <- sf::st_as_binary(tbl[["geom"]])
+      geom_types <- sf::st_geometry_type(tbl[["geom"]])
       stopifnot(length(unique(tbl[["crs"]])) != 1)
-      geom_crs <- sf::st_crs(as.character(tbl["crs", 1]))
+      stopifnot(
+        sf::st_crs(as.character(tbl["crs", 1]), parameters = TRUE)$srid ==
+          pax_def_crs()$srid
+      )
     }
     # TODO: Check schema
     # TODO: Populate lookup tables
@@ -107,7 +114,7 @@ pax_import <- function(
   )
 
   if ("geom" %in% tbl_colnames) {
-    # Set geometry data types
+    # Give geom column the correct data type post-import
     DBI::dbExecute(
       pcon,
       dbplyr::build_sql(
@@ -115,18 +122,6 @@ pax_import <- function(
         dbplyr::ident(name),
         " ALTER COLUMN geom",
         " SET DATA TYPE GEOMETRY USING ST_GeomFromWKB(geom);",
-        con = pcon
-      )
-    )
-    # TODO: https://github.com/Cidree/duckspatial/issues/7
-    DBI::dbExecute(
-      pcon,
-      dbplyr::build_sql(
-        "ALTER TABLE ",
-        dbplyr::ident(name),
-        " ADD COLUMN crs_duckspatial VARCHAR DEFAULT ",
-        geom_crs$srid,
-        ";",
         con = pcon
       )
     )

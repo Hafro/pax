@@ -26,6 +26,10 @@ export_mar_strata <- function(strata_name) {
   print(sf::st_is_valid(sf::st_read(shp_path), reason = TRUE))
 }
 
+pax_def_crs <- function() {
+  return(sf::st_crs(4326))
+}
+
 pax_def_strata <- function(strata_name) {
   shp_path <- system.file(
     "extdata",

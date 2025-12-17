@@ -18,7 +18,11 @@ import_defs <- list(
 
 if (!file.exists("/tmp/camel.duckdb")) {
   pcon <- pax::pax_connect("/tmp/camel.duckdb")
-  pax_import(pcon, pax_def_strata("new_strata"))
+  # TODO: Bodge CRS back again?
+  pax_import(
+    pcon,
+    pax_def_strata("new_strata") |> sf::st_set_crs(pax_def_crs())
+  )
 
   pax_import(pcon, do.call(pax_mar_si, import_defs))
   pax_import(pcon, do.call(pax_mar_measurement, import_defs))
