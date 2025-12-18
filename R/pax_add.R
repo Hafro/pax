@@ -143,58 +143,6 @@ pax_add_yearly_grouping <- function(tbl, ygroup = NULL) {
     dplyr::mutate(ygroup = coalesce(ygroup, year))
 }
 
-# Was: tidypax::si_add_strata
-pax_add_strata <- function(
-  tbl,
-  use_total_area = 0,
-  strata_stations = pax_dat_strata_stations(dbplyr::remote_con(tbl)),
-  strata_attributes = pax_dat_strata_attributes(dbplyr::remote_con(tbl))
-) {
-  con <- dbplyr::remote_con(tbl)
-
-  tbl |>
-    dplyr::left_join(strata_stations) |>
-    dplyr::left_join(strata_attributes) |>
-    dplyr::mutate(
-      area = ifelse(
-        local(use_total_area) == 1,
-        nvl(area, 1),
-        nvl(rall_area, 0)
-      ) /
-        1.852^2
-    ) |>
-    dplyr::group_by(
-      sample_id,
-      station,
-      gridcell,
-      species,
-      year,
-      length,
-      depth,
-      stratification,
-      stratum,
-      sampling_type,
-      area,
-      rectangle,
-      smareitur
-    ) |>
-    dplyr::summarise(N = sum(N, na.rm = TRUE), B = sum(B, na.rm = TRUE)) |>
-    dplyr::group_by(
-      species,
-      year,
-      stratification,
-      stratum,
-      sampling_type,
-      area
-    ) |>
-    dplyr::mutate(
-      unadjusted_N = N,
-      unadjusted_B = B,
-      N = area * N / dplyr::n_distinct(sample_id),
-      B = area * B / dplyr::n_distinct(sample_id)
-    )
-}
-
 # TODO: This interface is a bit of an anacronysm now
 pax_add_sampling_type_desc <- function(
   tbl,

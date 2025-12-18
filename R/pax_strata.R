@@ -43,3 +43,65 @@ pax_def_strata <- function(strata_name) {
     cite = citation("pax")
   )
 }
+
+# Was: tidypax::si_add_strata
+pax_add_strata <- function(
+  tbl,
+  strata_tbl = "new_strata",
+  use_total_area = 0
+) {
+  pcon <- dbplyr::remote_con(tbl)
+  if (is.character(strata_tbl)) {
+    strata_tbl <- dplyr::tbl(pcon, strata_tbl)
+  }
+  tbl_colnames <- pax_tbl_colnames(tbl)
+  strata_tbl_colnames <- pax_tbl_colnames(strata_tbl)
+
+  if ("h3_cell" %in% tbl_colnames && "h3_cells" %in% strata_tbl_colnames) {
+    out <- tbl |>
+      # First join to a de-duplicated map of h3_cell -> stratum ID
+      dplyr::left_join(
+        strata_tbl |>
+          dplyr::group_by(h3_cell = sql("UNNEST(h3_cells)")) |>
+          dplyr::summarize(stratum = min(stratum)),
+        by = c("h3_cell")
+      )
+  } else if (
+    "h3_cells" %in% tbl_colnames && "h3_cells" %in% strata_tbl_colnames
+  ) {
+    out <- tbl |>
+      # First join to a de-duplicated map of h3_cell -> stratum ID
+      dplyr::mutate(h3_cell = list_first(h3_cells)) |>
+      dplyr::left_join(
+        strata_tbl |>
+          dplyr::group_by(h3_cell = sql("UNNEST(h3_cells)")) |>
+          dplyr::summarize(stratum = min(stratum)),
+        by = c("h3_cell")
+      )
+  } else {
+    stop(
+      "Cannot join tables, expected columns missing (tbl: ",
+      paste(tbl_colnames, collapse = ","),
+      ", strata_tbl: ",
+      paste(tbl_colnames, collapse = ","),
+      ")"
+    )
+  }
+
+  # ..then join again to pull in metadata from strata_tbl
+  out |>
+    dplyr::left_join(
+      strata_tbl |>
+        # TODO: What's the generic form of what's going on here?
+        dplyr::mutate(
+          area = ifelse(
+            local(use_total_area) == 1,
+            coalesce(area, 1),
+            coalesce(rall_area, 0)
+          ) /
+            1.852^2
+        ) |>
+        dplyr::select(-geom, -h3_cells, -rall_area),
+      by = c("stratum")
+    )
+}

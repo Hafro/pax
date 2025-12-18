@@ -34,6 +34,47 @@ if (!file.exists("/tmp/camel.duckdb")) {
   pcon <- pax::pax_connect("/tmp/camel.duckdb")
 }
 
+ok_group("R/R/06-surveyplots.R:survey index by area", {
+  # Do the si by_strata query, and extract the station/stratum mapping from it
+  df_newpax_strata <- dplyr::tbl(pcon, "si") |>
+    dplyr::filter(
+      sampling_type == 30 &
+        coalesce(tow_number, 0) %in% 0:35 | ## spring survey
+        coalesce(tow_number, 0) %in%
+          0:75 &
+          gear_id %in% 77:78 &
+          year != 2011 &
+          sampling_type == 35 ## autumn survey
+    ) |>
+    pax_si_by_length() |>
+    pax_add_strata() |>
+    dplyr::group_by(station, stratum) |>
+    dplyr::summarise(
+      h3_cell = min(h3_cell),
+      begin_lat = min(begin_lat),
+      begin_lon = min(begin_lon)
+    ) |>
+    as.data.frame()
+
+  # Get station mapping from tidypax
+  df_tidypax_strata <- tidypax::si_strata_stations(mar) |>
+    dplyr::filter(stratification == "new_strata", synaflokkur == 30) |>
+    dplyr::select(station, stratum)
+
+  # TODO: These should match, but they don't. Either it's GIGO strata, or we should be using the tow midpoint as our join
+  df_strata_comparision <- df_newpax_strata |>
+    dplyr::left_join(
+      df_tidypax_strata,
+      by = c("station"),
+      suffix = c(".newpax", ".tidypax"),
+      copy = TRUE
+    ) |>
+    dplyr::filter(!is.na(stratum.newpax)) |>
+    dplyr::mutate(match = stratum.newpax == stratum.tidypax) |>
+    dplyr::distinct(stratum.newpax, stratum.tidypax, .keep_all = TRUE) |>
+    dplyr::arrange(stratum.newpax, stratum.tidypax)
+})
+
 ok_group("R/01-plots_and_tables.R:sampling_position", {
   df_tidypax <- tidypax:::sampling_position(
     mar,
