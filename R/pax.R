@@ -95,7 +95,7 @@ pax_import <- function(
     stopifnot(sf::st_crs(tbl, parameters = TRUE)$srid == pax_def_crs()$srid)
     geom_types <- sf::st_geometry_type(tbl)
     tbl <- as.data.frame(sf::st_drop_geometry(tbl))
-    # NB: Force geometry column to be called "geom", since this is what duckdbfs assumes
+    # NB: Force geometry column to be called "geom"
     tbl[["geom"]] <- geom_data
     field.types["geom"] <- "BLOB"
     tbl_colnames <- colnames(head(tbl, 0))
