@@ -208,6 +208,58 @@ pax_import <- function(
         con = pcon
       )
     )
+  } else if (
+    all(c("begin_lat", "begin_lon", "end_lat", "end_lon") %in% tbl_colnames)
+  ) {
+    # No geometry, but begin/end lat/lon column. Interpret as ST_lineString
+    # TODO: Why aren't we setting a CRS? Where should that get assumed? Convert them?
+    DBI::dbExecute(
+      pcon,
+      dbplyr::build_sql(
+        "ALTER TABLE ",
+        dbplyr::ident(name),
+        " ADD COLUMN geom GEOMETRY DEFAULT NULL;",
+        con = pcon
+      )
+    )
+    DBI::dbExecute(
+      pcon,
+      dbplyr::build_sql(
+        "ALTER TABLE ",
+        dbplyr::ident(name),
+        " ADD COLUMN h3_cells UBIGINT[] DEFAULT NULL;",
+        con = pcon
+      )
+    )
+    DBI::dbExecute(
+      pcon,
+      dbplyr::build_sql(
+        "UPDATE ",
+        dbplyr::ident(name),
+        # Both points, map a line from one to other
+        # NB: h3 assumes WGS84/EPSG:4326
+        " SET geom = ST_MakeLine([ST_Point(begin_lon, begin_lat), ST_Point(end_lon, end_lat)])",
+        " , h3_cells = h3_grid_path_cells(",
+        "     h3_latlng_to_cell(begin_lat, begin_lon, (SELECT res FROM h3_resolution)),",
+        "     h3_latlng_to_cell(end_lat, end_lon, (SELECT res FROM h3_resolution))",
+        " )",
+        " WHERE begin_lon IS NOT NULL AND begin_lat IS NOT NULL AND end_lon IS NOT NULL AND end_lat IS NOT NULL",
+        con = pcon
+      )
+    )
+    DBI::dbExecute(
+      pcon,
+      dbplyr::build_sql(
+        "UPDATE ",
+        dbplyr::ident(name),
+        # If end-point missing, make a point from start
+        # NB: h3 assumes WGS84/EPSG:4326
+        " SET geom = ST_Point(begin_lon, begin_lat)",
+        " , h3_cells = [h3_latlng_to_cell(begin_lat, begin_lon, (SELECT res FROM h3_resolution))]",
+        " WHERE begin_lon IS NOT NULL AND begin_lat IS NOT NULL AND end_lon IS NULL AND end_lat IS NULL",
+        con = pcon
+      )
+    )
   }
 
   if (!startsWith(name, "paxdat_")) {
