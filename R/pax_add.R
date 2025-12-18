@@ -15,7 +15,6 @@ pax_add_lgroups <- function(tbl, lgroups, dl = 1) {
     ) |>
     dplyr::group_by(lgroup) |>
     dplyr::mutate(mean_length_cm = mean(length_cm))
-  print(lgroup_tbl)
 
   tbl |>
     dplyr::left_join(pax_temptbl(pcon, lgroup_tbl), by = 'length_cm')
