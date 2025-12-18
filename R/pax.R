@@ -303,8 +303,8 @@ pax_decorate <- function(tbl, cite = NULL, name = NULL) {
 }
 
 pax_temptbl <- function(pcon, tbl) {
-  # If it's already a table, don't do anything. Let dplyr::join worry if the source matches
-  if (dplyr::is.tbl(tbl)) {
+  # If it's already a DB table, don't do anything. Let dplyr::join worry if the source matches
+  if (inherits(tbl, "tbl_sql")) {
     return(tbl)
   }
 
@@ -313,8 +313,21 @@ pax_temptbl <- function(pcon, tbl) {
     return(dplyr::tbl(pcon, tbl))
   }
 
-  # TODO: If lots of rows, store as temp tbl first and return that
-  dbplyr::copy_inline(pcon, tbl)
+  if (is.data.frame(tbl) && nrow(tbl) < 20) {
+    return(dbplyr::copy_inline(pcon, tbl))
+  }
+
+  if (is.data.frame(tbl)) {
+    return(dplyr::copy_to(
+      pcon,
+      tbl,
+      # TODO: Use digest to avoid filling session with copies of the same table
+      name = basename(tempfile(pattern = "paxtemp_")),
+      temporary = TRUE
+    ))
+  }
+
+  stop("Unknown table format, can't translate to DB table: ", substitute(tbl))
 }
 
 pax_tbl_colnames <- function(tbl) {
