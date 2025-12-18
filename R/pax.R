@@ -140,6 +140,43 @@ pax_import <- function(
         con = pcon
       )
     )
+  }
+
+  if (!is.null(geom_types) && all(geom_types == "MULTIPOLYGON")) {
+    # geometry columns hold multi-polygons, add h3_cells
+
+    # NB: sub-queries not allowed in lambda expressions, so fetch first
+    h3_resolution <- DBI::dbGetQuery(pcon, "SELECT res FROM h3_resolution;")[
+      1,
+      1
+    ]
+    # https://h3geo.org/docs/api/regions#polygontocells
+    DBI::dbExecute(
+      pcon,
+      dbplyr::build_sql(
+        "ALTER TABLE ",
+        dbplyr::ident(name),
+        " ADD COLUMN h3_cells UBIGINT[] DEFAULT NULL",
+        ";",
+        con = pcon
+      )
+    )
+    DBI::dbExecute(
+      pcon,
+      dbplyr::build_sql(
+        "UPDATE ",
+        dbplyr::ident(name),
+        # NB: h3_polygon_wkt_to_cells doesn't support MULTIPOLYGON, so we have to dump as a list of POLYGONs and then re-combine
+        #     https://github.com/isaacbrodsky/h3-duckdb/issues/175
+        " SET h3_cells = list_distinct(flatten(list_transform(",
+        "   ST_Dump(geom),",
+        "   lambda x: h3_polygon_wkt_to_cells(x.geom, ",
+        h3_resolution,
+        ")",
+        ")));",
+        con = pcon
+      )
+    )
   } else if (all(c("lat", "lon") %in% tbl_colnames)) {
     # No geometry, but lat/lon columns. Interpret these as ST_points
     DBI::dbExecute(
