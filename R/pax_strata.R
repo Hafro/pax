@@ -57,18 +57,7 @@ pax_add_strata <- function(
   tbl_colnames <- pax_tbl_colnames(tbl)
   strata_tbl_colnames <- pax_tbl_colnames(strata_tbl)
 
-  if ("h3_cell" %in% tbl_colnames && "h3_cells" %in% strata_tbl_colnames) {
-    out <- tbl |>
-      # First join to a de-duplicated map of h3_cell -> stratum ID
-      dplyr::left_join(
-        strata_tbl |>
-          dplyr::group_by(h3_cell = sql("UNNEST(h3_cells)")) |>
-          dplyr::summarize(stratum = min(stratum)),
-        by = c("h3_cell")
-      )
-  } else if (
-    "h3_cells" %in% tbl_colnames && "h3_cells" %in% strata_tbl_colnames
-  ) {
+  if ("h3_cells" %in% tbl_colnames && "h3_cells" %in% strata_tbl_colnames) {
     out <- tbl |>
       # First join to a de-duplicated map of h3_cell -> stratum ID
       dplyr::mutate(h3_cell = list_first(h3_cells)) |>

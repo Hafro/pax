@@ -193,7 +193,8 @@ pax_import <- function(
       dbplyr::build_sql(
         "ALTER TABLE ",
         dbplyr::ident(name),
-        " ADD COLUMN h3_cell UBIGINT DEFAULT NULL;",
+        " ADD COLUMN h3_cells UBIGINT[] DEFAULT NULL",
+        ";",
         con = pcon
       )
     )
@@ -203,7 +204,7 @@ pax_import <- function(
         "UPDATE ",
         dbplyr::ident(name),
         # NB: h3 assumes WGS84/EPSG:4326
-        " SET geom = ST_Point(lon, lat), h3_cell = h3_latlng_to_cell(lat, lon, (SELECT res FROM h3_resolution))",
+        " SET geom = ST_Point(lon, lat), h3_cells = [h3_latlng_to_cell(lat, lon, (SELECT res FROM h3_resolution))]",
         " WHERE lon IS NOT NULL AND lat IS NOT NULL",
         con = pcon
       )

@@ -50,7 +50,7 @@ ok_group("R/R/06-surveyplots.R:survey index by area", {
     pax_add_strata() |>
     dplyr::group_by(station, stratum) |>
     dplyr::summarise(
-      h3_cell = min(h3_cell),
+      h3_cells = min(list_first(h3_cells)),
       begin_lat = min(begin_lat),
       begin_lon = min(begin_lon)
     ) |>
