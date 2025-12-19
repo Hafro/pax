@@ -3,21 +3,21 @@ pax_add_lgroups <- function(tbl, lgroups, dl = 1) {
   pcon <- dbplyr::remote_con(tbl)
 
   lgroup_tbl <-
-    tidyr::expand_grid(length_cm = seq(min(lgroups), max(lgroups), by = dl)) |>
-    # TODO: consider making below:lgroups[cut(length_cm,lgroups-1,include.lowest = TRUE, labels =FALSE)]
+    tidyr::expand_grid(length = seq(min(lgroups), max(lgroups), by = dl)) |>
+    # TODO: consider making below:lgroups[cut(length,lgroups-1,include.lowest = TRUE, labels =FALSE)]
     dplyr::mutate(
       lgroup = lgroups[cut(
-        length_cm,
+        length,
         lgroups,
         include.lowest = TRUE,
         labels = FALSE
       )]
     ) |>
     dplyr::group_by(lgroup) |>
-    dplyr::mutate(mean_length_cm = mean(length_cm))
+    dplyr::mutate(mean_length = mean(length))
 
   tbl |>
-    dplyr::left_join(pax_temptbl(pcon, lgroup_tbl), by = 'length_cm')
+    dplyr::left_join(pax_temptbl(pcon, lgroup_tbl), by = 'length')
 }
 
 # Was: tidypax::add_regions

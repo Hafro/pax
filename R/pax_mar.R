@@ -199,7 +199,7 @@ pax_mar_measurement <- function(
       sample_id = synis_id,
       species = tegund_nr,
       measurement_type = maeling_teg,
-      length_cm = lengd,
+      length = lengd,
       age = aldur,
       sex = kyn_nr,
       maturity_stage = kynthroski_nr,
