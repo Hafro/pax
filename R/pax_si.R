@@ -1,25 +1,24 @@
 pax_si_by_age <- function(
   tbl,
-  species = 1,
   lgroups = seq(0, 200, 5),
   regions = list(all = 101:115),
   tgroup = NULL,
   ygroup = NULL,
   gear_group = NULL,
-  pre_scaling = pax_add_strata, # TODO: Can we just tell people to call pax_add_strata?
   post_scaling = function(x, ...) x,
-  alk,
+  alk_tbl,
   ...
 ) {
+  pcon <- dbplyr::remote_con(tbl)
+
   # NB: This did rename gear -> mfdb_gear_code, moved to pax_si.hafropax()
   tbl |>
-    pre_scaling() |>
     pax_add_regions(regions) |>
     pax_add_gear_group(gear_group) |>
     pax_add_lgroups(lgroups) |>
     pax_add_temporal_grouping(tgroup) |>
     pax_add_yearly_grouping(ygroup) |>
-    dplyr::left_join(alk) |>
+    dplyr::left_join(pax_temptbl(pcon, alk_tbl)) |>
     dplyr::mutate(
       adj_N = coalesce(agep, 0) * N,
       adj_B = coalesce(agep, 0) * B
@@ -28,7 +27,6 @@ pax_si_by_age <- function(
     post_scaling(
       regions = regions,
       gear_group = gear_group,
-      species = species,
       tgroup = tgroup,
       ...
     )
@@ -46,8 +44,10 @@ pax_si_make_alk <- function(
   ),
   tgroup = NULL,
   ygroup = NULL,
-  aldist = pax_aldist(dplyr::remote_con(tbl))
+  aldist_tbl = "aldist"
 ) {
+  pcon <- dbplyr::remote_con(tbl)
+
   # NB: This did rename gear -> mfdb_gear_code, moved to pax_si.hafropax()
   # TODO: Validate it's the right kind of tbl?
   tbl |>
@@ -55,7 +55,7 @@ pax_si_make_alk <- function(
     pax_add_regions(regions = regions) |>
     pax_add_temporal_grouping(tgroup) |>
     pax_add_yearly_grouping(ygroup) |>
-    dplyr::left_join(aldist, by = c('sample_id')) |>
+    dplyr::left_join(pax_temptbl(pcon, aldist_tbl), by = c('sample_id')) |>
     pax_add_lgroups(lgroups = lgroups) |>
     dplyr::mutate(count = nvl2(age, 1, 0), region = coalesce(region, 'all')) |>
     dplyr::filter(count > 0) |>
