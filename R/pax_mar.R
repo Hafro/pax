@@ -164,8 +164,6 @@ pax_mar_lw_coeffs <- function(
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
-
-  # TODO: What is generating lw_coeffs?
   out <- mar::lw_coeffs(mar)
 
   if (!is.null(species)) {
