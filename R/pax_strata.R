@@ -1,6 +1,8 @@
 # Routine used to extract strata from mar
 export_mar_strata <- function(strata_name) {
   shp_path <- paste0("pax/inst/extdata/strata_", strata_name, ".shp")
+  # NB: area is (in theory) the area of the stratum. "rall_area" ~ "surveyable_area",
+  #     i.e. the area in the stratum deep enough for the survey to reach.
   mar::tbl_mar(mar, 'ops$bthe."strata_areas"') |>
     dplyr::filter(stratification == local(strata_name)) |>
     dplyr::select(-stratification) |>
@@ -48,7 +50,7 @@ pax_def_strata <- function(strata_name) {
 pax_add_strata <- function(
   tbl,
   strata_tbl = "new_strata",
-  use_total_area = 0
+  area_col = "rall_area"
 ) {
   pcon <- dbplyr::remote_con(tbl)
   if (is.character(strata_tbl)) {
@@ -78,17 +80,14 @@ pax_add_strata <- function(
   }
 
   # ..then join again to pull in metadata from strata_tbl
+  # TODO: Instead of area_col ideally we...
+  #     * Calculate area from stratum shape
+  #     * Use depth cut-off instead of rall_area
   out |>
     dplyr::left_join(
       strata_tbl |>
-        # TODO: What's the generic form of what's going on here?
         dplyr::mutate(
-          area = ifelse(
-            local(use_total_area) == 1,
-            coalesce(area, 1),
-            coalesce(rall_area, 0)
-          ) /
-            1.852^2
+          area = coalesce(!!as.symbol(area_col), 0) / 1.852^2
         ) |>
         dplyr::select(-geom, -h3_cells, -rall_area),
       by = c("stratum")
