@@ -57,7 +57,10 @@ pax_si_make_alk <- function(
     pax_add_yearly_grouping(ygroup) |>
     dplyr::left_join(pax_temptbl(pcon, aldist_tbl), by = c('sample_id')) |>
     pax_add_lgroups(lgroups = lgroups) |>
-    dplyr::mutate(count = nvl2(age, 1, 0), region = coalesce(region, 'all')) |>
+    dplyr::mutate(
+      count = if_else(is.na(age), 0, 1),
+      region = coalesce(region, 'all')
+    ) |>
     dplyr::filter(count > 0) |>
     dplyr::group_by(ygroup, gear_name, region, species, tgroup, lgroup, age) |>
     dplyr::summarise(n = sum(count, na.rm = TRUE)) |>
@@ -236,13 +239,29 @@ pax_si_by_strata <- function(tbl, length_range = c(5, 500), std.cv = 0.2) {
 }
 
 pax_si_by_year <- function(tbl) {
-  # TODO: nvl2 is an oracle-ism, this needs fixing
-  ff <- "sqrt(sum(coalesce(%1$s_sd, 0)^2 * nvl2(%1$s_sd, area,0)^2/nvl2(%1$s_sd, s_N,1)))/sum(nvl2(%1$s_sd, area,1))* sum(area)/sum(nvl2(%1$s_sd, %1$s_m,1) * nvl2(%1$s_sd, area,1))"
-
-  tmp <-
-    sprintf(ff, c('n', 'b')) |>
-    stats::setNames(c('n_cv', 'b_cv')) |>
-    purrr::map(rlang::parse_expr)
+  tmp <- sapply(
+    c('n_cv', 'b_cv'),
+    function(var_name) {
+      substitute(
+        sqrt(sum(
+          coalesce(var_sd, 0)^2 *
+            if_else(is.na(var_sd), 0, area)^2 /
+            if_else(is.na(var_sd), 1, s_N)
+        )) /
+          sum(if_else(is.na(var_sd), 1, area)) *
+          sum(area) /
+          sum(
+            if_else(is.na(var_sd), 1, var_m) * if_else(is.na(var_sd), 1, area)
+          ),
+        list(
+          var_sd = as.symbol(gsub("_cv$", "_sd", var_name)),
+          var_m = as.symbol(gsub("_cv$", "_m", var_name)),
+          end = NULL
+        )
+      )
+    },
+    simplify = FALSE
+  )
 
   # TODO: Check that columns exist
   tbl |>
