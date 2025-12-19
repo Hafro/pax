@@ -50,18 +50,7 @@ pax_dat_gridcell <- function(pcon, gridcells) {
   }
 
   if (tbl_name %in% DBI::dbListTables(pcon)) {
-    # Filter gridcells by ones already in DB
-    tbl_gridcells <- dplyr::tbl(pcon, tbl_name) |> dplyr::pull(gridcell)
-    gridcells <- base::setdiff(gridcells, tbl_gridcells)
-
-    if (length(gridcells) > 0) {
-      DBI::dbWriteTable(
-        pcon,
-        tbl_name,
-        get_rows(gridcells),
-        append = TRUE
-      )
-    }
+    # TODO: Ideally we should be upserting / comparing and overwriting at this point
   } else {
     # TODO: We really want the citation in marmap::getNOAA.bathy, as well as citation("geo")
     pax_import(
