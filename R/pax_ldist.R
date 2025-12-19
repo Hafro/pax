@@ -8,9 +8,14 @@ pax_ldist_add_weight <- function(
 ) {
   a <- NULL # Mask NSE variable
   b <- NULL # Mask NSE variable
+  lw_coeffs_tbl <- pax_temptbl(pcon, lw_coeffs_tbl)
+  lw_coeffs_tbl_colnames <- pax_tbl_colnames(lw_coeffs_tbl)
 
   tbl |>
-    dplyr::left_join(pax_temptbl(pcon, lw_coeffs_tbl), by = "species") |>
+    dplyr::left_join(
+      lw_coeffs_tbl,
+      by = intersect(lw_coeffs_tbl_colnames, c("species", "sex"))
+    ) |>
     dplyr::mutate(
       a = ifelse(is.na(a), 0.01, a),
       b = ifelse(is.na(b), 3.00, b),
