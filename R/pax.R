@@ -302,7 +302,7 @@ pax_decorate <- function(tbl, cite = NULL, name = NULL) {
   return(tbl)
 }
 
-pax_temptbl <- function(pcon, tbl) {
+pax_temptbl <- function(pcon, tbl, force_tbl = FALSE) {
   # If it's already a DB table, don't do anything. Let dplyr::join worry if the source matches
   if (inherits(tbl, "tbl_sql")) {
     return(tbl)
@@ -313,7 +313,7 @@ pax_temptbl <- function(pcon, tbl) {
     return(dplyr::tbl(pcon, tbl))
   }
 
-  if (is.data.frame(tbl) && nrow(tbl) < 20) {
+  if (!isTRUE(force_tbl) && is.data.frame(tbl) && nrow(tbl) < 20) {
     return(dbplyr::copy_inline(pcon, tbl))
   }
 
