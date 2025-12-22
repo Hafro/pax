@@ -149,12 +149,18 @@ pax_si_by_length <- function(
   ldist = dplyr::tbl(dbplyr::remote_con(tbl), "ldist") |> pax_ldist_add_weight()
 ) {
   pcon <- dbplyr::remote_con(tbl)
+  # Choose a species to fill in gaps in data
+  def_species = ldist |>
+    dplyr::filter(!is.na(species)) |>
+    dplyr::pull(species) |>
+    dplyr::first()
 
   tbl |>
     ##  2. get length data
     dplyr::left_join(ldist, by = c("sample_id")) |>
 
     dplyr::mutate(
+      species = dplyr::if_else(is.na(species), local(def_species), species),
       length = dplyr::if_else(is.na(length), 0, length), # 0 lengths are 0 counts at stations
       count = dplyr::if_else(is.na(count), 0, count)
     ) |>
