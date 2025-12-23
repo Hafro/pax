@@ -611,5 +611,3 @@ ok_group("assessment_model/00-setup/input_data.R:maturity_key", {
     dplyr::collect()
   ok(ut_cmp_equal(df_tidypax, df_newpax), "data frames match")
 })
-
-DBI::dbDisconnect(pcon)
