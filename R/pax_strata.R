@@ -91,5 +91,11 @@ pax_add_strata <- function(
         ) |>
         dplyr::select(-geom, -h3_cells, -rall_area),
       by = c("stratum")
+    ) |>
+    dplyr::mutate(
+      unadjusted_N = N,
+      unadjusted_B = B,
+      N = area * N / dplyr::n_distinct(sample_id),
+      B = area * B / dplyr::n_distinct(sample_id)
     )
 }
