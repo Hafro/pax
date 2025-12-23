@@ -58,7 +58,7 @@ pax_si_make_alk <- function(
     dplyr::left_join(pax_temptbl(pcon, aldist_tbl), by = c('sample_id')) |>
     pax_add_lgroups(lgroups = lgroups) |>
     dplyr::mutate(
-      count = if_else(is.na(age), 0, 1),
+      count = if_else(is.na(age), 0, count),
       region = coalesce(region, 'all')
     ) |>
     dplyr::filter(count > 0) |>
