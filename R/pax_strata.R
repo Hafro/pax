@@ -1,6 +1,9 @@
 # Routine used to extract strata from mar
 export_mar_strata <- function(strata_name) {
   shp_path <- paste0("pax/inst/extdata/strata_", strata_name, ".shp")
+  if (file.exists(shp_path)) {
+    unlink(gsub(".shp$", ".*", shp_path))
+  }
   # NB: area is (in theory) the area of the stratum. "rall_area" ~ "surveyable_area",
   #     i.e. the area in the stratum deep enough for the survey to reach.
   mar::tbl_mar(mar, 'ops$bthe."strata_areas"') |>
@@ -9,10 +12,11 @@ export_mar_strata <- function(strata_name) {
     dplyr::filter(!is.na(lat), !is.na(lon)) |>
     dplyr::arrange(stratum, order) |>
     dplyr::collect() |>
-    dplyr::mutate(stratum = as.integer(stratum)) |>
+    dplyr::mutate(stratum = as.integer(stratum), order = as.integer(order)) |>
     dplyr::group_by(stratum) |>
-    sf::st_as_sf(coords = c("lon", "lat"), crs = "+proj=eqc") |>
+    sf::st_as_sf(coords = c("lon", "lat"), crs = 4326) |>
     dplyr::group_by(stratum) |>
+    dplyr::arrange(stratum, order) |>
     dplyr::summarise(geometry = sf::st_combine(geometry)) |>
     sf::st_cast("POLYGON") |>
     dplyr::left_join(
@@ -27,6 +31,7 @@ export_mar_strata <- function(strata_name) {
     sf::st_write(shp_path)
   print(sf::st_is_valid(sf::st_read(shp_path), reason = TRUE))
 }
+# for (s in c("old_strata", "new_strata", "ghl_strata")) export_mar_strata(s)
 
 pax_def_crs <- function() {
   return(sf::st_crs(4326))
