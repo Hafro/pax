@@ -4,6 +4,10 @@ library(unittest)
 
 library(pax)
 
+if (interactive()) {
+  options(width = 10000)
+}
+
 if (!exists("mar")) {
   mar <- mar::connect_mar()
 }
