@@ -72,10 +72,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
         N = c(102, 103, 104, 105, 111, 113)
       ),
       gear_group = NULL
-    ) |>
-    dplyr::filter(ygroup == 1990) |>
-    dplyr::arrange(ygroup, gear_name, region, species, tgroup, lgroup, age) |>
-    dplyr::collect()
+    )
 
   ok(
     ut_cmp_equal(
