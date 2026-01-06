@@ -548,10 +548,17 @@ ok_group("R/01-plots_and_tables.R:catch_agg", {
   # 1 1990            DSE     NE             0-100 0.177149
   # 2 1990            DSE     NE           100-200 0.052057
   # 3 1990            DSE     NE              300+ 0.000295
-  ok(ut_cmp_equal(
-    df_tidypax |> dplyr::group_by(year, mfdb_gear_code, region) |> dplyr::summarise(c = sum(c)),
-    df_newpax |> dplyr::group_by(year, mfdb_gear_code, region) |> dplyr::summarise(c = sum(c))
-  ), "data frames match, ignoring ocean_depth_class")
+  ok(
+    ut_cmp_equal(
+      df_tidypax |>
+        dplyr::group_by(year, mfdb_gear_code, region) |>
+        dplyr::summarise(c = sum(c)),
+      df_newpax |>
+        dplyr::group_by(year, mfdb_gear_code, region) |>
+        dplyr::summarise(c = sum(c))
+    ),
+    "data frames match, ignoring ocean_depth_class"
+  )
 })
 
 ok_group("assessment_model/00-setup/input_data.R:maturity_key", {
