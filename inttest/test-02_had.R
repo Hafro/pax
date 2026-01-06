@@ -231,9 +231,9 @@ ok_group("input_data.R:Generate the ALK from the survey", {
     dplyr::mutate(weight = as.numeric(exp(weight)))
 
   tidypax_igfs_by_length <-
-    si_stations(mar) |>
+    tidypax::si_stations(mar) |>
     dplyr::filter(sampling_type %in% 30, nvl(tow_number, 0) %in% 0:35) |>
-    si_by_length(species = species_code, ldist = function(src) {
+    tidypax::si_by_length(species = species_code, ldist = function(src) {
       mar::les_lengd(mar) |>
         mar::skala_med_taldir() |>
         dplyr::select(
@@ -310,13 +310,13 @@ ok_group("input_data.R:Generate the ALK from the survey", {
   )
 
   tidypax_igfs_at_age <-
-    si_stations(mar) |>
+    tidypax::si_stations(mar) |>
     dplyr::filter(sampling_type %in% 30, nvl(tow_number, 0) %in% 0:35) |>
     dplyr::filter(
       year >= local(import_defs$year_start),
       year <= local(import_defs$year_end)
     ) |>
-    si_by_length(species = species_code, ldist = function(src) {
+    tidypax::si_by_length(species = species_code, ldist = function(src) {
       mar::les_lengd(mar) |>
         mar::skala_med_taldir() |>
         dplyr::select(
@@ -334,7 +334,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           by = c("species", 'length')
         )
     }) |>
-    si_by_age(
+    tidypax::si_by_age(
       post_scaling = function(x, ...) {
         x
       },
