@@ -2,8 +2,12 @@
 # https://github.com/isaacbrodsky/h3-duckdb
 # https://duckdb.org/docs/stable/core_extensions/spatial/functions
 
-pax_connect <- function(dbdir = ":memory:", h3_resolution = 6) {
-  pcon <- DBI::dbConnect(duckdb::duckdb(), dbdir)
+pax_connect <- function(
+  dbdir = ":memory:",
+  read_only = FALSE,
+  h3_resolution = 6
+) {
+  pcon <- DBI::dbConnect(duckdb::duckdb(), dbdir, read_only = read_only)
 
   # Install required extensions
   extensions <- DBI::dbGetQuery(
