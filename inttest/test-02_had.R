@@ -163,12 +163,16 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           species = tegund_nr,
           length = lengd,
           age = aldur,
+          weight = thyngd,
           count = fjoldi
         ) |>
         dplyr::mutate(sample_id = as.numeric(sample_id)) |> # NB: sample_id is character, we need integer to sort it
         dplyr::filter(species == 2) |> # NB: Our ldist is broken down by species, we should do the same here
         dplyr::group_by(sample_id, species, length, age) |>
-        dplyr::summarize(count = sum(count)) |> # NB: les_lengd doesn't group
+        dplyr::summarize(
+          count = sum(count),
+          weight = sum(weight * count) / sum(count)
+        ) |> # NB: les_lengd doesn't group
         dplyr::arrange(sample_id, species, length, age) |>
         as.data.frame(),
       dplyr::tbl(pcon, "aldist") |>
@@ -178,6 +182,35 @@ ok_group("input_data.R:Generate the ALK from the survey", {
       end = NULL
     ),
     "aldist matches"
+  )
+
+  tidypax_lw_dat <-
+    mar::les_stod(mar) |>
+    dplyr::left_join(mar::les_syni(mar)) |>
+    dplyr::left_join(mar::les_aldur(mar)) |>
+    dplyr::filter(synaflokkur_nr == 30, tegund_nr == local(species_code)) |>
+    dplyr::filter(ar == 1990) |> # NB: Filter to avoid differences in selection
+    dplyr::select(species = tegund_nr, length = lengd, weight = thyngd) |>
+    dplyr::filter(!is.na(length), weight > 0) |>
+    dplyr::collect(n = Inf)
+  newpax_lw_dat <-
+    dplyr::tbl(pcon, "si") |>
+    dplyr::filter(sampling_type %in% 30) |>
+    dplyr::left_join(dplyr::tbl(pcon, "aldist"), by = c('sample_id')) |>
+    dplyr::filter(year == 1990) |> # NB: Filter to avoid differences in selection
+    dplyr::select(species, length, weight) |>
+    dplyr::filter(!is.na(length), weight > 0) |>
+    dplyr::collect(n = Inf)
+  ok(
+    ut_cmp_equal(
+      tidypax_lw_dat |>
+        dplyr::arrange(species, length, weight) |>
+        as.data.frame(),
+      newpax_lw_dat |>
+        dplyr::arrange(species, length, weight) |>
+        as.data.frame()
+    ),
+    "lw_dat: Can generate from both tidypax & newpax"
   )
 
   tidypax_lw_dat <-

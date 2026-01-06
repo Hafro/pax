@@ -142,6 +142,7 @@ pax_mar_aldist <- function(
       sample_id = synis_id,
       species = tegund_nr,
       length = lengd,
+      weight = thyngd,
       age = aldur,
       count = fjoldi
     )
@@ -153,7 +154,10 @@ pax_mar_aldist <- function(
     out |>
       # Re-group by columns we selected, ignoring maturity stage e.g.
       dplyr::group_by(sample_id, species, length, age) |>
-      dplyr::summarize(count = sum(count)) |>
+      dplyr::summarize(
+        count = sum(count),
+        weight = sum(weight * count) / sum(count)
+      ) |>
       decorate_mar()
   )
 }
