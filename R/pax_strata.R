@@ -144,8 +144,8 @@ pax_add_strata <- function(
   if (is.character(strata_tbl)) {
     strata_tbl <- dplyr::tbl(pcon, strata_tbl)
   }
-  tbl_colnames <- pax_tbl_colnames(tbl)
-  strata_tbl_colnames <- pax_tbl_colnames(strata_tbl)
+  tbl_colnames <- colnames(tbl)
+  strata_tbl_colnames <- colnames(strata_tbl)
 
   if ("h3_cells" %in% tbl_colnames && "h3_cells" %in% strata_tbl_colnames) {
     out <- tbl |>

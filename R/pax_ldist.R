@@ -9,7 +9,7 @@ pax_ldist_add_weight <- function(
   a <- NULL # Mask NSE variable
   b <- NULL # Mask NSE variable
   lw_coeffs_tbl <- pax_temptbl(pcon, lw_coeffs_tbl)
-  lw_coeffs_tbl_colnames <- pax_tbl_colnames(lw_coeffs_tbl)
+  lw_coeffs_tbl_colnames <- colnames(lw_coeffs_tbl)
 
   tbl |>
     dplyr::left_join(

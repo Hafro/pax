@@ -72,7 +72,7 @@ pax_import <- function(
   name = attr(tbl, "pax_name"),
   cite = attr(tbl, "pax_cite")
 ) {
-  tbl_colnames <- pax_tbl_colnames(tbl)
+  tbl_colnames <- colnames(tbl)
 
   if (DBI::dbExistsTable(pcon, name)) {
     if (!isTRUE(overwrite)) {
@@ -332,8 +332,4 @@ pax_temptbl <- function(pcon, tbl, force_tbl = FALSE) {
   }
 
   stop("Unknown table format, can't translate to DB table: ", substitute(tbl))
-}
-
-pax_tbl_colnames <- function(tbl) {
-  tbl |> dplyr::filter(0 == 1) |> colnames()
 }
