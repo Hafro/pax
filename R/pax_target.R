@@ -2,29 +2,35 @@
 # https://docs.ropensci.org/targets/reference/tar_target.html
 # https://duckdb.org/docs/stable/clients/r
 # TODO: Refresh on regular interval? https://github.com/ropensci/targets/discussions/429
-pax_populate_target <- function (name, command) {
+pax_populate_target <- function(name, command) {
   # Read-write output of target as a duckdb connection
   duckdb_format <- tar_format(
-    read = function (path) {
+    read = function(path) {
       # TODO: Attach a memory database & copy, so write makes sense?
       pax::pax_connect(path, read_only = TRUE)
     },
-    write = function (object, path) {
+    write = function(object, path) {
       # https://duckdb.org/docs/stable/guides/snippets/copy_in-memory_database_to_file
-      DBI::dbExecute(object, dbplyr::build_sql("ATTACH ", path, " AS out_db;", con = object))
+      DBI::dbExecute(
+        object,
+        dbplyr::build_sql("ATTACH ", path, " AS out_db;", con = object)
+      )
       DBI::dbExecute(object, "COPY FROM DATABASE memory TO out_db;")
       DBI::dbDisconnect(object)
     },
-    marshal = function (object) {
+    marshal = function(object) {
       # TODO: Flush object, load object$dbdir into memory
       stop("Not Implemented: marshal")
     },
-    unmarshal = function (object) {
+    unmarshal = function(object) {
       stop("Not Implemented: unmarshal")
 
       # TODO: Dump (object) to temporary file
       pcon <- pax::pax_connect()
-      DBI::dbExecute(pcon, dbplyr::build_sql("ATTACH ", tmp_path, " AS in_db;", con = object))
+      DBI::dbExecute(
+        pcon,
+        dbplyr::build_sql("ATTACH ", tmp_path, " AS in_db;", con = object)
+      )
       DBI::dbExecute(pcon, "COPY FROM DATABASE in_db TO memory;")
       return(pcon)
     },
@@ -32,18 +38,21 @@ pax_populate_target <- function (name, command) {
 
   tar_target_raw(
     name = targets::tar_deparse_language(substitute(name)),
-    command = substitute({
-      pcon_new <- pax::pax_connect()
-      command
-      pcon_new
-    }, list(command = substitute(command))),
+    command = substitute(
+      {
+        pcon_new <- pax::pax_connect()
+        command
+        pcon_new
+      },
+      list(command = substitute(command))
+    ),
     format = duckdb_format,
     retrieval = "worker" # Don't try to copy DB from main -> worker instance(s)
   )
 }
 
 # tarchetypes::tar_format_nanoparquet, but with column filtering
-pax_tar_format_parquet <- function () {
+pax_tar_format_parquet <- function() {
   rlang::check_installed("nanoparquet")
   read <- function(path) {
     tarchetypes::tar_nanoparquet_read(path, class = "tbl")
@@ -54,8 +63,12 @@ pax_tar_format_parquet <- function () {
   convert <- function(object) {
     cols <- colnames(object)
     # TODO: Deselect anything that isn't going to fit? Special h3_cells serialisation format?
-    if ("geom" %in% cols) object <- dplyr::select(object, -geom)
-    if ("h3_cells" %in% cols) object <- dplyr::select(object, -h3_cells)
+    if ("geom" %in% cols) {
+      object <- dplyr::select(object, -geom)
+    }
+    if ("h3_cells" %in% cols) {
+      object <- dplyr::select(object, -h3_cells)
+    }
     # TODO: Why do we need to as.data.frame() it?
     as.data.frame(object)
   }
