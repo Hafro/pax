@@ -5,6 +5,21 @@ update_stationlist <- function(
   pages = NULL,
   col_names = NULL
 ) {
+  # Convert DegreesMinutesSeconds to decimal
+  degrees_to_decimal <- function(col) {
+    # Chop 6 digit string into 3 pairs of digits, then sum each triple together
+    vapply(
+      strsplit(sprintf("%06d", col), "(?<=\\d{2})", perl = TRUE),
+      function(parts) {
+        as.numeric(parts[[1]]) +
+          as.numeric(parts[[2]]) / 60 +
+          as.numeric(parts[[3]]) / 3600 +
+          0
+      },
+      numeric(1)
+    )
+  }
+
   if (!requireNamespace("tabulapdf", quietly = TRUE)) {
     stop("This requires the tabulapdf package")
   }
@@ -113,7 +128,6 @@ update_stationlist <- function(
   on.exit(unlink(tempdir_path, recursive = TRUE), add = TRUE)
 
   # Pre-fetch PDF
-  print(pdf_url)
   if (startsWith(pdf_url, "https:")) {
     pdf_path <- file.path(tempdir_path, basename(pdf_url))
     utils::download.file(pdf_url, pdf_path, mode = "wb")
@@ -180,11 +194,11 @@ update_stationlist <- function(
   # Combine list of data.frames together
   station_df <- dplyr::bind_rows(station_df)
 
-  # Rescale lat/lon values
-  station_df[, "start_lat"] <- station_df[, "start_lat"] * 1e-4
-  station_df[, "start_lon"] <- station_df[, "start_lon"] * -1e-4
-  station_df[, "end_lat"] <- station_df[, "end_lat"] * 1e-4
-  station_df[, "end_lon"] <- station_df[, "end_lon"] * -1e-4
+  # Convert lat/lon values to decimal
+  station_df[, "start_lat"] <- degrees_to_decimal(station_df[, "start_lat"])
+  station_df[, "start_lon"] <- -degrees_to_decimal(station_df[, "start_lon"])
+  station_df[, "end_lat"] <- degrees_to_decimal(station_df[, "end_lat"])
+  station_df[, "end_lon"] <- -degrees_to_decimal(station_df[, "end_lon"])
   station_df[, "gridcell"] <- 10 *
     station_df[, "reitur"] +
     station_df[, "smareitur"]
