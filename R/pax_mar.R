@@ -322,6 +322,25 @@ pax_mar_sampling <- function(
 }
 
 # Was: tidypax::si_stations
+# sample_id - Row ID (247621)
+# year - Sample year (1960)
+# month - Sample month (12)
+# station - Station (6650013)
+# trip - Trip identifier ("A1-92")
+# sampling_type - Sampling type number (30)
+# gridcell - Statistical gridcell (6652)
+# begin_lat - Location of tow start (67.0)
+# begin_lon - Location of tow start (-15.1)
+# end_lat - Location of tow end (67.0)
+# end_lon - Location of tow end (-15.1)
+# mfdb_gear_code - Gear used (PSE)
+# gear_id - Gear identifier (78)
+# tow_number - Tow number (12)
+# tow_depth - Tow depth (155)
+# tow_length - Tow length (4)
+# tow_start - Tow start time (1992-01-14 11:30:00)
+# tow_end - Tow end time (1992-01-14 11:45:00)
+# fixed - 0/1
 pax_mar_si <- function(
   mar,
   species,
@@ -347,35 +366,10 @@ pax_mar_si <- function(
       mar::tbl_mar(mar, 'biota.gear_mapping'),
       by = 'veidarfaeri'
     ) |>
-    dplyr::select(
-      sample_id = synis_id,
-      year = ar,
-      month = man,
-      station,
-      trip = leidangur,
-      gridcell,
-      begin_lat = kastad_breidd,
-      begin_lon = kastad_lengd,
-      end_lat = hift_breidd,
-      end_lon = hift_lengd,
-      depth = botndypi_kastad,
-      # NB: Extracted rename from si_by_age
-      mfdb_gear_code = gear,
-      rectangle = reitur,
-      tow_number = tog_nr,
-      gear_id = veidarfaeri,
-      tow_length = toglengd,
-      sampling_type = synaflokkur_nr,
-      smareitur,
-      tow_start = togbyrjun,
-      tow_end = togendir,
-      skiki,
-      fjardarreitur
-    ) |>
     dplyr::mutate(
       fixed = case_when(
-        sampling_type == 30 &
-          (rectangle * 100 + nvl(tow_number, 0)) %in%
+        synaflokkur_nr == 30 &
+          (reitur * 100 + nvl(tog_nr, 0)) %in%
             c(
               27401,
               37212,
@@ -398,14 +392,36 @@ pax_mar_si <- function(
               72314
             ) ~
           0,
-        sampling_type == 30 & tow_number %in% 1:19 ~ 1,
-        sampling_type == 30 &
-          tow_number %in% c(31, 32) &
-          rectangle %in%
+        synaflokkur_nr == 30 & tog_nr %in% 1:19 ~ 1,
+        synaflokkur_nr == 30 &
+          tog_nr %in% c(31, 32) &
+          reitur %in%
             c(319, 321, 367, 370, 371, 372, 414, 415, 422, 474, 523) ~
           1,
         TRUE ~ 0
       )
+    ) |>
+    dplyr::select(
+      sample_id = synis_id,
+      year = ar,
+      month = man,
+      station,
+      trip = leidangur,
+      sampling_type = synaflokkur_nr,
+      gridcell,
+      begin_lat = kastad_breidd,
+      begin_lon = kastad_lengd,
+      end_lat = hift_breidd,
+      end_lon = hift_lengd,
+      # NB: Extracted rename from si_by_age
+      mfdb_gear_code = gear,
+      gear_id = veidarfaeri,
+      tow_depth = botndypi_kastad,
+      tow_number = tog_nr,
+      tow_length = toglengd,
+      tow_start = togbyrjun,
+      tow_end = togendir,
+      fixed
     )
 
   if (!is.null(species)) {
