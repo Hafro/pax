@@ -1,4 +1,5 @@
-pax_si_by_age <- function(
+# Was tidypax:si_by_age
+pax_si_scale_by_alk <- function(
   tbl,
   lgroups = seq(0, 200, 5),
   regions = list(all = 101:115),

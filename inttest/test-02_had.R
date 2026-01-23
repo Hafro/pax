@@ -359,7 +359,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
         )
     ) |>
     pax_add_strata("new_strata") |>
-    pax_si_by_age(
+    pax_si_scale_by_alk(
       tgroup = NULL,
       regions = list(
         S = c(101, 107, 106, 108, 109, 114),
