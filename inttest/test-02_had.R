@@ -26,7 +26,7 @@ if (!file.exists("/tmp/camel.duckdb")) {
 
   pax_import(pcon, do.call(pax_mar_station, import_defs))
   pax_import(pcon, do.call(pax_mar_measurement, import_defs))
-  pax_import(pcon, do.call(pax_mar_catch, import_defs))
+  pax_import(pcon, do.call(pax_mar_logbook, import_defs))
   pax_import(pcon, do.call(pax_mar_landings, import_defs))
   pax_import(pcon, do.call(pax_mar_sampling, import_defs))
   pax_import(pcon, pax_mar_aldist(mar, species = import_defs$species))
@@ -550,7 +550,7 @@ ok_group("R/01-plots_and_tables.R:catch_agg", {
       dplyr::collect() |>
       as.data.frame()
   )
-  df_newpax <- dplyr::tbl(pcon, "catch") |>
+  df_newpax <- dplyr::tbl(pcon, "logbook") |>
     pax_add_ocean_depth_class(breaks = c(0, 100, 200, 300)) |>
     pax_add_regions(
       regions = list(

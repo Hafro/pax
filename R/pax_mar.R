@@ -47,7 +47,7 @@ decorate_mar <- function(tbl) {
 }
 
 # Was tidypax::catch_data
-pax_mar_catch <- function(
+pax_mar_logbook <- function(
   mar,
   species,
   year_start = NULL,
@@ -57,14 +57,30 @@ pax_mar_catch <- function(
     stop("mar package not available, cannot import from DB")
   }
 
-  # Produced with https://gitlab.hafogvatn.is/dag/00-setup/-/blob/master/logbooks/catch.R
+  # NB: Produced with https://gitlab.hafogvatn.is/dag/00-setup/-/blob/master/logbooks/catch.R
+  # * sq / x / y / dx / dy / area produced by mar::encode_zchords(), rounding lon/lat
   out <- mar::tbl_mar(mar, 'ops$bthe."logbooks_compiled"') |>
     dplyr::filter(
-      species == local(species),
+      species %in% local(species),
     ) |>
-    dplyr::rename(
+    dplyr::select(
+      logbook_id = id,
+      species,
+      year,
+      month,
+      vessel_nr,
       mfdb_gear_code = gear,
+      gear_size = gear_size,
+      gridcell,
+      lat,
+      lon,
+      tow_time = towtime,
+      tow_hooks = hooks,
+      tow_num_nets = nr_net,
+      tow_num_traps = num_traps,
       ocean_depth = depth,
+      catch = catch,
+      catch_total = total
     )
 
   if (!is.null(year_start)) {

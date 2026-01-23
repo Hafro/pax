@@ -78,7 +78,7 @@ pax_si_scale_by_landings <- function(
   tbl,
   species,
   landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings"),
-  catch_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "catch"),
+  logbook_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "logbook"),
   regions = list(all = 101:115),
   gear_group = list(
     Other = 'Var',
@@ -104,7 +104,7 @@ pax_si_scale_by_landings <- function(
 
   if (length(regions) > 1) {
     catch_by_region <- # TODO: Was a whole separate function, needed?
-      catch_tbl |>
+      logbook_tbl |>
       dplyr::filter(species %in% local(species)) |>
       pax_add_regions(regions) |>
       pax_add_gear_group(gear_group) |>
