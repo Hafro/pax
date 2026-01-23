@@ -27,6 +27,7 @@ if (!file.exists("/tmp/camel.duckdb")) {
   pax_import(pcon, do.call(pax_mar_station, import_defs))
   pax_import(pcon, do.call(pax_mar_measurement, import_defs))
   pax_import(pcon, do.call(pax_mar_catch, import_defs))
+  pax_import(pcon, do.call(pax_mar_landings, import_defs))
   pax_import(pcon, do.call(pax_mar_sampling, import_defs))
   pax_import(pcon, pax_mar_aldist(mar, species = import_defs$species))
   pax_import(pcon, pax_mar_ldist(mar, species = import_defs$species))

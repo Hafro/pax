@@ -77,24 +77,57 @@ pax_mar_catch <- function(
 }
 
 # Was: tidypax::landings_by_gear
-pax_mar_landings <- function(mar) {
+# species - Species number (2)
+# mfdb_gear_code - Gear code (LLN)
+# ices_area - ICES statistical area ("5c")
+# year - Year (1998)
+# month - Month (2)
+# country - Country name ("iceland")
+# boat_id - Boat identifier (7028)
+# landings - Landings quantity (320)
+pax_mar_landings <- function(
+  mar,
+  species,
+  ices_area_like = '5a%',
+  year_start = NULL,
+  year_end = NULL
+) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
 
-  mar::landadur_afli(mar) |>
+  # Make an expression or'ing all parts of ices_area_like together
+  ices_area_c <- quote(1 == 1)
+  for (l in ices_area_like) {
+    ices_area_c <- substitute(
+      ices_area_c | str_like(ices_svaedi, l),
+      list(ices_area_c = ices_area_c, l = l)
+    )
+  }
+
+  out <- mar::landadur_afli(mar) |>
+    dplyr::filter(
+      ices_area_c,
+      tegund_nr %in% local(species)
+    ) |>
     dplyr::select(
-      species = tegund_nr,
-      mfdb_gear_code = mfdb_gear_code,
-      ices_area = ices_svaedi,
       year = ar,
       month = man,
-      ices_division = ices_svaedi,
+      species = tegund_nr,
+      ices_area = ices_svaedi,
       country = land,
+      mfdb_gear_code = mfdb_gear_code,
       boat_id = skip_nr,
       landings = magn_oslaegt
-    ) |>
-    decorate_mar()
+    )
+
+  if (!is.null(year_start)) {
+    out <- dplyr::filter(out, year >= local(year_start))
+  }
+  if (!is.null(year_end)) {
+    out <- dplyr::filter(out, year <= local(year_end))
+  }
+  return(decorate_mar(out))
 }
 
 pax_mar_ldist <- function(

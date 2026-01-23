@@ -80,7 +80,6 @@ pax_si_scale_by_landings <- function(
   landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings"),
   catch_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "catch"),
   regions = list(all = 101:115),
-  ices_area = '5a%',
   gear_group = list(
     Other = 'Var',
     BMT = c('BMT', 'NPT', 'SHT', 'PGT'),
@@ -90,13 +89,9 @@ pax_si_scale_by_landings <- function(
   tgroup = list(t1 = 1:6, t2 = 7:12)
 ) {
   pcon <- dbplyr::remote_con(tbl)
-  area_filter <-
-    sprintf('ices_area %%like%% \'%s\'', ices_area) |>
-    paste(collapse = '|')
 
   landings <-
-    pax_landings(tbl) |>
-    dplyr::filter(!!rlang::parse_expr(area_filter)) |>
+    landings_tbl |>
     ## assume unknown months are all in month 6
     dplyr::mutate(month = coalesce(month, 6)) |>
     ## assume landings from unknown gears are from bottom trawls
