@@ -24,7 +24,7 @@ if (!file.exists("/tmp/camel.duckdb")) {
   pcon <- pax::pax_connect("/tmp/camel.duckdb")
   pax_import(pcon, pax_def_strata("new_strata"))
 
-  pax_import(pcon, do.call(pax_mar_si, import_defs))
+  pax_import(pcon, do.call(pax_mar_station, import_defs))
   pax_import(pcon, do.call(pax_mar_measurement, import_defs))
   pax_import(pcon, do.call(pax_mar_catch, import_defs))
   pax_import(pcon, do.call(pax_mar_sampling, import_defs))
@@ -63,7 +63,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
     dplyr::filter(species == local(species_code))
 
   newpax_igfs_alk <-
-    dplyr::tbl(pcon, "si") |>
+    dplyr::tbl(pcon, "station") |>
     dplyr::filter(sampling_type %in% 30, coalesce(tow_number, 0) %in% 0:35) |>
     pax_si_make_alk(
       tgroup = NULL,
@@ -191,7 +191,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
     dplyr::filter(!is.na(length), weight > 0) |>
     dplyr::collect(n = Inf)
   newpax_lw_dat <-
-    dplyr::tbl(pcon, "si") |>
+    dplyr::tbl(pcon, "station") |>
     dplyr::filter(sampling_type %in% 30) |>
     dplyr::left_join(dplyr::tbl(pcon, "aldist"), by = c('sample_id')) |>
     dplyr::filter(year == 1990) |> # NB: Filter to avoid differences in selection
@@ -253,7 +253,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
     }) |>
     identity()
   newpax_igfs_by_length <-
-    dplyr::tbl(pcon, "si") |>
+    dplyr::tbl(pcon, "station") |>
     dplyr::filter(sampling_type %in% 30, coalesce(tow_number, 0) %in% 0:35) |>
     pax_si_by_length(
       ldist = dplyr::tbl(pcon, "ldist") |>
@@ -349,7 +349,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
     dplyr::filter(stratification == 'new_strata') # NB: Was old_strata, but haven't loaded that
 
   newpax_igfs_at_age <-
-    dplyr::tbl(pcon, "si") |>
+    dplyr::tbl(pcon, "station") |>
     dplyr::filter(sampling_type %in% 30, coalesce(tow_number, 0) %in% 0:35) |>
     pax_si_by_length(
       ldist = dplyr::tbl(pcon, "ldist") |>
@@ -454,7 +454,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
 
 ok_group("R/R/06-surveyplots.R:survey index by area", {
   # Do the si by_strata query, and extract the station/stratum mapping from it
-  df_newpax_strata <- dplyr::tbl(pcon, "si") |>
+  df_newpax_strata <- dplyr::tbl(pcon, "station") |>
     dplyr::filter(
       sampling_type == 30 &
         coalesce(tow_number, 0) %in% 0:35 | ## spring survey
@@ -623,7 +623,7 @@ ok_group("assessment_model/00-setup/input_data.R:maturity_key", {
       dplyr::arrange(year, region, age, lgroup) |>
       dplyr::collect()
   )
-  df_newpax <- dplyr::tbl(pcon, "si") |>
+  df_newpax <- dplyr::tbl(pcon, "station") |>
     dplyr::filter(sampling_type == 30) |>
     dplyr::inner_join(
       dplyr::tbl(pcon, "measurement") |>

@@ -341,7 +341,7 @@ pax_mar_sampling <- function(
 # tow_start - Tow start time (1992-01-14 11:30:00)
 # tow_end - Tow end time (1992-01-14 11:45:00)
 # fixed - 0/1
-pax_mar_si <- function(
+pax_mar_station <- function(
   mar,
   species,
   year_start = NULL,
