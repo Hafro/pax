@@ -322,11 +322,17 @@ pax_temptbl <- function(pcon, tbl, force_tbl = FALSE) {
   }
 
   if (is.data.frame(tbl)) {
+    tbl_name <- paste0("temptbl_", digest::digest(tbl, algo = "xxh3_64"))
+
+    # If hash matches, reuse old table
+    if (DBI::dbExistsTable(pcon, tbl_name)) {
+      return(dplyr::tbl(pcon, tbl_name))
+    }
+
     return(dplyr::copy_to(
       pcon,
       tbl,
-      # TODO: Use digest to avoid filling session with copies of the same table
-      name = basename(tempfile(pattern = "paxtemp_")),
+      name = tbl_name,
       temporary = TRUE
     ))
   }
