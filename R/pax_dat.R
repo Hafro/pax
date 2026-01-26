@@ -12,59 +12,94 @@ intpax_dat <- function(pcon, name, df) {
   return(dplyr::tbl(pcon, tbl_name))
 }
 
-# Was: 'ops$bthe."noaa_bathymetry" && ops$bthe."reitmapping"
-# NB: Saved with:
-#     mar::tbl_mar(mar,'ops$bthe."reitmapping"') |>
-#       dplyr::filter(!is.na(gridcell), !is.na(division), !is.na(subdivision), !is.na(lat), !is.na(lon)) |>
-#       dplyr::select(-id) |>
-#       write.table(file = "pax/data/gridcell.txt")
-pax_dat_gridcell <- function(pcon, gridcells) {
-  name <- "gridcell"
-  tbl_name <- "paxdat_gridcell"
+# Was: ops$bthe."reitmapping"
+pax_dat_gridcell <- function(pcon) {
+  dat_from_pkg(pcon, "gridcell")
+}
 
-  get_rows <- function(gridcells) {
-    env <- new.env(parent = emptyenv())
-    utils::data(list = name, package = "pax", envir = env)
-    # TODO: Disable filtering for now, fetch for all of data file
-    gridcell_df <- env[[name]] #|> dplyr::filter(gridcell %in% gridcells)
+refresh_gridcell <- function(mar) {
+  mar::tbl_mar(mar, 'ops$bthe."reitmapping"') |>
+    dplyr::filter(
+      !is.na(gridcell),
+      !is.na(division),
+      !is.na(subdivision),
+      !is.na(lat),
+      !is.na(lon)
+    ) |>
+    dplyr::select(-id) |>
+    write.table(file = "pax/data/gridcell.txt")
+}
 
-    depth_df <- marmap::getNOAA.bathy(
-      lon1 = min(gridcell_df$lon, na.rm = TRUE),
-      lon2 = max(gridcell_df$lon, na.rm = TRUE),
-      lat1 = min(gridcell_df$lat, na.rm = TRUE),
-      lat2 = max(gridcell_df$lat, na.rm = TRUE),
+pax_dat_ocean_depth <- function(pcon) {
+  if (DBI::dbExistsTable(pcon, "paxdat_ocean_depth")) {
+    return(dplyr::tbl(pcon, "paxdat_ocean_depth"))
+  }
+
+  gridcell_bounds <-
+    pax_dat_gridcell(pcon) |>
+    dplyr::summarize(
+      lat1 = min(lat, na.rm = TRUE),
+      lon1 = min(lon, na.rm = TRUE),
+      lat2 = max(lat, na.rm = TRUE),
+      lon2 = max(lon, na.rm = TRUE)
+    ) |>
+    as.data.frame() |>
+    as.list()
+
+  # Fetch unaggregated data first, save to a temporary table
+  # Do this to avoid bringing in an R-native H3 library
+  raw_ocean_depth_tbl_name <-
+    marmap::getNOAA.bathy(
+      lon1 = gridcell_bounds$lon1,
+      lon2 = gridcell_bounds$lon2,
+      lat1 = gridcell_bounds$lat1,
+      lat2 = gridcell_bounds$lat2,
       keep = TRUE
     ) |>
-      as.data.frame.table(convert = TRUE, stringsAsFactors = FALSE) |>
-      dplyr::mutate(
-        lon = as.numeric(Var1),
-        lat = as.numeric(Var2),
-        # NB: bathy depth figures are negative, we'll assume positive
-        ocean_depth = -Freq,
-        gridcell = geo::d2sr(lat, lon)
-      ) |>
-      dplyr::group_by(gridcell) |>
-      dplyr::summarise(ocean_depth = mean(ocean_depth))
+    as.data.frame.table(convert = TRUE, stringsAsFactors = FALSE) |>
+    dplyr::mutate(
+      lon = as.numeric(Var1),
+      lat = as.numeric(Var2),
+      # NB: NOAA.bathy depth figures are negative, we'll assume positive
+      ocean_depth = -Freq,
+    ) |>
+    dplyr::select(
+      lon,
+      lat,
+      ocean_depth,
+    ) |>
+    pax_temptbl(pcon, tbl = _) |>
+    dbplyr::remote_name()
+  on.exit(
+    DBI::dbExecute(pcon, paste0("DROP TABLE ", raw_ocean_depth_tbl_name)),
+    add = TRUE
+  )
 
-    return(dplyr::left_join(gridcell_df, depth_df, by = c("gridcell")))
-  }
-
-  if (tbl_name %in% DBI::dbListTables(pcon)) {
-    # TODO: Ideally we should be upserting / comparing and overwriting at this point
-  } else {
-    # TODO: We really want the citation in marmap::getNOAA.bathy, as well as citation("geo")
-    pax_import(
-      pcon,
-      get_rows(gridcells),
-      name = tbl_name,
-      cite = list(
-        citation("marmap"),
-        citation("geo")
-      )
+  # NB: Use raw SQL to stop dbplyr converting h3_cell into double
+  DBI::dbExecute(pcon, "DROP TABLE IF EXISTS paxdat_ocean_depth")
+  DBI::dbExecute(
+    pcon,
+    dbplyr::build_sql(
+      "CREATE TABLE paxdat_ocean_depth AS",
+      # NB: Re-generate lon/lat so we choose the center of the cell
+      " SELECT h3_cell_to_lng(h3_cell) AS lon",
+      "      , h3_cell_to_lat(h3_cell) AS lat",
+      "      , ocean_depth AS ocean_depth",
+      "      , h3_cell AS h3_cell",
+      " FROM (",
+      "SELECT h3_latlng_to_cell(lat, lon, (SELECT res FROM h3_resolution)) AS h3_cell",
+      "     , mean(ocean_depth) AS ocean_depth",
+      " FROM ",
+      dplyr::ident(raw_ocean_depth_tbl_name),
+      " GROUP BY h3_latlng_to_cell(lat, lon, (SELECT res FROM h3_resolution))",
+      ")",
+      "ORDER BY h3_cell", # NB: duckdb likes data to be ordered
+      con = pcon
     )
-  }
+  )
+  #DBI::dbGetQuery(pcon, "DESCRIBE paxdat_ocean_depth")
 
-  return(dplyr::tbl(pcon, tbl_name))
+  return(dplyr::tbl(pcon, "paxdat_ocean_depth"))
 }
 
 dat_from_pkg <- function(pcon, name) {

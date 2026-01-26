@@ -576,17 +576,9 @@ ok_group("R/01-plots_and_tables.R:catch_agg", {
     dplyr::arrange(year, mfdb_gear_code, region, ocean_depth_class) |>
     dplyr::collect() |>
     as.data.frame()
-  # TODO: Total catch good, but ocean_depth_class isn't right?
+  # NB: tidypax's noaa_bathymetry is wrong: https://github.com/Hafro/pax/issues/9 so queries don't match
   # > df_newpax |> dplyr::filter(year == 1990, mfdb_gear_code == "DSE", region == "NE")
-  #   year mfdb_gear_code region ocean_depth_class        c
-  # 1 1990            DSE     NE             0-100 0.177149
-  # 2 1990            DSE     NE           100-200 0.051805
-  # 3 1990            DSE     NE              300+ 0.000547
   # > df_tidypax |> dplyr::filter(year == 1990, mfdb_gear_code == "DSE", region == "NE")
-  #   year mfdb_gear_code region ocean_depth_class        c
-  # 1 1990            DSE     NE             0-100 0.177149
-  # 2 1990            DSE     NE           100-200 0.052057
-  # 3 1990            DSE     NE              300+ 0.000295
   ok(
     ut_cmp_equal(
       df_tidypax |>

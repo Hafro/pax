@@ -63,17 +63,17 @@ pax_add_ocean_depth_class <- function(tbl, breaks = c(0, 100, 200, 300)) {
   b_labs_plusgroup <- sprintf("%d+", b_max)
 
   tbl |>
-    dplyr::left_join(
-      dplyr::tbl(pcon, "paxdat_gridcell"),
-      by = 'gridcell',
-      suffix = c("", ".gridcell")
-    ) |>
     dplyr::mutate(
-      # TODO: This assumes there's both incoming ocean_depth & ocean_depth.gridcell
-      ocean_depth = ifelse(
-        is.na(ocean_depth),
-        ocean_depth.gridcell,
-        ocean_depth
+      # If depth missing, use mean depth from paxdat_ocean_depth
+      ocean_depth = case_when(
+        is.na(ocean_depth) ~
+          dplyr::sql(
+            "(
+        SELECT mean(od.ocean_depth)
+        FROM paxdat_ocean_depth od
+        WHERE h3_cell IN h3_cells)"
+          ),
+        TRUE ~ ocean_depth
       ),
       ocean_depth_class = case_when(
         is.na(ocean_depth) ~ 'Unknown',

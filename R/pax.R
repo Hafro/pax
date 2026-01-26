@@ -271,12 +271,8 @@ pax_import <- function(
     # Populate ancillary tables
     # TODO: Eventually these will hang of the schema definition
     if ("gridcell" %in% tbl_colnames) {
-      pax_dat_gridcell(
-        pcon,
-        dplyr::tbl(pcon, name) |>
-          dplyr::distinct(gridcell) |>
-          dplyr::pull(gridcell)
-      )
+      pax_dat_gridcell(pcon)
+      pax_dat_ocean_depth(pcon)
     }
     if (all(c("lat", "lon") %in% tbl_colnames)) {
       # TODO: Separately to gridcell, fetch noaa depth for maps?
