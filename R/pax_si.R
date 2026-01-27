@@ -21,10 +21,10 @@ pax_si_scale_by_alk <- function(
     pax_add_yearly_grouping(ygroup) |>
     dplyr::left_join(pax_temptbl(pcon, alk_tbl)) |>
     dplyr::mutate(
-      adj_N = coalesce(agep, 0) * N,
-      adj_B = coalesce(agep, 0) * B
+      si_abund = coalesce(agep, 0) * si_abund,
+      si_biomass = coalesce(agep, 0) * si_biomass
     ) |>
-    dplyr::filter(adj_B > 0, N > 0) |>
+    dplyr::filter(si_biomass > 0, si_abund > 0) |>
     post_scaling(
       regions = regions,
       gear_group = gear_group,
@@ -134,12 +134,15 @@ pax_si_scale_by_landings <- function(
     dplyr::left_join(landings) |>
     dplyr::group_by(species, year, tgroup, gear_name, region) |>
     dplyr::mutate(
-      adj_N = adj_N * coalesce(catch, sum(adj_B)) / sum(adj_B),
-      adj_B = adj_B * coalesce(catch, sum(adj_B)) / sum(adj_B)
+      si_abund = si_abund * coalesce(catch, sum(si_biomass)) / sum(si_biomass),
+      si_biomass = si_biomass *
+        coalesce(catch, sum(si_biomass)) /
+        sum(si_biomass)
     )
 }
 
 # NB: Removing the species filtering, and assume that the ldist table is pre-filtered
+# NB: Creates the si_biomass/si_abund values
 pax_si_by_length <- function(
   tbl,
   ldist = dplyr::tbl(dbplyr::remote_con(tbl), "ldist") |> pax_ldist_add_weight()
@@ -163,32 +166,40 @@ pax_si_by_length <- function(
     # 3. get count data
     #    Note: If only counted at station this code approach fails
     pax_ldist_scale_tow_area() |>
-    dplyr::mutate(N = count / 1e3) |>
+    dplyr::mutate(si_abund = count / 1e3) |>
     # 7. calculate_biomass from numbers, length and a and b
     # 7.a get the length weight coefficients
-    dplyr::mutate(B = ifelse(is.na(N), 0, N) * weight / 1000) |>
-    dplyr::mutate(N = coalesce(N, 0), B = coalesce(B, 0)) |>
+    dplyr::mutate(
+      si_biomass = ifelse(is.na(si_abund), 0, si_abund) * weight / 1000
+    ) |>
+    dplyr::mutate(
+      si_abund = coalesce(si_abund, 0),
+      si_biomass = coalesce(si_biomass, 0)
+    ) |>
     dplyr::select(-c(count, weight))
 }
 
 pax_si_scale_winsorize <- function(tbl, q = 0.95) {
   winsor_table_b <-
     tbl |>
-    dplyr::filter(B > 0) |>
+    dplyr::filter(si_biomass > 0) |>
     dplyr::group_by(year, sample_id, species) |>
-    dplyr::summarise(B = sum(B, na.rm = TRUE), N = sum(N, na.rm = TRUE)) |>
+    dplyr::summarise(
+      si_biomass = sum(si_biomass, na.rm = TRUE),
+      si_abund = sum(si_abund, na.rm = TRUE)
+    ) |>
     dplyr::group_by(year, species) |>
     dplyr::mutate(B_quantile = quantile(B, q)) |>
-    dplyr::filter(B > B_quantile) |>
-    dplyr::mutate(B_scalar = min(B) / B) |>
+    dplyr::filter(si_biomass > B_quantile) |>
+    dplyr::mutate(B_scalar = min(si_biomass) / si_biomass) |>
     dplyr::ungroup() |>
     dplyr::select(sample_id, species, B_scalar)
 
   tbl |>
     dplyr::left_join(winsor_table_b) |>
     dplyr::mutate(
-      B = coalesce(B_scalar, 1) * B,
-      N = coalesce(B_scalar, 1) * N
+      si_biomass = coalesce(B_scalar, 1) * si_biomass,
+      si_abund = coalesce(B_scalar, 1) * si_abund
     ) |>
     dplyr::select(-B_scalar)
 }
@@ -197,14 +208,14 @@ pax_si_by_strata <- function(tbl, length_range = c(5, 500), std.cv = 0.2) {
   # TODO: Check that columns exist
   tbl |>
     dplyr::mutate(
-      B = ifelse(
+      si_biomass = ifelse(
         length < local(max(length_range)) & length > local(min(length_range)),
-        B,
+        si_biomass,
         0
       ),
-      N = ifelse(
+      si_abund = ifelse(
         length < local(max(length_range)) & length > local(min(length_range)),
-        N,
+        si_abund,
         0
       )
     ) |>
@@ -218,7 +229,10 @@ pax_si_by_strata <- function(tbl, length_range = c(5, 500), std.cv = 0.2) {
       sampling_type,
       area
     ) |>
-    dplyr::summarise(N = sum(N, na.rm = TRUE), B = sum(B, na.rm = TRUE)) |>
+    dplyr::summarise(
+      si_abund = sum(si_abund, na.rm = TRUE),
+      si_biomass = sum(si_biomass, na.rm = TRUE)
+    ) |>
     dplyr::group_by(
       species,
       year,
@@ -228,36 +242,45 @@ pax_si_by_strata <- function(tbl, length_range = c(5, 500), std.cv = 0.2) {
       area
     ) |>
     dplyr::summarise(
-      s_N = n(),
-      n_m = sum(N, na.rm = TRUE), # number of fish
-      n_sd = sd(N),
-      b_m = sum(B, na.rm = TRUE), # biomass of fish
-      b_sd = sd(B)
+      si_N = n(),
+      si_abund = sum(si_abund, na.rm = TRUE), # number of fish
+      si_abund_sd = sd(si_abund),
+      si_biomass = sum(si_biomass, na.rm = TRUE), # biomass of fish
+      si_biomass_sd = sd(si_biomass)
     ) |>
     dplyr::mutate(
-      n_sd = ifelse(n_sd == 0, n_m * local(std.cv), s_N * n_sd),
-      b_sd = ifelse(b_sd == 0, b_m * local(std.cv), s_N * b_sd)
+      si_abund_sd = ifelse(
+        si_abund_sd == 0,
+        si_abund * local(std.cv),
+        si_N * si_abund_sd
+      ),
+      si_biomass_sd = ifelse(
+        si_biomass_sd == 0,
+        si_biomass * local(std.cv),
+        si_N * si_biomass_sd
+      )
     )
 }
 
 pax_si_by_year <- function(tbl) {
+  # Generate code to calculate CV for both si_abund & si_biomass
   tmp <- sapply(
-    c('n_cv', 'b_cv'),
+    c('si_abund_cv', 'si_biomass_cv'),
     function(var_name) {
       substitute(
         sqrt(sum(
           coalesce(var_sd, 0)^2 *
             if_else(is.na(var_sd), 0, area)^2 /
-            if_else(is.na(var_sd), 1, s_N)
+            if_else(is.na(var_sd), 1, si_N)
         )) /
           sum(if_else(is.na(var_sd), 1, area)) *
           sum(area) /
           sum(
-            if_else(is.na(var_sd), 1, var_m) * if_else(is.na(var_sd), 1, area)
+            if_else(is.na(var_sd), 1, var) * if_else(is.na(var_sd), 1, area)
           ),
         list(
           var_sd = as.symbol(gsub("_cv$", "_sd", var_name)),
-          var_m = as.symbol(gsub("_cv$", "_m", var_name)),
+          var = as.symbol(gsub("_cv$", "", var_name)),
           end = NULL
         )
       )
@@ -267,13 +290,13 @@ pax_si_by_year <- function(tbl) {
 
   # TODO: Check that columns exist
   tbl |>
-    dplyr::filter(n_m > 0) |> ## remove strata with no fish to avoid division by zero
+    dplyr::filter(si_abund > 0) |> ## remove strata with no fish to avoid division by zero
     dplyr::group_by(stratification, species, sampling_type, year) |>
     dplyr::summarise(
-      srN = n(), # strata within a year
-      n = sum(n_m, na.rm = TRUE),
+      si_N = n(), # strata within a year
+      si_abund = sum(si_abund, na.rm = TRUE),
       !!!tmp[1],
-      b = sum(b_m, na.rm = TRUE),
+      si_biomass = sum(si_biomass, na.rm = TRUE),
       !!!tmp[2]
     ) |>
     dplyr::ungroup()

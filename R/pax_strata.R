@@ -223,9 +223,7 @@ pax_add_strata <- function(
       by = c("stratum")
     ) |>
     dplyr::mutate(
-      unadjusted_N = N,
-      unadjusted_B = B,
-      N = area * N / dplyr::n_distinct(sample_id),
-      B = area * B / dplyr::n_distinct(sample_id)
+      si_abund = area * si_abund / dplyr::n_distinct(sample_id),
+      si_biomass = area * si_biomass / dplyr::n_distinct(sample_id)
     )
 }

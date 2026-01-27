@@ -289,8 +289,8 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           species,
           length,
           sex,
-          N,
-          B
+          si_abund = N,
+          si_biomass = B
         ) |>
         as.data.frame(),
       newpax_igfs_by_length |>
@@ -309,8 +309,8 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           species,
           length,
           sex,
-          N,
-          B
+          si_abund,
+          si_biomass
         ) |>
         as.data.frame(),
       end = NULL
@@ -421,9 +421,8 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           lgroup,
           age,
           agep,
-          N,
-          adj_N,
-          adj_B
+          si_abund = adj_N,
+          si_biomass = adj_B
         ) |>
         as.data.frame(),
       newpax_igfs_at_age |>
@@ -448,9 +447,8 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           lgroup,
           age,
           agep,
-          N,
-          adj_N,
-          adj_B
+          si_abund,
+          si_biomass
         ) |>
         # TODO: Why do we still have an h3_cell column?
         as.data.frame(),
