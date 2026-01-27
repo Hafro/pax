@@ -171,7 +171,7 @@ pax_si_by_length <- function(
     dplyr::select(-c(count, weight))
 }
 
-pax_si_winsorize <- function(tbl, q = 0.95) {
+pax_si_scale_winsorize <- function(tbl, q = 0.95) {
   winsor_table_b <-
     tbl |>
     dplyr::filter(B > 0) |>
