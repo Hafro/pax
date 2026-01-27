@@ -22,7 +22,8 @@ import_defs <- list(
 
 if (!file.exists("/tmp/camel.duckdb")) {
   pcon <- pax::pax_connect("/tmp/camel.duckdb")
-  pax_import(pcon, pax_def_strata("new_strata_autumn"))
+  pax_import(pcon, pax_def_strata("old_strata"))
+  pax_import(pcon, pax_def_strata("new_strata_spring"))
 
   writeLines("=== pax_mar_station")
   pax_import(pcon, do.call(pax_mar_station, import_defs))
@@ -355,7 +356,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
       gear_group = NULL,
       alk = tidypax_igfs_alk
     ) |>
-    dplyr::filter(stratification == 'new_strata') # NB: Was old_strata, but haven't loaded that
+    dplyr::filter(stratification == 'old_strata')
 
   newpax_igfs_at_age <-
     dplyr::tbl(pcon, "station") |>
@@ -367,7 +368,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           by = c("species", 'length')
         )
     ) |>
-    pax_add_strata("new_strata") |>
+    pax_add_strata("old_strata") |>
     pax_si_scale_by_alk(
       tgroup = NULL,
       regions = list(
@@ -463,16 +464,10 @@ ok_group("R/R/06-surveyplots.R:survey index by area", {
   # Do the si by_strata query, and extract the station/stratum mapping from it
   df_newpax_strata <- dplyr::tbl(pcon, "station") |>
     dplyr::filter(
-      sampling_type == 30 &
-        coalesce(tow_number, 0) %in% 0:35 | ## spring survey
-        coalesce(tow_number, 0) %in%
-          0:75 &
-          gear_id %in% 77:78 &
-          year != 2011 &
-          sampling_type == 35 ## autumn survey
+      sampling_type == 30 & coalesce(tow_number, 0) %in% 0:35
     ) |>
     pax_si_by_length() |>
-    pax_add_strata() |>
+    pax_add_strata(strata_tbl = "new_strata_spring") |>
     dplyr::group_by(station, stratum) |>
     dplyr::summarise(
       h3_cells = min(list_first(h3_cells)),

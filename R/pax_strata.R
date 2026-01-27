@@ -179,7 +179,7 @@ pax_def_strata <- function(strata_name) {
 # Was: tidypax::si_add_strata
 pax_add_strata <- function(
   tbl,
-  strata_tbl = "new_strata",
+  strata_tbl,
   area_col = "rall_area"
 ) {
   pcon <- dbplyr::remote_con(tbl)
