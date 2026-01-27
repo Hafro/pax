@@ -171,7 +171,6 @@ pax_mar_ldist <- function(
   return(
     out |>
       # Re-group by columns we selected, ignoring maturity stage e.g.
-      # TODO: Previously this didn't happen. Why?
       dplyr::group_by(sample_id, species, length, sex) |>
       dplyr::summarize(count = sum(count)) |>
       decorate_mar()

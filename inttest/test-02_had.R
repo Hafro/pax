@@ -451,7 +451,6 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           si_abund,
           si_biomass
         ) |>
-        # TODO: Why do we still have an h3_cell column?
         as.data.frame(),
       end = NULL
     ),
