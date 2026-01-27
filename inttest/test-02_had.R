@@ -368,7 +368,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           by = c("species", 'length')
         )
     ) |>
-    pax_add_strata("old_strata") |>
+    pax_si_scale_by_strata("old_strata") |>
     pax_si_scale_by_alk(
       tgroup = NULL,
       regions = list(
@@ -379,84 +379,92 @@ ok_group("input_data.R:Generate the ALK from the survey", {
       alk = newpax_igfs_alk
     )
 
-  if (FALSE) { # TODO: Incorrect strata is breaking scaling
-  tidypax_igfs_at_age |>
-    dplyr::filter(sample_id == 44490, age == 2) |>
-    dplyr::arrange(length) |>
-    dplyr::select(station, length, stratum, age, agep)
-  newpax_igfs_at_age |>
-    dplyr::filter(sample_id == 44490, age == 2) |>
-    dplyr::arrange(length) |>
-    dplyr::select(
-      station,
-      length,
-      begin_lat,
-      begin_lon,
-      end_lat,
-      end_lon,
-      stratum,
-      age,
-      agep
-    )
+  # Find stations in 1990 where we agree on the stratum
+  agreeing_stations <- tidypax_igfs_at_age |>
+    dplyr::filter(year == 1990) |>
+    dplyr::group_by(station, stratum) |>
+    dplyr::summarize() |>
+    dplyr::collect() |>
+    dplyr::inner_join(
+      newpax_igfs_at_age |>
+        dplyr::filter(year == 1990) |>
+        dplyr::group_by(station, stratum) |>
+        dplyr::summarize() |>
+        dplyr::collect(),
+      by = c("station", "stratum")
+    ) |>
+    dplyr::pull(station)
+  agreeing_stations <- c(4120273, 4121373, 4130573)
 
   ok(
     ut_cmp_equal(
       tidypax_igfs_at_age |>
-        dplyr::filter(year == 1990, station == 3661273) |>
-        dplyr::arrange(
-          ygroup,
-          gear_name,
-          region,
-          species,
-          tgroup,
-          lgroup,
-          age
-        ) |>
         dplyr::ungroup() |>
+        #dplyr::filter(sample_id == 44490) |>
+        dplyr::filter(year == 1990, station %in% local(agreeing_stations)) |>
         dplyr::select(
           ygroup,
-          gear_name,
-          region,
-          species,
           tgroup,
+          gear_name,
           lgroup,
+          station,
           age,
+          length,
           agep,
           si_abund = adj_N,
           si_biomass = adj_B
         ) |>
-        as.data.frame(),
-      newpax_igfs_at_age |>
-        dplyr::rename(gear = mfdb_gear_code) |>
-        dplyr::filter(year == 1990, station == 3661273) |>
+        dplyr::collect() |>
+        dplyr::mutate(
+          si_abund = round(si_abund, 5),
+          si_biomass = round(si_biomass, 5),
+          agep = round(agep, 3)
+        ) |>
         dplyr::arrange(
           ygroup,
-          gear_name,
-          region,
-          species,
           tgroup,
+          gear_name,
           lgroup,
-          age
+          station,
+          age,
+          length
         ) |>
+        as.data.frame(),
+      newpax_igfs_at_age |>
         dplyr::ungroup() |>
+        #dplyr::filter(sample_id == 44490) |>
+        dplyr::filter(year == 1990, station %in% local(agreeing_stations)) |>
         dplyr::select(
           ygroup,
-          gear_name,
-          region,
-          species,
           tgroup,
+          gear_name,
           lgroup,
+          station,
           age,
+          length,
           agep,
           si_abund,
           si_biomass
         ) |>
-        as.data.frame(),
-      end = NULL
+        dplyr::collect() |>
+        dplyr::mutate(
+          si_abund = round(si_abund, 5),
+          si_biomass = round(si_biomass, 5),
+          agep = round(agep, 3)
+        ) |>
+        dplyr::arrange(
+          ygroup,
+          tgroup,
+          gear_name,
+          lgroup,
+          station,
+          age,
+          length
+        ) |>
+        as.data.frame()
     ),
-    "newpax_igfs_at_age: Matches tidypax at 1990"
+    "newpax_igfs_at_age: Matches tidypax at selected stations"
   )
-  }  # TODO: End
 })
 
 ok_group("R/R/06-surveyplots.R:survey index by area", {

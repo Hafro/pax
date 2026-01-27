@@ -204,7 +204,85 @@ pax_si_scale_winsorize <- function(tbl, q = 0.95) {
     dplyr::select(-B_scalar)
 }
 
-pax_si_by_strata <- function(tbl, length_range = c(5, 500), std.cv = 0.2) {
+# Was tidypax:si_add_strata
+pax_si_scale_by_strata <- function(
+  tbl,
+  strata_tbl,
+  area_col = "rall_area"
+) {
+  pcon <- dbplyr::remote_con(tbl)
+  # TODO: This should just be pax_temptbl()
+  if (is.character(strata_tbl)) {
+    strata_tbl <- dplyr::tbl(pcon, strata_tbl)
+  }
+  tbl_colnames <- colnames(tbl)
+  strata_tbl_colnames <- colnames(strata_tbl)
+
+  if ("h3_cells" %in% tbl_colnames && "h3_cells" %in% strata_tbl_colnames) {
+    out <- tbl |>
+      # First join to a de-duplicated map of h3_cell -> stratum ID
+      # TODO: This is assuming the "first" h3_cell of the station is what to join against, not using stationlist, midpoint, etc.
+      dplyr::mutate(h3_cell = list_first(h3_cells)) |>
+      dplyr::left_join(
+        strata_tbl |>
+          dplyr::group_by(h3_cell = sql("UNNEST(h3_cells)")) |>
+          dplyr::summarize(stratum = min(stratum)),
+        by = c("h3_cell")
+      )
+  } else {
+    stop(
+      "Cannot join tables, expected columns missing (tbl: ",
+      paste(tbl_colnames, collapse = ","),
+      ", strata_tbl: ",
+      paste(tbl_colnames, collapse = ","),
+      ")"
+    )
+  }
+
+  # ..then join again to pull in metadata from strata_tbl
+  # TODO: Instead of area_col ideally we...
+  #     * Calculate area from stratum shape
+  #     * Use depth cut-off instead of rall_area
+  out |>
+    dplyr::left_join(
+      strata_tbl |>
+        dplyr::mutate(
+          # Convert km^2 to square nautical miles
+          area = coalesce(!!as.symbol(area_col), 0) / 1.852^2
+        ) |>
+        dplyr::select(-geom, -h3_cells, -rall_area),
+      by = c("stratum")
+    ) |>
+    dplyr::group_by(
+      sample_id,
+      station,
+      gridcell,
+      species,
+      year,
+      length,
+      tow_depth,
+      stratum,
+      sampling_type,
+      area
+    ) |>
+    dplyr::summarize(
+      si_abund = sum(si_abund, na.rm = TRUE),
+      si_biomass = sum(si_biomass, na.rm = TRUE)
+    ) |>
+    dplyr::group_by(species, year, stratum, sampling_type, area) |>
+    dplyr::mutate(
+      # NB: Not summarise, i.e. window function
+      si_abund = area * si_abund / dplyr::n_distinct(sample_id),
+      si_biomass = area * si_biomass / dplyr::n_distinct(sample_id)
+    )
+}
+
+# Was tidypax::si_by_strata
+pax_summary_si_by_strata <- function(
+  tbl,
+  length_range = c(5, 500),
+  std.cv = 0.2
+) {
   # TODO: Check that columns exist
   tbl |>
     dplyr::mutate(
