@@ -5,7 +5,7 @@
 pax_connect <- function(
   dbdir = ":memory:",
   read_only = FALSE,
-  h3_resolution = 6
+  h3_resolution = 8
 ) {
   pcon <- DBI::dbConnect(duckdb::duckdb(), dbdir, read_only = read_only)
 
