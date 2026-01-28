@@ -474,14 +474,14 @@ ok_group("R/R/06-surveyplots.R:survey index by area", {
       sampling_type == 30 & coalesce(tow_number, 0) %in% 0:35
     ) |>
     pax_si_by_length() |>
-    pax_add_strata(strata_tbl = "new_strata_spring") |>
+    pax_si_scale_by_strata(strata_tbl = "new_strata_spring") |>
     dplyr::group_by(station, stratum) |>
-    dplyr::summarise(
-      h3_cell = to_hex(min(list_first(h3_cells))),
-      begin_lat = min(begin_lat),
-      begin_lon = min(begin_lon)
-    ) |>
-    dplyr::filter(!is.na(h3_cell)) |>
+    #dplyr::summarise(
+    #  h3_cell = to_hex(min(list_first(h3_cells))),
+    #  begin_lat = min(begin_lat),
+    #  begin_lon = min(begin_lon)
+    #) |>
+    #dplyr::filter(!is.na(h3_cell)) |>
     as.data.frame()
 
   # Get station mapping from tidypax
