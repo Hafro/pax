@@ -1,23 +1,41 @@
 # Was: tidypax::add_lgroups
-pax_add_lgroups <- function(tbl, lgroups, dl = 1) {
+pax_add_lgroups <- function(tbl, lgroups) {
   pcon <- dbplyr::remote_con(tbl)
 
-  lgroup_tbl <-
-    tidyr::expand_grid(length = seq(min(lgroups), max(lgroups), by = dl)) |>
-    # TODO: consider making below:lgroups[cut(length,lgroups-1,include.lowest = TRUE, labels =FALSE)]
-    dplyr::mutate(
-      lgroup = lgroups[cut(
-        length,
-        lgroups,
-        include.lowest = TRUE,
-        labels = FALSE
-      )]
-    ) |>
-    dplyr::group_by(lgroup) |>
-    dplyr::mutate(mean_length = mean(length))
+  if (FALSE && all(diff(lgroups) == diff(lgroups)[[1]])) {
+    # TODO: Disabled until #11 sorted
+    # Even length-groups, we can use modulo arithmetic
+    lgroup_min <- min(lgroups)
+    lgroup_max <- max(lgroups)
+    lgroup_dl <- diff(lgroups)[[1]]
 
-  tbl |>
-    dplyr::left_join(pax_temptbl(pcon, lgroup_tbl), by = 'length')
+    tbl <- tbl |>
+      dplyr::mutate(
+        lgroup = least(
+          greatest(
+            (length - local(lgroup_min)) -
+              ((length - local(lgroup_min)) %% local(lgroup_dl)),
+            local(lgroup_min)
+          ) +
+            local(lgroup_min),
+          local(lgroup_max)
+        )
+      )
+  } else {
+    # Use list_filter to pick off first item to meet condition
+    tbl <- tbl |>
+      dplyr::mutate(
+        # TODO: tidypax::add_lgroups' behaviour was including the lower bound in the previous group,
+        #       use < instead of <= here to emulate this, but seems broken.
+        #       https://github.com/Hafro/pax/issues/11
+        lgroup = sql(paste0(
+          "list_last(list_filter([",
+          paste(as.numeric(lgroups), collapse = ", "),
+          "], lambda x : x < length))"
+        ))
+      )
+  }
+  return(tbl)
 }
 
 # Was: tidypax::add_regions
