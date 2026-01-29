@@ -75,7 +75,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
   newpax_igfs_alk <-
     dplyr::tbl(pcon, "station") |>
     dplyr::filter(sampling_type %in% 30, coalesce(tow_number, 0) %in% 0:35) |>
-    pax_si_make_alk(
+    pax_ldist_alk(
       tgroup = NULL,
       regions = list(
         S = c(101, 107, 106, 108, 109, 114),

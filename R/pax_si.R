@@ -37,51 +37,6 @@ pax_si_scale_by_alk <- function(
     )
 }
 
-pax_si_make_alk <- function(
-  tbl,
-  lgroups = seq(0, 200, 5),
-  regions = list(all = 101:115),
-  gear_group = list(
-    Other = 'Var',
-    BMT = c('BMT', 'NPT', 'SHT', 'PGT'),
-    LLN = 'LLN',
-    DSE = c('PSE', 'DSE')
-  ),
-  tgroup = NULL,
-  ygroup = NULL,
-  aldist_tbl = "aldist"
-) {
-  pcon <- dbplyr::remote_con(tbl)
-
-  # NB: This did rename gear -> mfdb_gear_code, moved to pax_si.hafropax()
-  # TODO: Validate it's the right kind of tbl?
-  tbl |>
-    dplyr::left_join(pax_temptbl(pcon, aldist_tbl), by = c('sample_id')) |>
-    pax_add_groupings(
-      groupings = pax_def_groupings(
-        regions = regions,
-        gear_group = gear_group,
-        lgroups = lgroups,
-        tgroup = tgroup,
-        ygroup = ygroup,
-      )
-    ) |>
-    dplyr::mutate(
-      count = if_else(is.na(age), 0, count),
-      region = coalesce(region, 'all')
-    ) |>
-    dplyr::filter(count > 0) |>
-    dplyr::group_by(ygroup, gear_name, region, species, tgroup, lgroup, age) |>
-    dplyr::summarise(n = sum(count, na.rm = TRUE)) |>
-    dplyr::group_by(ygroup, gear_name, region, species, tgroup, lgroup) |>
-    dplyr::mutate(
-      agep = ifelse(sum(n, na.rm = TRUE) == 0, 1, n / sum(n, na.rm = TRUE))
-    ) |>
-    #dplyr::left_join(matp) |>
-    dplyr::filter(!is.na(age)) |>
-    dplyr::select(-n)
-}
-
 pax_si_scale_by_landings <- function(
   tbl,
   species,
