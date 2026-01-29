@@ -55,11 +55,6 @@ pax_si_scale_by_landings <- function(
 
   landings <-
     landings_tbl |>
-    ## assume unknown months are all in month 6
-    dplyr::mutate(month = coalesce(month, 6)) |>
-    ## assume landings from unknown gears are from bottom trawls
-    dplyr::mutate(mfdb_gear_code = coalesce(mfdb_gear_code, 'BMT')) |>
-
     pax_add_groupings(
       groupings = pax_def_groupings(
         regions = regions,
