@@ -113,7 +113,7 @@ pax_mar_landings <- function(
   }
 
   # Make an expression or'ing all parts of ices_area_like together
-  ices_area_c <- quote(1 == 1)
+  ices_area_c <- quote(1 == 0)
   for (l in ices_area_like) {
     ices_area_c <- substitute(
       ices_area_c | str_like(ices_svaedi, l),
@@ -134,7 +134,7 @@ pax_mar_landings <- function(
       country = land,
       mfdb_gear_code = mfdb_gear_code,
       boat_id = skip_nr,
-      landings = magn_oslaegt
+      catch = magn_oslaegt
     )
 
   if (!is.null(year_start)) {
