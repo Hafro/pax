@@ -14,11 +14,15 @@ pax_si_scale_by_alk <- function(
 
   # NB: This did rename gear -> mfdb_gear_code, moved to pax_si.hafropax()
   tbl |>
-    pax_add_regions(regions) |>
-    pax_add_gear_group(gear_group) |>
-    pax_add_lgroups(lgroups) |>
-    pax_add_temporal_grouping(tgroup) |>
-    pax_add_yearly_grouping(ygroup) |>
+    pax_add_groupings(
+      groupings = pax_def_groupings(
+        regions = regions,
+        gear_group = gear_group,
+        lgroups = lgroups,
+        tgroup = tgroup,
+        ygroup = ygroup,
+      )
+    ) |>
     dplyr::left_join(pax_temptbl(pcon, alk_tbl)) |>
     dplyr::mutate(
       si_abund = coalesce(agep, 0) * si_abund,
@@ -52,12 +56,16 @@ pax_si_make_alk <- function(
   # NB: This did rename gear -> mfdb_gear_code, moved to pax_si.hafropax()
   # TODO: Validate it's the right kind of tbl?
   tbl |>
-    pax_add_gear_group(gear_group) |>
-    pax_add_regions(regions = regions) |>
-    pax_add_temporal_grouping(tgroup) |>
-    pax_add_yearly_grouping(ygroup) |>
     dplyr::left_join(pax_temptbl(pcon, aldist_tbl), by = c('sample_id')) |>
-    pax_add_lgroups(lgroups = lgroups) |>
+    pax_add_groupings(
+      groupings = pax_def_groupings(
+        regions = regions,
+        gear_group = gear_group,
+        lgroups = lgroups,
+        tgroup = tgroup,
+        ygroup = ygroup,
+      )
+    ) |>
     dplyr::mutate(
       count = if_else(is.na(age), 0, count),
       region = coalesce(region, 'all')
@@ -97,18 +105,30 @@ pax_si_scale_by_landings <- function(
     ## assume landings from unknown gears are from bottom trawls
     dplyr::mutate(mfdb_gear_code = coalesce(mfdb_gear_code, 'BMT')) |>
 
-    pax_add_gear_group(gear_group) |>
-    pax_add_temporal_grouping(tgroup) |>
+    pax_add_groupings(
+      groupings = pax_def_groupings(
+        regions = regions,
+        gear_group = gear_group,
+        lgroups = NULL,
+        tgroup = tgroup,
+        ygroup = NULL,
+      )
+    ) |>
     dplyr::group_by(species, year, tgroup, gear_name) |>
     dplyr::summarise(catch = sum(catch))
 
   if (length(regions) > 1) {
     catch_by_region <- # TODO: Was a whole separate function, needed?
       logbook_tbl |>
-      dplyr::filter(species %in% local(species)) |>
-      pax_add_regions(regions) |>
-      pax_add_gear_group(gear_group) |>
-      pax_add_temporal_grouping(tgroup) |>
+      pax_add_groupings(
+        groupings = pax_def_groupings(
+          regions = regions,
+          gear_group = gear_group,
+          lgroups = NULL,
+          tgroup = tgroup,
+          ygroup = NULL,
+        )
+      ) |>
       dplyr::group_by(species, year, tgroup, gear_name, region) |>
       dplyr::summarise(catch = sum(catch)) |>
       dplyr::group_by(species, year, tgroup, gear_name) |>
