@@ -102,7 +102,7 @@ pax_ldist_scale_tow_area <-
     vf_adj <- NULL # Mask NSE variable
 
     tbl |>
-      dplyr::left_join(pax_temptbl(pcon, towdims_tbl, force_tbl = TRUE)) |> # NB: copy_inline is losing precision
+      dplyr::left_join(pax_temptbl(pcon, towdims_tbl)) |>
       dplyr::left_join(pax_temptbl(pcon, vfadj_tbl)) |>
       dplyr::mutate(
         vf_adj = ifelse(species == 19, 1, coalesce(vf_adj, 1)), #temp fix for GSS until index redefined

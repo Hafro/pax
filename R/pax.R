@@ -302,7 +302,7 @@ pax_decorate <- function(tbl, cite = NULL, name = NULL) {
   return(tbl)
 }
 
-pax_temptbl <- function(pcon, tbl, force_tbl = FALSE) {
+pax_temptbl <- function(pcon, tbl) {
   # If it's already a DB table, don't do anything. Let dplyr::join worry if the source matches
   if (inherits(tbl, "tbl_sql")) {
     return(tbl)
@@ -313,24 +313,11 @@ pax_temptbl <- function(pcon, tbl, force_tbl = FALSE) {
     return(dplyr::tbl(pcon, tbl))
   }
 
-  if (!isTRUE(force_tbl) && is.data.frame(tbl) && nrow(tbl) < 20) {
-    return(dbplyr::copy_inline(pcon, tbl))
-  }
-
   if (is.data.frame(tbl)) {
+    # Register data.frame as in-memory copy of table
     tbl_name <- paste0("temptbl_", digest::digest(tbl, algo = "xxh3_64"))
-
-    # If hash matches, reuse old table
-    if (DBI::dbExistsTable(pcon, tbl_name)) {
-      return(dplyr::tbl(pcon, tbl_name))
-    }
-
-    return(dplyr::copy_to(
-      pcon,
-      tbl,
-      name = tbl_name,
-      temporary = TRUE
-    ))
+    duckdb::duckdb_register(pcon, tbl_name, tbl, overwrite = TRUE)
+    return(dplyr::tbl(pcon, tbl_name))
   }
 
   stop("Unknown table format, can't translate to DB table: ", substitute(tbl))
