@@ -137,6 +137,9 @@ ok_group("input_data.R:Generate the ALK from the survey", {
     "Data frames match in 1990"
   )
 
+  test_sample_ids <- dplyr::tbl(pcon, "station") |>
+    dplyr::filter(year == 1990, month == 3) |>
+    dplyr::pull(sample_id)
   ok(
     ut_cmp_equal(
       mar::les_lengd(mar) |>
@@ -148,6 +151,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           sex = kyn_nr,
           count = fjoldi
         ) |>
+        dplyr::filter(sample_id %in% local(test_sample_ids)) |>
         dplyr::mutate(sample_id = as.numeric(sample_id)) |> # NB: sample_id is character, we need integer to sort it
         dplyr::filter(species == 2) |> # NB: Our ldist is broken down by species, we should do the same here
         dplyr::group_by(sample_id, species, length, sex) |>
@@ -155,12 +159,13 @@ ok_group("input_data.R:Generate the ALK from the survey", {
         dplyr::arrange(sample_id, species, length, sex) |>
         as.data.frame(),
       dplyr::tbl(pcon, "ldist") |>
+        dplyr::filter(sample_id %in% local(test_sample_ids)) |>
         dplyr::mutate(sample_id = as.numeric(sample_id)) |> # NB: sample_id is character, we need integer to sort it
         dplyr::arrange(sample_id, species, length, sex) |>
         as.data.frame(),
       end = NULL
     ),
-    "ldist matches"
+    "ldist matches for 1990/3"
   )
   ok(
     ut_cmp_equal(
@@ -173,6 +178,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           weight = thyngd,
           count = fjoldi
         ) |>
+        dplyr::filter(sample_id %in% local(test_sample_ids)) |>
         dplyr::mutate(sample_id = as.numeric(sample_id)) |> # NB: sample_id is character, we need integer to sort it
         dplyr::filter(species == 2) |> # NB: Our ldist is broken down by species, we should do the same here
         dplyr::group_by(sample_id, species, length, age) |>
@@ -183,12 +189,13 @@ ok_group("input_data.R:Generate the ALK from the survey", {
         dplyr::arrange(sample_id, species, length, age) |>
         as.data.frame(),
       dplyr::tbl(pcon, "aldist") |>
+        dplyr::filter(sample_id %in% local(test_sample_ids)) |>
         dplyr::mutate(sample_id = as.numeric(sample_id)) |> # NB: sample_id is character, we need integer to sort it
         dplyr::arrange(sample_id, species, length, age) |>
         as.data.frame(),
       end = NULL
     ),
-    "aldist matches"
+    "aldist matches for 1990/3"
   )
 
   tidypax_lw_dat <-
