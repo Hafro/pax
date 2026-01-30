@@ -217,7 +217,7 @@ pax_si_scale_by_strata <- function(
     dplyr::left_join(
       strata_tbl |>
         dplyr::mutate(
-          # Convert km^2 to square nautical miles
+          # Convert km^2 (reitmapping units) to square nautical miles (tow area units)
           area = coalesce(!!as.symbol(area_col), 0) / 1.852^2
         ) |>
         dplyr::select(-geom, -h3_cells, -rall_area),
