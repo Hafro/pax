@@ -70,10 +70,6 @@ pax_dat_ocean_depth <- function(pcon) {
     ) |>
     pax_temptbl(pcon, tbl = _) |>
     dbplyr::remote_name()
-  on.exit(
-    DBI::dbExecute(pcon, paste0("DROP TABLE ", raw_ocean_depth_tbl_name)),
-    add = TRUE
-  )
 
   # NB: Use raw SQL to stop dbplyr converting h3_cell into double
   DBI::dbExecute(pcon, "DROP TABLE IF EXISTS paxdat_ocean_depth")
