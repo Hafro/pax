@@ -94,13 +94,15 @@ pax_si_scale_by_landings <- function(
         catch_by_region,
         by = c("species", "year", "tgroup", "gear_name")
       ) |>
-      dplyr::mutate(catch = catch * coalesce(catch_proportion, 1))
+      dplyr::mutate(catch = catch * coalesce(catch_proportion, 1)) |>
+      ## this will cause problems down the road.. need to do something more sensible
+      dplyr::mutate(region = coalesce(region, 'all'))
   } else {
+    # TODO: This isn't quite right?
     landings <- landings |> dplyr::mutate(region = 'all')
   }
 
   tbl |>
-    dplyr::mutate(region = coalesce(region, 'all')) |> ## this will cause problems down the road.. need to do something more sensible
     dplyr::left_join(landings) |>
     dplyr::group_by(species, year, tgroup, gear_name, region) |>
     dplyr::mutate(
