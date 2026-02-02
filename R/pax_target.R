@@ -2,9 +2,8 @@
 # https://docs.ropensci.org/targets/reference/tar_target.html
 # https://duckdb.org/docs/stable/clients/r
 # TODO: Refresh on regular interval? https://github.com/ropensci/targets/discussions/429
-pax_populate_target <- function(name, command) {
-  # Read-write output of target as a duckdb connection
-  duckdb_format <- tar_format(
+pax_tar_format_duckdb <- function() {
+  targets::tar_format(
     read = function(path) {
       # TODO: Attach a memory database & copy, so write makes sense?
       pax::pax_connect(path, read_only = TRUE)
@@ -34,20 +33,6 @@ pax_populate_target <- function(name, command) {
       DBI::dbExecute(pcon, "COPY FROM DATABASE in_db TO memory;")
       return(pcon)
     },
-  )
-
-  tar_target_raw(
-    name = targets::tar_deparse_language(substitute(name)),
-    command = substitute(
-      {
-        pcon_new <- pax::pax_connect()
-        command
-        pcon_new
-      },
-      list(command = substitute(command))
-    ),
-    format = duckdb_format,
-    retrieval = "worker" # Don't try to copy DB from main -> worker instance(s)
   )
 }
 
