@@ -109,6 +109,11 @@ pax_add_regions <- function(
     return(tbl)
   }
 
+  if (is.null(regions)) {
+    # No regions given, do nothing
+    return(tbl)
+  }
+
   regions_tbl <- data.frame(
     # Repeat the region name from the regions list, one per entry
     region = rep(names(regions), sapply(regions, length)),

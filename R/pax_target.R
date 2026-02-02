@@ -10,11 +10,17 @@ pax_tar_format_duckdb <- function() {
     },
     write = function(object, path) {
       # https://duckdb.org/docs/stable/guides/snippets/copy_in-memory_database_to_file
+
+      # Get databases already attached. Might be filename, or memory
+      def_dbs <- DBI::dbGetQuery(object, "SHOW DATABASES")[, 1]
+
       DBI::dbExecute(
         object,
         dbplyr::build_sql("ATTACH ", path, " AS out_db;", con = object)
       )
-      DBI::dbExecute(object, "COPY FROM DATABASE memory TO out_db;")
+      for (n in def_dbs) {
+        DBI::dbExecute(object, paste("COPY FROM DATABASE ", n, " TO out_db;"))
+      }
       DBI::dbDisconnect(object)
     },
     marshal = function(object) {
