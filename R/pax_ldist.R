@@ -52,6 +52,8 @@ pax_ldist_add_weight <- function(
   tbl,
   lw_coeffs_tbl = "lw_coeffs"
 ) {
+  pcon <- dbplyr::remote_con(tbl)
+
   a <- NULL # Mask NSE variable
   b <- NULL # Mask NSE variable
   lw_coeffs_tbl <- pax_temptbl(pcon, lw_coeffs_tbl)
