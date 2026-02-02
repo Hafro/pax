@@ -58,11 +58,11 @@ ok_group("Commercial catch at age", {
   tidypax_comm_alk <-
     tidypax::si_stations(mar) |>
     dplyr::filter(sampling_type %in% c(1, 2, 8)) |>
-    dplyr::mutate(gear = nvl(gear, 'BMT')) |>
     tidypax::si_make_alk(
       tgroup = list(t1 = 1:6, t2 = 7:12),
       gear_group = list(
         Other = 'Var',
+        BMT = NA, # Assume unknown gear are BMT
         BMT = c('BMT', 'NPT', 'SHT', 'PGT', 'DRD'),
         LLN = c('HLN', 'LLN', 'GIL'),
         DSE = c('PSE', 'DSE')

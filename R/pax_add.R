@@ -182,6 +182,7 @@ pax_add_ocean_depth_class <- function(
 pax_add_gear_group <- function(
   tbl,
   gear_group = NULL,
+  default = "Other",
   ignore_missing_col = FALSE
 ) {
   pcon <- dbplyr::remote_con(tbl)
@@ -199,9 +200,26 @@ pax_add_gear_group <- function(
     purrr::map(~ tibble::tibble(mfdb_gear_code = .)) |>
     dplyr::bind_rows(.id = 'gear_name')
 
-  tbl |>
-    dplyr::left_join(pax_temptbl(pcon, gear_tbl)) |>
-    dplyr::mutate(gear_name = coalesce(gear_name, 'Other'))
+  out <- dplyr::left_join(tbl, pax_temptbl(pcon, gear_tbl))
+
+  # Set any groups containing NA manually, as these won't join
+  na_groups <- names(gear_group)[sapply(gear_group, function(x) any(is.na(x)))]
+  if (length(na_groups) > 1) {
+    stop("Only one gear_group can contain NA")
+  } else if (length(na_groups) > 0) {
+    out <- dplyr::mutate(
+      out,
+      gear_name = ifelse(is.na(mfdb_gear_code), local(na_groups), gear_name)
+    )
+  }
+
+  # Set default for any still-unassigned groups
+  if (!is.null(default)) {
+    out <- dplyr::mutate(
+      out,
+      gear_name = coalesce(gear_name, local(default))
+    )
+  }
 }
 
 # Was: tidypax::add_temporal_grouping
