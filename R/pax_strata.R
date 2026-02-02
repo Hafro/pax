@@ -162,6 +162,14 @@ pax_def_crs <- function() {
   return(sf::st_crs(4326))
 }
 
+pax_def_strata_list <- function() {
+  shp_names <- list.files(
+    system.file("extdata", package = "pax"),
+    pattern = "^strata_.*\\.shp$"
+  )
+  gsub("^strata_|\\.shp$", "", shp_names)
+}
+
 pax_def_strata <- function(strata_name) {
   shp_path <- system.file(
     "extdata",
