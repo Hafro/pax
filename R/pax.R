@@ -267,24 +267,6 @@ pax_import <- function(
     )
   }
 
-  if (!startsWith(name, "paxdat_")) {
-    # Populate ancillary tables
-    # TODO: Eventually these will hang of the schema definition
-    if ("gridcell" %in% tbl_colnames) {
-      pax_dat_gridcell(pcon)
-      pax_dat_ocean_depth(pcon)
-    }
-    if (all(c("lat", "lon") %in% tbl_colnames)) {
-      # TODO: Separately to gridcell, fetch noaa depth for maps?
-    }
-    if ("sampling_type" %in% tbl_colnames) {
-      pax_dat_sampling_type_desc(pcon)
-    }
-    if ("mfdb_gear_code" %in% tbl_colnames) {
-      pax_dat_mfdb_gear_code_desc(pcon)
-    }
-  }
-
   if (!is.null(cite)) {
     # TODO: Copy citation to citation table
   }
@@ -308,9 +290,25 @@ pax_temptbl <- function(pcon, tbl) {
     return(tbl)
   }
 
-  # If a character scalar, assume it's a table name
   if (is.character(tbl) && length(tbl) == 1) {
-    return(dplyr::tbl(pcon, tbl))
+    if (isTRUE(startsWith(tbl, "paxdat_"))) {
+      # Reference to pax package data, load & attach in-memory copy
+      if (!DBI::dbExistsTable(pcon, tbl)) {
+        name <- gsub("^paxdat_", "", tbl)
+        env <- new.env(parent = emptyenv())
+        utils::data(list = name, package = "pax", envir = env)
+        data_df <- env[[name]]
+
+        duckdb::duckdb_register(pcon, tbl, data_df)
+      }
+      return(dplyr::tbl(pcon, tbl))
+    }
+
+    if (DBI::dbExistsTable(pcon, tbl)) {
+      return(dplyr::tbl(pcon, tbl))
+    }
+
+    stop("Table not available in pax DB: ", tbl)
   }
 
   if (is.data.frame(tbl)) {
