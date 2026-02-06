@@ -74,6 +74,7 @@ pax_mar_logbook <- function(
       gridcell,
       lat,
       lon,
+      tow_area = area,
       tow_time = towtime,
       tow_hooks = hooks,
       tow_num_nets = nr_net,
