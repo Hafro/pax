@@ -392,6 +392,7 @@ pax_mar_sampling <- function(
 pax_mar_station <- function(
   mar,
   species,
+  sampling_type = NULL,
   year_start = NULL,
   year_end = NULL
 ) {
@@ -480,6 +481,9 @@ pax_mar_station <- function(
   }
   if (!is.null(year_end)) {
     out <- dplyr::filter(out, year <= local(year_end))
+  }
+  if (!is.null(sampling_type)) {
+    out <- dplyr::filter(out, sampling_type %in% local(sampling_type))
   }
   return(out |> decorate_mar())
 }
