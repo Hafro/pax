@@ -140,6 +140,7 @@ pax_add_regions <- function(
 # Was: tidypax::add_depth_labels
 pax_add_ocean_depth_class <- function(
   tbl,
+  ocean_depth_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "ocean_depth"),
   breaks = c(0, 100, 200, 300),
   ignore_missing_col = FALSE
 ) {
@@ -150,8 +151,6 @@ pax_add_ocean_depth_class <- function(
     return(tbl)
   }
 
-  # TODO: fallback logic, do right thing based in incoming table columns (only gridcell, select that, etc.)
-
   breaks <- sort(breaks)
   b_max <- max(breaks)
   b_labs <- paste(breaks[-length(breaks)], breaks[-1], sep = '-')
@@ -159,15 +158,17 @@ pax_add_ocean_depth_class <- function(
 
   tbl |>
     dplyr::mutate(
-      # If depth missing, use mean depth from paxdat_ocean_depth
+      # If depth missing, use mean depth from ocean_depth_tbl
       ocean_depth = case_when(
         is.na(ocean_depth) ~
-          dplyr::sql(
+          dplyr::sql(paste0(
             "(
         SELECT mean(od.ocean_depth)
-        FROM paxdat_ocean_depth od
+        FROM ",
+            dbplyr::remote_name(ocean_depth_tbl),
+            " od
         WHERE h3_cell IN h3_cells)"
-          ),
+          )),
         TRUE ~ ocean_depth
       ),
       ocean_depth_class = case_when(

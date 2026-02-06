@@ -25,6 +25,8 @@ if (!file.exists("/tmp/camel.duckdb")) {
   pax_import(pcon, pax_def_strata("old_strata"))
   pax_import(pcon, pax_def_strata("new_strata_spring"))
 
+  writeLines("=== pax_marmap_ocean_depth")
+  pax_import(pcon, pax::pax_marmap_ocean_depth(), overwrite = TRUE)
   writeLines("=== pax_mar_station")
   pax_import(pcon, do.call(pax_mar_station, import_defs))
   writeLines("=== pax_mar_measurement")
