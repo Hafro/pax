@@ -1,5 +1,5 @@
 # Fetch stationlist data from published PDFs
-update_stationlist <- function(
+data_update_stationlist <- function(
   name,
   pdf_url = NULL,
   pages = NULL,

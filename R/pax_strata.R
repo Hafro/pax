@@ -1,5 +1,9 @@
 # Routine used to extract strata from mar
-export_mar_strata <- function(mar, strata_name, substratification = "default") {
+data_update_mar_strata <- function(
+  mar,
+  strata_name,
+  substratification = "default"
+) {
   shp_path <- paste0(
     "pax/inst/extdata/strata_",
     strata_name,
@@ -152,10 +156,10 @@ export_mar_strata <- function(mar, strata_name, substratification = "default") {
   invisible(out)
 }
 if (FALSE) {
-  pax:::export_mar_strata(mar, "old_strata")
-  pax:::export_mar_strata(mar, "new_strata", "spring")
-  pax:::export_mar_strata(mar, "new_strata", "autumn")
-  pax:::export_mar_strata(mar, "ghl_strata")
+  pax:::data_update_mar_strata(mar, "old_strata")
+  pax:::data_update_mar_strata(mar, "new_strata", "spring")
+  pax:::data_update_mar_strata(mar, "new_strata", "autumn")
+  pax:::data_update_mar_strata(mar, "ghl_strata")
 }
 
 pax_def_crs <- function() {
