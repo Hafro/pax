@@ -1,8 +1,8 @@
 # Was: tidypax::landings_by_gear
 pax_landings_by_gear <- function(
   tbl,
-  species,
-  end_year = lubridate::year(Sys.Date()),
+  species = (tbl |> head(1) |> dplyr::pull(species)),
+  year_end = lubridate::year(Sys.Date()),
   gear_group = list(
     Other = 'Var',
     BMT = c('BMT', 'NPT', 'SHT', 'PGT'),
@@ -89,14 +89,14 @@ pax_landings_summary_significantboats <- function(
   species,
   ices_division = c("5c"),
   start_year = 1991,
-  end_year = lubridate::year(Sys.Date())
+  year_end = lubridate::year(Sys.Date())
 ) {
   # TODO: Check required columns
   tbl |>
     dplyr::filter(
       species = species,
       ices_division %in% local(ices_division),
-      year %in% local(start_year):local(end_year - 1)
+      year %in% local(start_year):local(year_end - 1)
     ) |>
     dplyr::group_by(year, boat_id) |>
     dplyr::summarise(c = sum(landings, na.rm = TRUE)) |>
