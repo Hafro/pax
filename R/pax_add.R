@@ -122,7 +122,7 @@ pax_add_regions <- function(
 
   out <- tbl |>
     dplyr::left_join(
-      dplyr::tbl(pcon, "paxdat_gridcell") |>
+      pax_temptbl(pcon, "paxdat_gridcell") |>
         dplyr::select(gridcell, division, subdivision) |>
         dplyr::left_join(pax_temptbl(pcon, regions_tbl), by = c("division")),
       by = c("gridcell"),
