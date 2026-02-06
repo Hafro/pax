@@ -6,7 +6,6 @@ pax_si_scale_by_alk <- function(
   tgroup = NULL,
   ygroup = NULL,
   gear_group = NULL,
-  post_scaling = function(x, ...) x,
   alk_tbl,
   ...
 ) {
@@ -28,13 +27,7 @@ pax_si_scale_by_alk <- function(
       si_abund = coalesce(agep, 0) * si_abund,
       si_biomass = coalesce(agep, 0) * si_biomass
     ) |>
-    dplyr::filter(si_biomass > 0, si_abund > 0) |>
-    post_scaling(
-      regions = regions,
-      gear_group = gear_group,
-      tgroup = tgroup,
-      ...
-    )
+    dplyr::filter(si_biomass > 0, si_abund > 0)
 }
 
 pax_si_scale_by_landings <- function(
