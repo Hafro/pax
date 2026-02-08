@@ -13,7 +13,7 @@ install:
 full-install: build
 	R CMD INSTALL --install-tests --html --example "$(TARBALL)"
 
-build:
+build: roxygen
 	R CMD build .
 
 check: build
@@ -28,11 +28,15 @@ wincheck: build
 	# https://www.mail-archive.com/r-package-devel@r-project.org/msg05040.html
 	curl -s ftp://win-builder.r-project.org/R-devel/ | sed -E 's/(AM|PM)/\t\1/g' | sort -k 1 -k 3 -k 2
 
+roxygen:
+	Rscript -e 'rver <- try(read.dcf("DESCRIPTION")[1,"RoxygenNote"], silent = TRUE); if (!("try-error" %in% class(rver))) { remotes::install_github(paste0("r-lib/roxygen2@v", rver)); roxygen2::roxygenise() }'
+
 examples: install
 	Rscript -e 'devtools::run_examples(run_donttest = TRUE, run_dontrun = FALSE, document = FALSE)'
 
 vignettes: install
 	Rscript -e 'tools::buildVignettes(dir=".")'
+	[ -d "./vignettes/articles/" ] && Rscript -e 'for (f in Sys.glob("./vignettes/articles/*.Rmd")) tools::buildVignette(f, dir="vignettes/")' || true
 
 serve-docs:
 	[ -d docs ] && rm -r docs || true
