@@ -1,23 +1,3 @@
-pax_def_groupings <- function(
-  lgroups = seq(0, 200, 5),
-  regions = list(all = 101:115),
-  tgroup = NULL,
-  ygroup = NULL,
-  gear_group = NULL,
-  ocean_depth = NULL,
-  ...
-) {
-  list(
-    lgroups = lgroups,
-    regions = regions,
-    tgroup = tgroup,
-    ygroup = ygroup,
-    gear_group = gear_group,
-    ocean_depth = ocean_depth,
-    ...
-  )
-}
-
 pax_add_groupings <- function(
   tbl,
   groupings = pax_def_groupings(),
@@ -50,6 +30,25 @@ pax_add_groupings <- function(
     )
 }
 
+pax_def_groupings <- function(
+  lgroups = seq(0, 200, 5),
+  regions = list(all = 101:115),
+  tgroup = NULL,
+  ygroup = NULL,
+  gear_group = NULL,
+  ocean_depth = NULL,
+  ...
+) {
+  list(
+    lgroups = lgroups,
+    regions = regions,
+    tgroup = tgroup,
+    ygroup = ygroup,
+    gear_group = gear_group,
+    ocean_depth = ocean_depth,
+    ...
+  )
+}
 # Was: tidypax::add_lgroups
 pax_add_lgroups <- function(tbl, lgroups, ignore_missing_col = FALSE) {
   pcon <- dbplyr::remote_con(tbl)
