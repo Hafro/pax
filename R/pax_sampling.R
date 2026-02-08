@@ -33,8 +33,8 @@ pax_sampling_overview_plot <- function(
       by = c("year", "month", "mfdb_gear_code")
     ) |>
     dplyr::ungroup() |>
-    pax_add_sampling_type_desc(pcon) |>
-    pax_add_mfdb_gear_code_desc(pcon) |>
+    pax_describe_sampling_type(pcon) |>
+    pax_describe_mfdb_gear_code(pcon) |>
     dplyr::collect(n = Inf) |>
 
     ggplot2::ggplot(ggplot2::aes(man, p.lnd)) +
@@ -85,7 +85,7 @@ pax_sampling_detail <- function(
       n_lengths = sum(count),
       n_otol = sum(count * otol)
     ) |>
-    pax_add_mfdb_gear_code_desc(pcon) |>
+    pax_describe_mfdb_gear_code(pcon) |>
     dplyr::select(-mfdb_gear_code) |>
     tidyr::pivot_wider(
       names_from = mfdb_gear_code_desc,

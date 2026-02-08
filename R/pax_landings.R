@@ -54,7 +54,7 @@ pax_landings_summary_boatlandings <- function(tbl) {
 
   # TODO: Check required columns - needs pax_landings_by_gear()?
   tbl |>
-    pax_add_mfdb_gear_code_desc() |>
+    pax_describe_mfdb_gear_code() |>
     dplyr::mutate(
       mfdb_gear_code_desc = ifelse(
         is.na(mfdb_gear_code_desc),

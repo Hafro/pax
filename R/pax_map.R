@@ -150,7 +150,7 @@ pax_map_layer_catch <- function(
         data = data |>
           dplyr::select(mfdb_gear_code) |>
           dplyr::distinct() |>
-          pax_add_mfdb_gear_code_desc()
+          pax_describe_mfdb_gear_code()
       ) +
       ggplot2::facet_wrap(~mfdb_gear_code, dir = 'v', ncol = 2)
   } else {

@@ -324,37 +324,7 @@ pax_add_yearly_grouping <- function(
       out,
       ygroup = ifelse(is.na(year), local(na_groups), ygroup)
     )
-  return(out)
-}
-
-# TODO: This interface is a bit of an anacronysm now
-pax_add_sampling_type_desc <- function(
-  tbl,
-  lang = getOption('pax.lang')
-) {
-  pcon <- dbplyr::remote_con(tbl)
-
-  st_tbl <- dplyr::tbl(pcon, "paxdat_sampling_type_desc")
-  if (lang == 'is') {
-    st_tbl <- st_tbl |>
-      dplyr::select(sampling_type, sampling_type_desc = sampling_type_desc_is)
-  } else {
-    st_tbl <- st_tbl |>
-      dplyr::select(sampling_type, sampling_type_desc = sampling_type_desc_en)
   }
 
-  tbl |>
-    dplyr::left_join(st_tbl, by = c('sampling_type'))
-}
-
-pax_add_mfdb_gear_code_desc <- function(
-  tbl,
-  lang = getOption('pax.lang')
-) {
-  pcon <- dbplyr::remote_con(tbl)
-
-  st_tbl <- dplyr::tbl(pcon, "paxdat_mfdb_gear_code_desc")
-
-  tbl |>
-    dplyr::left_join(st_tbl, by = c('mfdb_gear_code'))
+  return(out)
 }

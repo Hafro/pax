@@ -244,7 +244,7 @@ pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
     pdat <-
       ldist |>
       dplyr::collect(n = Inf) |>
-      dplyr::left_join(pax_add_mfdb_gear_code_desc(), by = 'mfdb_gear_code') |>
+      dplyr::left_join(pax_describe_mfdb_gear_code(), by = 'mfdb_gear_code') |>
       dplyr::mutate(
         description = ifelse(is.na(description), 'Other', description)
       ) |>
@@ -257,7 +257,7 @@ pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
     pdat <-
       ldist |>
       dplyr::collect(n = Inf) |>
-      dplyr::left_join(pax_add_mfdb_gear_code_desc(), by = 'mfdb_gear_code') |>
+      dplyr::left_join(pax_describe_mfdb_gear_code(), by = 'mfdb_gear_code') |>
       dplyr::mutate(
         description = ifelse(is.na(description), 'Other', description)
       ) |>
