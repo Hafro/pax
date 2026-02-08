@@ -1,8 +1,6 @@
 # Was: tidypax::landings_by_gear
 pax_landings_by_gear <- function(
   tbl,
-  species = (tbl |> head(1) |> dplyr::pull(species)),
-  year_end = lubridate::year(Sys.Date()),
   gear_group = list(
     Other = 'Var',
     BMT = c('BMT', 'NPT', 'SHT', 'PGT'),
@@ -10,12 +8,18 @@ pax_landings_by_gear <- function(
     DSE = c('PSE', 'DSE')
   )
 ) {
-  # TODO: Check required columns
+  pax_checkcols(
+    tbl,
+    "year",
+    "species",
+    "ices_region",
+    "country",
+    "mfdb_gear_code",
+    "boat_id",
+    "landings"
+  )
+
   tbl |>
-    dplyr::filter(
-      species %in% local(species),
-      year < local(tyr)
-    ) |>
     pax_add_gear_group(gear_group) |>
     dplyr::group_by(year, species, gear_name, country, ices_region) |>
     dplyr::summarise(
@@ -31,7 +35,8 @@ pax_landings_plot <- function(
   xlab = 'Year',
   breaks = seq(0, 1e5, by = 10)
 ) {
-  # TODO: Check required columns
+  pax_checkcols(tbl, "year", "country", "landings")
+
   tbl |>
     dplyr::group_by(year, country) |>
     dplyr::summarise(c = sum(landings)) |>
@@ -45,14 +50,23 @@ pax_landings_plot <- function(
       legend.position = c(0.15, 0.75)
     ) +
     ggplot2::scale_x_continuous(breaks = breaks) +
-    ggplot2::scale_fill_crayola()
+    pax_scale_fill_crayola()
 }
 
 # Was: tidypax::boat_summary_table
-pax_landings_summary_boatlandings <- function(tbl) {
+pax_landings_boat_summary <- function(tbl) {
+  # i.e. pax_landings_by_gear()
+  pax_checkcols(
+    tbl,
+    "year",
+    "country",
+    "mfdb_gear_code",
+    "landings",
+    "num_boats"
+  )
+
   `Total catch` <- NULL # Mask NSE variable
 
-  # TODO: Check required columns - needs pax_landings_by_gear()?
   tbl |>
     pax_describe_mfdb_gear_code() |>
     tidyr::pivot_wider(
@@ -77,35 +91,38 @@ pax_landings_summary_boatlandings <- function(tbl) {
 }
 
 # Was: tidypax::num_boats_table
-pax_landings_summary_significantboats <- function(
-  tbl,
-  species,
-  ices_division = c("5c"),
-  start_year = 1991,
-  year_end = lubridate::year(Sys.Date())
+pax_landings_significantboats_summary <- function(
+  tbl
 ) {
-  # TODO: Check required columns
+  # i.e. pax_landings_boat_summary
+  pax_checkcols(tbl, "year", "boat_id", "landings")
+
   tbl |>
-    dplyr::filter(
-      species = species,
-      ices_division %in% local(ices_division),
-      year %in% local(start_year):local(year_end - 1)
-    ) |>
     dplyr::group_by(year, boat_id) |>
     dplyr::summarise(c = sum(landings, na.rm = TRUE)) |>
     dplyr::filter(c > 0) |>
-    dbplyr::window_order(ar, c) |>
-    dplyr::group_by(ar) |>
+    dbplyr::window_order(year, c) |>
+    dplyr::group_by(year) |>
     dplyr::mutate(cc = cumsum(c), ct = sum(c, na.rm = TRUE)) |>
     dplyr::filter(cc > 0.05 * ct) |>
     dplyr::summarise(n = n(), catch = sum(c, na.rm = TRUE) / 1e3) |>
-    dplyr::arrange(ar)
+    dplyr::select(-c, -cc, -ct) |>
+    dplyr::arrange(year)
 }
 
 # Was: num_boats_plot
-# TODO: naming/structure, plot methods plot summary, or do both?
-pax_landings_summary_significantboats_plot <- function(tbl) {
-  # TODO: Check columns, expects pax_landings_summary_significantboats
+pax_landings_significantboats_plot <- function(tbl) {
+  # i.e. pax_landings_significantboats_summary
+  pax_checkcols(
+    tbl,
+    "year",
+    "boat_id",
+    "landings",
+    "catch",
+    "num_boats_*",
+    "landings_*"
+  )
+
   years <- tbl |> dplyr::distinct(years)
   breaks <- unique(years - years %% 5) # Round all years to nearest 5 years
   breaks <- c(breaks, max(breaks) + 5) # Add back on topmost year
