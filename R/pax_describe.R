@@ -27,6 +27,17 @@ pax_describe_sampling_type <- function(
   tbl |>
     dplyr::left_join(st_tbl, by = c('sampling_type'))
 }
+data_update_sampling_type_desc <- function(mar) {
+  write.table(
+    mar::les_synaflokk(mar) |>
+      dplyr::select(
+        sampling_type = synaflokkur_nr,
+        sampling_type_desc_en = enskt_heiti,
+        sampling_type_desc_is = heiti
+      ),
+    file = "pax/data/sampling_type_desc.txt"
+  )
+}
 
 #' @return \subsection{pax_describe_mfdb_gear_code}{A dplyr query, with a ``mfdb_gear_code_desc`` column describing ``mfdb_gear_code`` values}
 #' @rdname pax_describe

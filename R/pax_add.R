@@ -182,6 +182,18 @@ pax_add_regions <- function(
 
   return(out)
 }
+data_update_gridcell <- function(mar) {
+  mar::tbl_mar(mar, 'ops$bthe."reitmapping"') |>
+    dplyr::filter(
+      !is.na(gridcell),
+      !is.na(division),
+      !is.na(subdivision),
+      !is.na(lat),
+      !is.na(lon)
+    ) |>
+    dplyr::select(-id) |>
+    write.table(file = "pax/data/gridcell.txt")
+}
 
 #' @param ocean_depth_tbl Table containing a mapping from ``h3_cell`` to ``ocean_depth``, used when the ``ocean_depth`` column is ``NA``
 #' @param breaks Ocean depth breaks, everything beyond the final group is part of a plus group
