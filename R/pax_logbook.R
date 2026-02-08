@@ -1,3 +1,22 @@
+#' Create CPUE plot from logbook
+#'
+#' Calculate CPUE, create plot from logbook data
+#' @param tbl A dplyr query from a logbook table
+#' @examples
+#' pcon <- pax::pax_connect(":memory:")
+#' # NB: Ordinarily this would be fed in by pax::pax_mar_logbook()
+#' pax_import(pcon, read.table(text = "
+#' 	year	mfdb_gear_code	tow_hooks	tow_time	tow_num_nets	catch	catch_total
+#' 1	2000	LLN		1		120		5		1e5	10e5
+#' 2	2001	LLN		NA		110		NA		2e5	10e5
+#' 3	2002	LLN		NA		120		NA		1e5	10e5
+#' "), name = "ex_logbook")
+#' dplyr::tbl(pcon, "ex_logbook") |> pax_add_cpue() |> pax_logbook_cpue_plot()
+#' @name pax_logbook
+NULL
+
+#' @return \subsection{pax_add_cpue}{A table with an additional cpue column, with effort calculated by the first available value from ``tow_time``, ``tow_hooks`` or ``tow_num_nets``}
+#' @rdname pax_logbook
 # Was: tidypax::cpue_plot (first half)
 pax_add_cpue <- function(tbl) {
   pax_checkcols(
@@ -24,7 +43,10 @@ pax_add_cpue <- function(tbl) {
     dplyr::mutate(cpue = catch / effort)
 }
 
-# Was: tidypax::cpue_plot
+#' @param year_end Filter any data at/after this year
+#' @param limit Ignore records over this proportion of ``catch_total``
+#' @return \subsection{pax_logbook_cpue_plot}{A ggplot2 plot of CPUE}
+#' @rdname pax_logbook
 pax_logbook_cpue_plot <- function(
   tbl,
   year_end = lubridate::year(Sys.Date()),
