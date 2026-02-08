@@ -595,9 +595,9 @@ ok_group("R/01-plots_and_tables.R:catch_agg", {
         NW = 102,
         NE = c(103, 104, 105),
         SE = c(107, 106),
-        SW = 108
-      ),
-      default = "Other"
+        SW = 108,
+        Other = NULL
+      )
     ) |>
     dplyr::group_by(year, mfdb_gear_code, region, ocean_depth_class) |>
     dplyr::summarise(c = sum(catch) / 1e6) |>
@@ -668,9 +668,9 @@ ok_group("assessment_model/00-setup/input_data.R:maturity_key", {
     pax_add_regions(
       regions = list(
         S = c(101, 107, 106, 108, 109, 114),
-        N = c(102, 103, 104, 105, 111, 113)
-      ),
-      default = "S"
+        N = c(102, 103, 104, 105, 111, 113),
+        S = NULL
+      )
     ) |>
     dplyr::group_by(year, lgroup, age, region) |>
     dplyr::summarise(p = mean(mat)) |>

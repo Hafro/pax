@@ -98,7 +98,7 @@ pax_add_lgroups <- function(tbl, lgroups, ignore_missing_col = FALSE) {
 pax_add_regions <- function(
   tbl,
   regions = list(all = 101:115),
-  default = NULL,
+  division_tbl = pax_temptbl(dbplyr::remote_con(tbl), "paxdat_gridcell"),
   ignore_missing_col = FALSE
 ) {
   pcon <- dbplyr::remote_con(tbl)
@@ -113,6 +113,16 @@ pax_add_regions <- function(
     return(tbl)
   }
 
+  # Pick off any default group
+  default_group <- regions[sapply(regions, length) == 0]
+  regions <- regions[sapply(regions, length) > 0]
+  if (length(default_group) > 1) {
+    stop(
+      "More than one default region is not allowed, got: ",
+      dput(default_group)
+    )
+  }
+
   regions_tbl <- data.frame(
     # Repeat the region name from the regions list, one per entry
     region = rep(names(regions), sapply(regions, length)),
@@ -121,18 +131,21 @@ pax_add_regions <- function(
 
   out <- tbl |>
     dplyr::left_join(
-      pax_temptbl(pcon, "paxdat_gridcell") |>
+      division_tbl |>
         dplyr::select(gridcell, division, subdivision) |>
         dplyr::left_join(pax_temptbl(pcon, regions_tbl), by = c("division")),
       by = c("gridcell"),
       suffix = c("", ".gridcell")
     )
-  if (!is.null(default)) {
+
+  # Set default for any still-unassigned groups
+  if (length(default_group) > 0) {
     out <- dplyr::mutate(
       out,
-      region = ifelse(is.na(region), local(default), region)
+      region = coalesce(region, local(names(default_group)[[1]]))
     )
   }
+
   return(out)
 }
 
@@ -187,7 +200,6 @@ pax_add_ocean_depth_class <- function(
 pax_add_gear_group <- function(
   tbl,
   gear_group = NULL,
-  default = "Other",
   ignore_missing_col = FALSE
 ) {
   pcon <- dbplyr::remote_con(tbl)
@@ -199,6 +211,16 @@ pax_add_gear_group <- function(
 
   if (is.null(gear_group)) {
     return(tbl |> dplyr::mutate(gear_name = 'all'))
+  }
+
+  # Pick off any default group
+  default_group <- gear_group[sapply(gear_group, length) == 0]
+  gear_group <- gear_group[sapply(gear_group, length) > 0]
+  if (length(default_group) > 1) {
+    stop(
+      "More than one default group is not allowed, got: ",
+      dput(default_group)
+    )
   }
 
   gear_tbl <- gear_group |>
@@ -219,12 +241,14 @@ pax_add_gear_group <- function(
   }
 
   # Set default for any still-unassigned groups
-  if (!is.null(default)) {
+  if (length(default_group) > 0) {
     out <- dplyr::mutate(
       out,
-      gear_name = coalesce(gear_name, local(default))
+      gear_name = coalesce(gear_name, local(names(default_group)[[1]]))
     )
   }
+
+  return(out)
 }
 
 # Was: tidypax::add_temporal_grouping
@@ -248,9 +272,22 @@ pax_add_temporal_grouping <- function(
     purrr::map(~ tibble::tibble(month = .)) |>
     dplyr::bind_rows(.id = 'tgroup')
 
-  tbl |>
+  out <- tbl |>
     dplyr::left_join(pax_temptbl(pcon, tgroup_tbl), by = "month") |>
     dplyr::mutate(tgroup = coalesce(tgroup, 'Other'))
+
+  # Set any groups containing NA manually, as these won't join
+  na_groups <- names(tgroup)[sapply(tgroup, function(x) any(is.na(x)))]
+  if (length(na_groups) > 1) {
+    stop("Only one tgroup can contain NA")
+  } else if (length(na_groups) > 0) {
+    out <- dplyr::mutate(
+      out,
+      tgroup = ifelse(is.na(month), local(na_groups), tgroup)
+    )
+  }
+
+  return(out)
 }
 
 # Was: tidypax::add_yearly_grouping
@@ -274,9 +311,20 @@ pax_add_yearly_grouping <- function(
     purrr::map(~ tibble::tibble(year = .)) |>
     dplyr::bind_rows(.id = 'ygroup')
 
-  tbl |>
+  out <- tbl |>
     dplyr::left_join(pax_temptbl(pcon, ygroup_tbl), by = 'year') |>
     dplyr::mutate(ygroup = coalesce(ygroup, year))
+
+  # Set any groups containing NA manually, as these won't join
+  na_groups <- names(ygroup)[sapply(ygroup, function(x) any(is.na(x)))]
+  if (length(na_groups) > 1) {
+    stop("Only one ygroup can contain NA")
+  } else if (length(na_groups) > 0) {
+    out <- dplyr::mutate(
+      out,
+      ygroup = ifelse(is.na(year), local(na_groups), ygroup)
+    )
+  return(out)
 }
 
 # TODO: This interface is a bit of an anacronysm now
