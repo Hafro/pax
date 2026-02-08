@@ -6,5 +6,10 @@ ut_tbl <- function(pcon, df) {
 
 ut_as_sort_df <- function(tbl) {
   dplyr::arrange(tbl, dplyr::pick(everything())) |>
+    (function(x) {
+      i <- sapply(x, is.factor)
+      x[i] <- lapply(x[i], as.character)
+      return(x)
+    })() |>
     as.data.frame()
 }

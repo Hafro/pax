@@ -55,13 +55,6 @@ pax_landings_summary_boatlandings <- function(tbl) {
   # TODO: Check required columns - needs pax_landings_by_gear()?
   tbl |>
     pax_describe_mfdb_gear_code() |>
-    dplyr::mutate(
-      mfdb_gear_code_desc = ifelse(
-        is.na(mfdb_gear_code_desc),
-        'Other',
-        mfdb_gear_code_desc
-      )
-    ) |>
     tidyr::pivot_wider(
       names_from = mfdb_gear_code_desc,
       values_from = c(landings, num_boats),

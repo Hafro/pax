@@ -37,7 +37,29 @@ pax_describe_mfdb_gear_code <- function(
   pcon <- dbplyr::remote_con(tbl)
 
   st_tbl <- pax_temptbl(pcon, "paxdat_mfdb_gear_code_desc")
+  other_desc <- st_tbl |>
+    dplyr::filter(is.na(mfdb_gear_code)) |>
+    dplyr::pull(mfdb_gear_code_desc) |>
+    as.character()
 
   tbl |>
-    dplyr::left_join(st_tbl, by = c('mfdb_gear_code'))
+    dplyr::left_join(st_tbl, by = c('mfdb_gear_code')) |>
+    dplyr::mutate(
+      mfdb_gear_code_desc = coalesce(mfdb_gear_code_desc, local(other_desc))
+    )
+}
+data_update_mfdb_gear_code_desc <- function() {
+  write.table(
+    data.frame(
+      mfdb_gear_code = c(as.character(mfdb::gear$name), NA),
+      mfdb_gear_code_desc = c(
+        tools::toTitleCase(as.character(
+          mfdb::gear$description
+        )),
+        "Other"
+      ),
+      stringsAsFactors = FALSE
+    ),
+    file = "pax/data/mfdb_gear_code_desc.txt"
+  )
 }

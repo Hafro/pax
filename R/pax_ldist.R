@@ -245,12 +245,9 @@ pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
       ldist |>
       dplyr::collect(n = Inf) |>
       dplyr::left_join(pax_describe_mfdb_gear_code(), by = 'mfdb_gear_code') |>
-      dplyr::mutate(
-        description = ifelse(is.na(description), 'Other', description)
-      ) |>
-      dplyr::group_by(year, description, length) |>
+      dplyr::group_by(year, mfdb_gear_code_desc, length) |>
       dplyr::summarise(n = sum(n), .groups = 'drop') |>
-      dplyr::group_by(year, description) |>
+      dplyr::group_by(year, mfdb_gear_code_desc) |>
       dplyr::mutate(p = n / sum(n)) |>
       dplyr::ungroup()
   } else {
@@ -258,9 +255,6 @@ pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
       ldist |>
       dplyr::collect(n = Inf) |>
       dplyr::left_join(pax_describe_mfdb_gear_code(), by = 'mfdb_gear_code') |>
-      dplyr::mutate(
-        description = ifelse(is.na(description), 'Other', description)
-      ) |>
       tidyr::drop_na(sex) |>
       dplyr::mutate(
         sex = dplyr::case_when(
@@ -269,7 +263,7 @@ pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
           .default = as.character(sex)
         )
       ) |>
-      dplyr::group_by(year, description, sex) |>
+      dplyr::group_by(year, mfdb_gear_code_desc, sex) |>
       dplyr::mutate(p = n / sum(n)) |>
       dplyr::ungroup()
   }
@@ -284,9 +278,9 @@ pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
     ggridges::geom_ridgeline(fill = '#045a8d', alpha = 0.5) +
     {
       if (split_by_sex) {
-        ggplot2::facet_wrap(~ description + sex, ncol = 6)
+        ggplot2::facet_wrap(~ mfdb_gear_code_desc + sex, ncol = 6)
       } else {
-        ggplot2::facet_wrap(~description, ncol = 5)
+        ggplot2::facet_wrap(~mfdb_gear_code_desc, ncol = 5)
       }
     } +
     ggplot2::theme_bw() +
