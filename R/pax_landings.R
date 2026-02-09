@@ -12,18 +12,18 @@ pax_landings_by_gear <- function(
     tbl,
     "year",
     "species",
-    "ices_region",
+    "ices_area",
     "country",
     "mfdb_gear_code",
     "boat_id",
-    "landings"
+    "catch"
   )
 
   tbl |>
     pax_add_gear_group(gear_group) |>
-    dplyr::group_by(year, species, gear_name, country, ices_region) |>
+    dplyr::group_by(year, species, gear_name, country, ices_area) |>
     dplyr::summarise(
-      landings = sum(landings),
+      catch = sum(catch),
       num_boats = n_distinct(boat_id)
     )
 }
@@ -35,11 +35,11 @@ pax_landings_plot <- function(
   xlab = 'Year',
   breaks = seq(0, 1e5, by = 10)
 ) {
-  pax_checkcols(tbl, "year", "country", "landings")
+  pax_checkcols(tbl, "year", "country", "catch")
 
   tbl |>
     dplyr::group_by(year, country) |>
-    dplyr::summarise(c = sum(landings)) |>
+    dplyr::summarise(c = sum(catch)) |>
     dplyr::arrange(desc(country)) |>
     ggplot2::ggplot(ggplot2::aes(year, c / 1e3, fill = country)) +
     ggplot2::geom_bar(stat = 'identity') +
@@ -60,34 +60,39 @@ pax_landings_boat_summary <- function(tbl) {
     tbl,
     "year",
     "country",
-    "mfdb_gear_code",
-    "landings",
+    "gear_name",
+    "catch",
     "num_boats"
   )
 
   `Total catch` <- NULL # Mask NSE variable
 
   tbl |>
+    # NB: Assumes groups have valid mfdb_gear_code names
     pax_describe_mfdb_gear_code() |>
+    dplyr::collect() |>
     tidyr::pivot_wider(
       names_from = mfdb_gear_code_desc,
-      values_from = c(landings, num_boats),
+      values_from = c(catch, num_boats),
       values_fill = 0
     ) |>
     dplyr::group_by(year) |>
     dplyr::mutate(
-      `Total catch` = sum(dplyr::c_across(dplyr::contains('landings_')))
+      `Total catch` = sum(dplyr::c_across(dplyr::contains('catch_')))
     ) |>
     dplyr::select(
       Year = year,
       dplyr::starts_with('num_boats_'),
-      dplyr::starts_with('landings_'),
+      dplyr::starts_with('catch_'),
       `Total catch`
     ) |>
     #dplyr::select(-num_boats_Other) |>
     dplyr::arrange(Year) |>
-    purrr::set_names(., gsub('num_boats_', 'Nr. ', names(.))) |>
-    purrr::set_names(., gsub('landings_', '', names(.)))
+    (function(x) {
+      names(x) <- gsub('num_boats_', 'Nr. ', names(x))
+      names(x) <- gsub('catch_', '', names(x))
+      return(x)
+    })()
 }
 
 # Was: tidypax::num_boats_table
@@ -95,11 +100,11 @@ pax_landings_significantboats_summary <- function(
   tbl
 ) {
   # i.e. pax_landings_boat_summary
-  pax_checkcols(tbl, "year", "boat_id", "landings")
+  pax_checkcols(tbl, "year", "boat_id", "catch")
 
   tbl |>
     dplyr::group_by(year, boat_id) |>
-    dplyr::summarise(c = sum(landings, na.rm = TRUE)) |>
+    dplyr::summarise(c = sum(catch, na.rm = TRUE)) |>
     dplyr::filter(c > 0) |>
     dbplyr::window_order(year, c) |>
     dplyr::group_by(year) |>
@@ -117,10 +122,9 @@ pax_landings_significantboats_plot <- function(tbl) {
     tbl,
     "year",
     "boat_id",
-    "landings",
     "catch",
     "num_boats_*",
-    "landings_*"
+    "catch_*"
   )
 
   years <- tbl |> dplyr::distinct(years)
