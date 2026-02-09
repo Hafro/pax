@@ -46,6 +46,7 @@ pax_describe_mfdb_gear_code <- function(
   lang = getOption('pax.lang')
 ) {
   pcon <- dbplyr::remote_con(tbl)
+  tbl_colnames <- colnames(tbl)
 
   st_tbl <- pax_temptbl(pcon, "paxdat_mfdb_gear_code_desc")
   other_desc <- st_tbl |>
@@ -53,11 +54,20 @@ pax_describe_mfdb_gear_code <- function(
     dplyr::pull(mfdb_gear_code_desc) |>
     as.character()
 
-  tbl |>
-    dplyr::left_join(st_tbl, by = c('mfdb_gear_code')) |>
-    dplyr::mutate(
-      mfdb_gear_code_desc = coalesce(mfdb_gear_code_desc, local(other_desc))
-    )
+  if ("mfdb_gear_code" %in% tbl_colnames) {
+    out <- tbl |>
+      dplyr::left_join(st_tbl, by = c('mfdb_gear_code'))
+  } else if ("gear_name" %in% tbl_colnames) {
+    # i.e the column added by pax_add_gear_group()
+    out <- tbl |>
+      dplyr::left_join(st_tbl, by = c('gear_name' = 'mfdb_gear_code'))
+  }
+  out <- dplyr::mutate(
+    out,
+    mfdb_gear_code_desc = coalesce(mfdb_gear_code_desc, local(other_desc))
+  )
+
+  return(out)
 }
 data_update_mfdb_gear_code_desc <- function() {
   write.table(
