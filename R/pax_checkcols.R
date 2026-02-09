@@ -7,9 +7,12 @@ pax_checkcols <- function(tbl, ...) {
     # Everything fine, carry on
     return(invisible(NULL))
   }
+  callee <- deparse1(sys.call(which = -1)[[1]])
 
   stop(
-    "Table is missing colums: ",
+    "Table is missing colums required by ",
+    callee,
+    ": ",
     paste(missing_cols, collapse = ", "),
     "\nFull column list: ",
     paste(actual_cols, collapse = ", "),
