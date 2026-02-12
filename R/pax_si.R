@@ -368,19 +368,3 @@ pax_si_year_summary <- function(tbl) {
     ) |>
     dplyr::ungroup()
 }
-
-#' @describeIn si_stations Adjusts indices for the exclusion of the Faroe ridge (placeholder)
-#' @return adjusted query
-#' @export
-pax_si_fix_faroe_ridge <- function(tbl, action = 'remove') {
-  if (action == 'remove') {
-    tbl |>
-      dplyr::filter(
-        !(stratum %in% c(1, 4, 93, 3, 92)) &
-          stratification == 'old_strata' |
-          !(stratum %in% c(4, 7, 44, 43)) & stratification == 'new_strata'
-      )
-  } else {
-    stop(sprintf('Action %s not implemented', action))
-  }
-}
