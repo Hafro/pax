@@ -13,7 +13,7 @@ pcon <- pax_connect(":memory:")
 pax_import(pcon, pax_def_strata("new_strata_spring"))
 
 
-ok_group("pax_si_strata_summary", {
+ok_group("pax_si_strata_summary/pax_si_year_summary", {
   # at_age |> head(20) |> dplyr::select(-geom, -h3_cells) |> write.csv()
   at_age <- pax:::ut_tbl(
     pcon,
@@ -63,6 +63,22 @@ ok_group("pax_si_strata_summary", {
 2,2012,39,35,5983.9902773192,1,2390.31078293229,NA,1853.79128875286,NA
 2,2012,40,35,3587.91953208505,3,1634.53354580632,1419.00018065999,1203.8219792661,1316.04683540872
 2,2012,41,35,216.183813669122,1,117.756594975063,NA,251.447292274247,NA
+'
+      ),
+      tolerance = 1e-6
+    ),
+    "pax_si_strata_summary: Matches baseline"
+  )
+
+  out <- out |> pax::pax_si_year_summary()
+  # out |> pax:::ut_as_sort_df() |> write.csv(row.names = FALSE)
+  ok(
+    ut_cmp_equal(
+      pax:::ut_as_sort_df(out),
+      read.csv(
+        text = '
+"species","sampling_type","year","si_N","si_abund","si_abund_cv","si_biomass","si_biomass_cv"
+2,35,2012,10,15617.1047350023,1.94233123180338,20149.846145215,2.51310977740264
 '
       ),
       tolerance = 1e-6

@@ -316,7 +316,17 @@ pax_si_strata_summary <- function(
     )
 }
 
-pax_si_by_year <- function(tbl) {
+# Was tidypax::si_by_year
+pax_si_year_summary <- function(tbl) {
+  pax_checkcols(
+    tbl,
+    "si_N",
+    "si_abund",
+    "si_abund_sd",
+    "si_biomass",
+    "si_biomass_sd"
+  )
+
   # Generate code to calculate CV for both si_abund & si_biomass
   tmp <- sapply(
     c('si_abund_cv', 'si_biomass_cv'),
@@ -345,7 +355,7 @@ pax_si_by_year <- function(tbl) {
   # TODO: Check that columns exist
   tbl |>
     dplyr::filter(si_abund > 0) |> ## remove strata with no fish to avoid division by zero
-    dplyr::group_by(stratification, species, sampling_type, year) |>
+    dplyr::group_by(species, sampling_type, year) |>
     dplyr::summarise(
       si_N = n(), # strata within a year
       si_abund = sum(si_abund, na.rm = TRUE),
