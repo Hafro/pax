@@ -11,6 +11,9 @@ pax_si_scale_by_alk <- function(
 ) {
   pcon <- dbplyr::remote_con(tbl)
 
+  pax_checkcols(tbl, "si_abund", "si_biomass")
+  pax_checkcols(alk_tbl, "agep")
+
   # NB: This did rename gear -> mfdb_gear_code, moved to pax_si.hafropax()
   tbl |>
     pax_add_groupings(
