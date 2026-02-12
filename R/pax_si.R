@@ -243,11 +243,24 @@ pax_si_scale_by_strata <- function(
 }
 
 # Was tidypax::si_by_strata
-pax_summary_si_by_strata <- function(
+pax_si_strata_summary <- function(
   tbl,
   length_range = c(5, 500),
   std.cv = 0.2
 ) {
+  pax_checkcols(
+    tbl,
+    "sample_id",
+    "station",
+    "species",
+    "year",
+    "stratum",
+    "sampling_type",
+    "area",
+    "si_abund",
+    "si_biomass"
+  )
+
   # TODO: Check that columns exist
   tbl |>
     dplyr::mutate(
@@ -267,7 +280,6 @@ pax_summary_si_by_strata <- function(
       station,
       species,
       year,
-      stratification,
       stratum,
       sampling_type,
       area
@@ -279,7 +291,6 @@ pax_summary_si_by_strata <- function(
     dplyr::group_by(
       species,
       year,
-      stratification,
       stratum,
       sampling_type,
       area
