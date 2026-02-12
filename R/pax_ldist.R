@@ -11,14 +11,15 @@ pax_ldist_alk <- function(
   ),
   tgroup = NULL,
   ygroup = NULL,
-  aldist_tbl = "aldist"
+  aldist_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "aldist")
 ) {
+  pax_checkcols(tbl, "sample_id")
+  pax_checkcols(aldist_tbl, "sample_id", "age", "count")
   pcon <- dbplyr::remote_con(tbl)
 
   # NB: This did rename gear -> mfdb_gear_code, moved to pax_si.hafropax()
-  # TODO: Validate it's the right kind of tbl?
   tbl |>
-    dplyr::left_join(pax_temptbl(pcon, aldist_tbl), by = c('sample_id')) |>
+    dplyr::left_join(aldist_tbl, by = c('sample_id')) |>
     pax_add_groupings(
       groupings = pax_def_groupings(
         regions = regions,
