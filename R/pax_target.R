@@ -16,7 +16,12 @@ pax_tar_format_duckdb <- function() {
 
       DBI::dbExecute(
         object,
-        dbplyr::build_sql("ATTACH ", path, " AS out_db;", con = object)
+        dbplyr::build_sql(
+          "ATTACH ",
+          path,
+          " AS out_db (READ_WRITE);",
+          con = object
+        )
       )
       for (n in def_dbs) {
         DBI::dbExecute(object, paste("COPY FROM DATABASE ", n, " TO out_db;"))
