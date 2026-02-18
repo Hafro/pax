@@ -128,19 +128,15 @@ pax_ldist_scale_tow_area <-
 
 # Was: tidypax::ldist_by_year
 pax_ldist_by_year <- function(
-  tbl,
-  sampling_type,
-  species,
-  ldist = pax_ldist(con) |> pax_ldist_scale_round() |> pax_ldist_scale_abund()
+  tbl, # probably dplyr::tbl(pcon, "station")
+  ldist_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "ldist") |>
+    pax_ldist_scale_round() |>
+    pax_ldist_scale_abund()
 ) {
   con <- dbplyr::remote_con(tbl)
 
   tbl |> # TODO: Was pax_si(con)
-    dplyr::filter(
-      sampling_type %in% local(sampling_type),
-      species %in% local(species)
-    ) |>
-    dplyr::left_join(ldist, by = 'sample_id') |>
+    dplyr::left_join(ldist_tbl, by = 'sample_id') |>
     dplyr::group_by(species, year, sex, length, mfdb_gear_code) |>
     dplyr::summarise(n = sum(count)) |>
     dplyr::ungroup() |>
@@ -152,6 +148,42 @@ pax_ldist_by_year <- function(
       sex,
       n
     )
+}
+
+# Was: mar::skala_med_taldir
+pax_ldist_scale_abund <- function(
+  tbl,
+  measurement_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "measurement")
+) {
+  # Was: biota.skala_v
+  ratio_tbl <- measurement_tbl |>
+    dplyr::group_by(sample_id, species) |>
+    dplyr::summarize(
+      ratio_count_len = coalesce(
+        sum(ifelse(
+          measurement_type %in% c('LEN', 'LENM', 'LENC', 'OTOL'),
+          count,
+          0
+        )),
+        0
+      ),
+      ratio_count_cnt = coalesce(
+        sum(ifelse(measurement_type %in% c('CNT', 'WEI'), count, 0)),
+        0
+      )
+    )
+
+  tbl |>
+    dplyr::left_join(ratio_tbl) |>
+    dplyr::mutate(
+      ratio = ifelse(
+        ratio_count_cnt == 0,
+        1,
+        1 + ratio_count_cnt / ifelse(ratio_count_len == 0, 1, ratio_count_len)
+      )
+    ) |>
+    dplyr::mutate(count = count * ratio) |>
+    dplyr::select(-ratio, -ratio_count_len, -ratio_count_cnt)
 }
 
 # Was: tidypax::ldist_plot
