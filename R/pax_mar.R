@@ -122,7 +122,7 @@ pax_mar_landings <- function(
     )
   }
 
-  out <- mar::landadur_afli(mar) |>
+  out <- mar::landadur_afli(mar) |> # i.e. combined reported landings, including historical landings & foreign
     dplyr::filter(
       ices_area_c,
       tegund_nr %in% local(species)

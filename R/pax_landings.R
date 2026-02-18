@@ -164,3 +164,33 @@ pax_landings_significantboats_plot <- function(tbl) {
 
   p2 + p1
 }
+
+# Was: landings_by_fishing_year.csv
+pax_landings_fishingyear_summary <- function(
+  tbl,
+  fishingyear_cal_start = 9
+) {
+  pax_checkcols(
+    tbl,
+    "year",
+    "month",
+    "catch"
+  )
+
+  tbl |>
+    dplyr::mutate(
+      fishing_year = dplyr::case_when(
+        # Pre-1991 regulations were different, no fishingyear
+        year < 1991 ~ as.character(sql("year::INTEGER")),
+        year == 1991 && month < local(fishingyear_cal_start) ~
+          as.character(sql("year::INTEGER")),
+        month < local(fishingyear_cal_start) ~
+          paste0(sql("year::INTEGER - 1"), '/', sql("year::INTEGER")),
+        TRUE ~ paste0(sql("year::INTEGER"), '/', sql("year::INTEGER + 1"))
+      )
+    ) |>
+    dplyr::group_by(fishing_year) |>
+    dplyr::summarize(
+      catch_kt = round(sum(catch) / 1000)
+    )
+}
