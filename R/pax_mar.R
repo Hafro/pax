@@ -392,7 +392,7 @@ pax_mar_sampling <- function(
 # fixed - 0/1
 pax_mar_station <- function(
   mar,
-  species,
+  species = NULL, # NB: Ignored
   sampling_type = NULL,
   year_start = NULL,
   year_end = NULL
@@ -474,9 +474,6 @@ pax_mar_station <- function(
       fixed
     )
 
-  if (!is.null(species)) {
-    out <- dplyr::filter(out, species %in% local(species))
-  }
   if (!is.null(year_start)) {
     out <- dplyr::filter(out, year >= local(year_start))
   }
