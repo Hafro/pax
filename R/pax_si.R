@@ -264,7 +264,6 @@ pax_si_strata_summary <- function(
     "si_biomass"
   )
 
-  # TODO: Check that columns exist
   tbl |>
     dplyr::mutate(
       si_biomass = ifelse(
@@ -355,7 +354,6 @@ pax_si_year_summary <- function(tbl) {
     simplify = FALSE
   )
 
-  # TODO: Check that columns exist
   tbl |>
     dplyr::filter(si_abund > 0) |> ## remove strata with no fish to avoid division by zero
     dplyr::group_by(species, sampling_type, year) |>

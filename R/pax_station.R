@@ -2,7 +2,7 @@
 pax_station_location_summary <- function(
   tbl,
   ldist = dplyr::tbl(dbplyr::remote_con(tbl), "ldist") |>
-    pax_ldist_scale_abund() |> # TODO: i.e. mar::skala_med_taldir, synis_id tegund_nr kvarnadir maeldir taldir vigt_synis vigt_afla
+    pax_ldist_scale_abund() |>
     pax_ldist_add_weight()
 ) {
   species_dummies <-

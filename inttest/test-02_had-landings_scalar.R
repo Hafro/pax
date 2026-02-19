@@ -151,7 +151,7 @@ ok_group("Commercial catch at age", {
     ut_cmp_equal(
       tidypax_catch_at_age |>
         dplyr::filter(year == 1990) |>
-        # TODO: Rows aren't grouped in tidypax to the same degree. Why?
+        # NB: Regroup to make up for differing aldist grouping
         dplyr::group_by(
           species,
           tgroup,

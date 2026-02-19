@@ -1,5 +1,3 @@
-# TODO: N/A
-
 #' crayola fills
 #'
 #' @param defines Length of color entries in the vector of palettes is calculated as n*12 (this length should be longer than levels filled).

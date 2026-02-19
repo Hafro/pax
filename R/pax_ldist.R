@@ -135,7 +135,7 @@ pax_ldist_by_year <- function(
 ) {
   con <- dbplyr::remote_con(tbl)
 
-  tbl |> # TODO: Was pax_si(con)
+  tbl |>
     dplyr::left_join(ldist_tbl, by = 'sample_id') |>
     dplyr::group_by(species, year, sex, length, mfdb_gear_code) |>
     dplyr::summarise(n = sum(count)) |>

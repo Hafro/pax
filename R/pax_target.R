@@ -5,7 +5,6 @@
 pax_tar_format_duckdb <- function() {
   targets::tar_format(
     read = function(path) {
-      # TODO: Attach a memory database & copy, so write makes sense?
       pax::pax_connect(path, read_only = TRUE)
     },
     write = function(object, path) {
