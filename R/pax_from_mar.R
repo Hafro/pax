@@ -8,7 +8,7 @@ pax_from_mar <- function(
   mar_opts = list(),
   dbdir = ":memory:"
 ) {
-  pcon <- do.call(pax_connect, pax_opts)
+  pcon <- pax_connect(dbdir = dbdir)
 
   # Open a connection to upstream hafro DB
   mar <- do.call(mar::connect_mar, mar_opts)
