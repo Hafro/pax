@@ -268,7 +268,23 @@ pax_import <- function(
   }
 
   if (!is.null(cite)) {
-    # TODO: Copy citation to citation table
+    if (!DBI::dbExistsTable(pcon, "pax_citation")) {
+      DBI::dbExecute(
+        pcon,
+        "CREATE TABLE pax_citation (tbl_name VARCHAR PRIMARY KEY, citation VARCHAR)"
+      )
+    }
+    DBI::dbExecute(
+      pcon,
+      dbplyr::build_sql(
+        "INSERT OR REPLACE INTO pax_citation VALUES (",
+        name,
+        ", ",
+        cite,
+        ")",
+        con = pcon
+      )
+    )
   }
 
   invisible(NULL)
