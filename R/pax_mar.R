@@ -36,14 +36,10 @@ decorate_mar <- function(tbl) {
     stop("No pax_mar_* call found in call stack")
   }
 
-  # Citation is mar citation but with the pax call inserted
-  cite <- citation("mar")[[1]]
-  cite$title <- deparse1(mar_call)
-
   # Default table name is the name of the function
   name <- gsub("^pax_mar_", "", parent_fn)
 
-  return(pax_decorate(tbl, cite = cite, name = name))
+  return(pax_decorate(tbl, name = name))
 }
 
 # Was tidypax::catch_data

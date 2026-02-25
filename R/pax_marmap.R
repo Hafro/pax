@@ -50,7 +50,7 @@ pax_marmap_ocean_depth <- function(
   )
   tbl <- dplyr::tbl(tmp_pcon, agg_ocean_depth_tbl_name) |> dplyr::collect()
 
-  return(pax_decorate(tbl, cite = citation("marmap"), name = "ocean_depth"))
+  return(pax_decorate(tbl, name = "ocean_depth"))
 }
 
 # Fetch ocean_depth table via. marmap

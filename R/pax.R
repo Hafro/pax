@@ -274,7 +274,7 @@ pax_import <- function(
   invisible(NULL)
 }
 
-pax_decorate <- function(tbl, cite = NULL, name = NULL) {
+pax_decorate <- function(tbl, cite = deparse1(sys.call(-2)), name = NULL) {
   if (!is.null(cite)) {
     attr(tbl, "pax_cite") <- cite
   }

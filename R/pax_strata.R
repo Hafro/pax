@@ -182,8 +182,6 @@ pax_def_strata <- function(strata_name) {
   )
   pax_decorate(
     sf::st_read(shp_path),
-    name = strata_name,
-    # TODO: Should strata have individual citiations?
-    cite = citation("pax")
+    name = strata_name
   )
 }
