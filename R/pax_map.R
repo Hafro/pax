@@ -90,7 +90,6 @@ pax_map_layer_depth <- function(
       lat < local(max(base$coordinates$limits$y)),
       lat > local(min(base$coordinates$limits$y))
     ) |>
-    # TODO: We must have a regular grid, not h3 cells. Poor-man's conversion to gridcell
     dplyr::mutate(lon = round(lon, 1), lat = round(lat, 1)) |>
     dplyr::group_by(lon, lat) |>
     dplyr::summarize(ocean_depth = mean(ocean_depth, na.rm = TRUE)) |>
