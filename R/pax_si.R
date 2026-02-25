@@ -64,7 +64,7 @@ pax_si_scale_by_landings <- function(
     dplyr::summarise(catch = sum(catch))
 
   if (length(regions) > 1) {
-    catch_by_region <- # TODO: Was a whole separate function, needed?
+    catch_by_region <-
       logbook_tbl |>
       pax_add_groupings(
         groupings = pax_def_groupings(
