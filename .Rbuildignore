@@ -1,5 +1,5 @@
 \.git
-\.github
+^\.github$
 ^Makefile
 ^[^/]+\.tar\.gz
 ^.bash_history
