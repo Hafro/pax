@@ -12,37 +12,19 @@ if (!exists("mar")) {
   mar <- mar::connect_mar()
 }
 
-species_code <- 2
 import_defs <- list(
-  mar,
-  species = species_code,
+  species = 2,
   year_start = 1990,
   year_end = 1994
 )
 
 if (!file.exists("/tmp/camel.duckdb")) {
-  pcon <- pax::pax_connect("/tmp/camel.duckdb")
-  pax_import(pcon, pax_def_strata("old_strata"))
-  pax_import(pcon, pax_def_strata("new_strata_spring"))
-
-  writeLines("=== pax_marmap_ocean_depth")
-  pax_import(pcon, pax::pax_marmap_ocean_depth(), overwrite = TRUE)
-  writeLines("=== pax_mar_station")
-  pax_import(pcon, do.call(pax_mar_station, import_defs))
-  writeLines("=== pax_mar_measurement")
-  pax_import(pcon, do.call(pax_mar_measurement, import_defs))
-  writeLines("=== pax_mar_logbook")
-  pax_import(pcon, do.call(pax_mar_logbook, import_defs))
-  writeLines("=== pax_mar_landings")
-  pax_import(pcon, do.call(pax_mar_landings, import_defs))
-  writeLines("=== pax_mar_sampling")
-  pax_import(pcon, do.call(pax_mar_sampling, import_defs))
-  writeLines("=== pax_mar_aldist")
-  pax_import(pcon, pax_mar_aldist(mar, species = import_defs$species))
-  writeLines("=== pax_mar_ldist")
-  pax_import(pcon, pax_mar_ldist(mar, species = import_defs$species))
-  writeLines("=== pax_mar_lw_coeffs")
-  pax_import(pcon, pax_mar_lw_coeffs(mar, species = import_defs$species))
+  pcon <- pax::pax_from_mar(
+    species = import_defs$species,
+    year_start = import_defs$year_start,
+    year_end = import_defs$year_end,
+    dbdir = "/tmp/camel.duckdb"
+  )
 } else {
   pcon <- pax::pax_connect("/tmp/camel.duckdb")
 }
@@ -72,7 +54,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
           dplyr::summarize(count = sum(count))
       }
     ) |>
-    dplyr::filter(species == local(species_code))
+    dplyr::filter(species == local(import_defs$species))
 
   newpax_igfs_alk <-
     dplyr::tbl(pcon, "station") |>
@@ -204,7 +186,10 @@ ok_group("input_data.R:Generate the ALK from the survey", {
     mar::les_stod(mar) |>
     dplyr::left_join(mar::les_syni(mar)) |>
     dplyr::left_join(mar::les_aldur(mar)) |>
-    dplyr::filter(synaflokkur_nr == 30, tegund_nr == local(species_code)) |>
+    dplyr::filter(
+      synaflokkur_nr == 30,
+      tegund_nr == local(import_defs$species)
+    ) |>
     dplyr::filter(ar == 1990) |> # NB: Filter to avoid differences in selection
     dplyr::select(species = tegund_nr, length = lengd, weight = thyngd) |>
     dplyr::filter(!is.na(length), weight > 0) |>
@@ -233,12 +218,15 @@ ok_group("input_data.R:Generate the ALK from the survey", {
     mar::les_stod(mar) |>
     dplyr::left_join(mar::les_syni(mar)) |>
     dplyr::left_join(mar::les_aldur(mar)) |>
-    dplyr::filter(synaflokkur_nr == 30, tegund_nr == local(species_code)) |>
+    dplyr::filter(
+      synaflokkur_nr == 30,
+      tegund_nr == local(import_defs$species)
+    ) |>
     dplyr::select(species = tegund_nr, length = lengd, weight = thyngd) |>
     dplyr::filter(!is.na(length), weight > 0) |>
     dplyr::collect(n = Inf)
   lw_pred <-
-    tibble::tibble(species = species_code, length = 1:150) |>
+    tibble::tibble(species = import_defs$species, length = 1:150) |>
     modelr::add_predictions(
       gam::gam(
         weight ~ gam::s(log(length), df = 8),
@@ -252,7 +240,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
   tidypax_igfs_by_length <-
     tidypax::si_stations(mar) |>
     dplyr::filter(sampling_type %in% 30, nvl(tow_number, 0) %in% 0:35) |>
-    tidypax::si_by_length(species = species_code, ldist = function(src) {
+    tidypax::si_by_length(species = import_defs$species, ldist = function(src) {
       mar::les_lengd(mar) |>
         mar::skala_med_taldir() |>
         dplyr::select(
@@ -335,7 +323,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
       year >= local(import_defs$year_start),
       year <= local(import_defs$year_end)
     ) |>
-    tidypax::si_by_length(species = species_code, ldist = function(src) {
+    tidypax::si_by_length(species = import_defs$species, ldist = function(src) {
       mar::les_lengd(mar) |>
         mar::skala_med_taldir() |>
         dplyr::select(
@@ -534,7 +522,7 @@ ok_group("R/R/06-surveyplots.R:survey index by area", {
 ok_group("R/01-plots_and_tables.R:sampling_position", {
   df_tidypax <- tidypax:::sampling_position(
     mar,
-    species_nr = species_code,
+    species_nr = import_defs$species,
     year_range = import_defs$year_start:import_defs$year_end
   ) |>
     dplyr::arrange(lat, lon, year, mfdb_gear_code) |>
@@ -548,8 +536,11 @@ ok_group("R/01-plots_and_tables.R:sampling_position", {
 })
 
 ok_group("R/01-plots_and_tables.R:sampling_tables", {
-  species_code <- 2
-  df_tidypax <- tidypax:::sampling_tables(mar, species_nr = species_code) |>
+  import_defs$species <- 2
+  df_tidypax <- tidypax:::sampling_tables(
+    mar,
+    species_nr = import_defs$species
+  ) |>
     dplyr::filter(Year %in% 1990:1994) |>
     dplyr::collect() |>
     dplyr::rename(year = Year)
@@ -563,7 +554,7 @@ ok_group("R/01-plots_and_tables.R:sampling_tables", {
 
 ok_group("R/01-plots_and_tables.R:catch_agg", {
   df_tidypax <- suppressWarnings(
-    tidypax::catch_data(mar, species_code) |>
+    tidypax::catch_data(mar, import_defs$species) |>
       dplyr::filter(
         year >= local(import_defs$year_start),
         year <= local(import_defs$year_end)
@@ -629,7 +620,7 @@ ok_group("assessment_model/00-setup/input_data.R:maturity_key", {
         mar::les_maelingu(mar) |>
           dplyr::filter(
             maeling_teg == 'OTOL',
-            tegund_nr == local(species_code),
+            tegund_nr == local(import_defs$species),
             !is.na(aldur),
             !is.na(kynthroski_nr)
           ) |>

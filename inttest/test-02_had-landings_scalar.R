@@ -12,46 +12,19 @@ if (!exists("mar")) {
   mar <- mar::connect_mar()
 }
 
-species_code <- 2
 import_defs <- list(
-  mar,
-  species = species_code,
+  species = 2,
   year_start = 1990,
   year_end = 1994
 )
 
 if (!file.exists("/tmp/camel.duckdb")) {
-  pcon <- pax::pax_connect("/tmp/camel.duckdb")
-  pax_import(pcon, pax_def_strata("old_strata"))
-  pax_import(pcon, pax_def_strata("new_strata_spring"))
-
-  writeLines("=== pax_marmap_ocean_depth")
-  pax_import(pcon, pax::pax_marmap_ocean_depth(), overwrite = TRUE)
-  writeLines("=== pax_mar_station")
-  pax_import(pcon, do.call(pax_mar_station, import_defs))
-  writeLines("=== pax_mar_measurement")
-  pax_import(pcon, do.call(pax_mar_measurement, import_defs))
-  writeLines("=== pax_mar_logbook")
-  pax_import(pcon, do.call(pax_mar_logbook, import_defs))
-  writeLines("=== pax_mar_landings")
-  pax_import(
-    pcon,
-    pax_mar_landings(
-      mar,
-      species = import_defs$species,
-      ices_area_like = "5a%",
-      year_start = import_defs$year_start,
-      year_end = import_defs$year_end
-    )
+  pcon <- pax::pax_from_mar(
+    species = import_defs$species,
+    year_start = import_defs$year_start,
+    year_end = import_defs$year_end,
+    dbdir = "/tmp/camel.duckdb"
   )
-  writeLines("=== pax_mar_sampling")
-  pax_import(pcon, do.call(pax_mar_sampling, import_defs))
-  writeLines("=== pax_mar_aldist")
-  pax_import(pcon, pax_mar_aldist(mar, species = import_defs$species))
-  writeLines("=== pax_mar_ldist")
-  pax_import(pcon, pax_mar_ldist(mar, species = import_defs$species))
-  writeLines("=== pax_mar_lw_coeffs")
-  pax_import(pcon, pax_mar_lw_coeffs(mar, species = import_defs$species))
 } else {
   pcon <- pax::pax_connect("/tmp/camel.duckdb")
 }
@@ -70,12 +43,12 @@ ok_group("Commercial catch at age", {
         DSE = c('PSE', 'DSE')
       )
     ) |>
-    dplyr::filter(species == local(species_code))
+    dplyr::filter(species == local(import_defs$species))
   tidypax_catch_at_age <-
     tidypax::si_stations(mar) |>
     dplyr::filter(sampling_type %in% c(1, 2, 8)) |>
     dplyr::mutate(gear = nvl(gear, 'BMT')) |>
-    tidypax::si_by_length(species = species_code) |>
+    tidypax::si_by_length(species = import_defs$species) |>
     tidypax::si_by_age(
       pre_scaling = function(x, ...) {
         x
