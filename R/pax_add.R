@@ -113,7 +113,7 @@ pax_add_lgroups <- function(
   return(tbl)
 }
 
-#' @param regions List of region name to a vector of divisions, divisions are groups of gridcells described by \var{division_tbl}. Vectors can be NULL ("Other" value for gridcells without a matching division/region)
+#' @param regions List of region name to a vector of divisions, divisions are groups of gridcells described by \var{division_tbl}. Vectors can be ``pax_add_other()`` ("Other" value for gridcells without a matching division/region)
 #' @param division_tbl Mapping of gridcell -> division, by default the internal [gridcell] mapping
 #' @return \subsection{pax_add_regions}{Query with an additional ``region`` column, binning a ``gridcell`` column}
 #' @rdname pax_add_groupings
@@ -246,7 +246,7 @@ pax_add_ocean_depth_class <- function(
     )
 }
 
-#' @param gear_group List mapping gear names to a vector of ``mfdb_gear_code`` values. Vectors can contain NA (i.e. missing gear codes will be assigned here) or NULL ("Other" value used for unassigned gear codes)
+#' @param gear_group List mapping gear names to a vector of ``mfdb_gear_code`` values. Vectors can contain NA (i.e. missing gear codes will be assigned here) or ``pax_add_other()`` ("Other" value used for unassigned gear codes)
 #' @return \subsection{pax_add_gear_group}{Query with an additional ``gear_name`` column, binning a ``mfdb_gear_code`` column}
 #' @rdname pax_add_groupings
 # Was: tidypax::add_gear_group
@@ -386,4 +386,9 @@ pax_add_yearly_grouping <- function(
   }
 
   return(out)
+}
+
+#' @return \subsection{pax_add_other}{Placeholder to mark "other" group}
+pax_add_other <- function() {
+  NULL
 }

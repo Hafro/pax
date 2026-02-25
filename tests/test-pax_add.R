@@ -65,7 +65,11 @@ ok_group("pax_add_regions", {
     )
   ) |>
     pax_add_regions(
-      regions = list(Other = c(), "10s" = c(NA, 103L), "11s" = c(110:113))
+      regions = list(
+        Other = pax_add_other(),
+        "10s" = c(NA, 103L),
+        "11s" = c(110:113)
+      )
     )
   ok(
     ut_cmp_equal(
@@ -90,7 +94,11 @@ ok_group("pax_add_regions", {
     )
   ) |>
     pax_add_regions(
-      regions = list(Other = c(), "10s" = c(NA, 103L), "11s" = c(110:113))
+      regions = list(
+        Other = pax_add_other(),
+        "10s" = c(NA, 103L),
+        "11s" = c(110:113)
+      )
     )
   ok(
     ut_cmp_equal(
