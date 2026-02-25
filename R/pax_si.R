@@ -64,6 +64,7 @@ pax_si_scale_by_landings <- function(
     dplyr::summarise(catch = sum(catch))
 
   if (length(regions) > 1) {
+    message("Scaling landings by logbook data to get per-area landings")
     catch_by_region <-
       logbook_tbl |>
       pax_add_groupings(
