@@ -10,7 +10,7 @@ library(unittest)
 library(pax)
 
 pcon <- pax_connect(":memory:")
-pax_import(pcon, pax_def_strata("new_strata_spring"))
+pax_import(pcon, suppressWarnings(pax_def_strata("new_strata_spring")))
 
 
 ok_group("pax_si_strata_summary/pax_si_year_summary", {
