@@ -22,3 +22,5 @@ core
 
 ^_pkgdown.yml$
 ^pkgdown/
+^[.]?air[.]toml$
+^\.vscode$
