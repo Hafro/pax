@@ -93,3 +93,10 @@ Instead of an implicit scaling by strata and optional post-scaling by same scale
       gear_group = list(...)
     ) |>
 ```
+
+## Development
+
+### Code formatting
+
+This projects uses [Air](https://posit-dev.github.io/air/), you may need to configure your editor accordingly.
+See https://posit-dev.github.io/air/editors.html
