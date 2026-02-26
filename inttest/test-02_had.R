@@ -51,7 +51,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
             count = fjoldi
           ) |>
           dplyr::group_by(sample_id, species, length, age) |>
-          dplyr::summarize(count = sum(count))
+          dplyr::summarize(count = sum(count, na.rm = TRUE))
       }
     ) |>
     dplyr::filter(species == local(import_defs$species))
@@ -139,7 +139,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
         dplyr::mutate(sample_id = as.numeric(sample_id)) |> # NB: sample_id is character, we need integer to sort it
         dplyr::filter(species == 2) |> # NB: Our ldist is broken down by species, we should do the same here
         dplyr::group_by(sample_id, species, length, sex) |>
-        dplyr::summarize(count = sum(count)) |> # NB: les_lengd doesn't group
+        dplyr::summarize(count = sum(count, na.rm = TRUE)) |> # NB: les_lengd doesn't group
         dplyr::arrange(sample_id, species, length, sex) |>
         as.data.frame(),
       dplyr::tbl(pcon, "ldist") |>
@@ -167,8 +167,8 @@ ok_group("input_data.R:Generate the ALK from the survey", {
         dplyr::filter(species == 2) |> # NB: Our ldist is broken down by species, we should do the same here
         dplyr::group_by(sample_id, species, length, age) |>
         dplyr::summarize(
-          count = sum(count),
-          weight = sum(weight * count) / sum(count)
+          count = sum(count, na.rm = TRUE),
+          weight = sum(weight * count, na.rm = TRUE) / sum(count, na.rm = TRUE)
         ) |> # NB: les_lengd doesn't group
         dplyr::arrange(sample_id, species, length, age) |>
         as.data.frame(),
@@ -252,7 +252,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
         ) |>
         dplyr::filter(species == 2) |> # NB: newpax's ldist is broken down by species, we should do the same here
         dplyr::group_by(sample_id, species, length, sex) |>
-        dplyr::summarize(count = sum(count)) |> # NB: les_lengd doesn't group
+        dplyr::summarize(count = sum(count, na.rm = TRUE)) |> # NB: les_lengd doesn't group
         dplyr::left_join(
           dbplyr::copy_inline(mar, lw_pred),
           by = c("species", 'length')
@@ -335,7 +335,7 @@ ok_group("input_data.R:Generate the ALK from the survey", {
         ) |>
         dplyr::filter(species == 2) |> # NB: newpax's ldist is broken down by species, we should do the same here
         dplyr::group_by(sample_id, species, length, sex) |>
-        dplyr::summarize(count = sum(count)) |> # NB: les_lengd doesn't group
+        dplyr::summarize(count = sum(count, na.rm = TRUE)) |> # NB: les_lengd doesn't group
         dplyr::left_join(
           dbplyr::copy_inline(mar, lw_pred),
           by = c("species", 'length')
@@ -571,7 +571,7 @@ ok_group("R/01-plots_and_tables.R:catch_agg", {
       ) |>
       dplyr::mutate(region = coalesce(region, 'Other')) |>
       dplyr::group_by(year, mfdb_gear_code, region, depth_class) |>
-      dplyr::summarise(c = sum(catch) / 1e6) |>
+      dplyr::summarise(c = sum(catch, na.rm = TRUE) / 1e6) |>
       dplyr::ungroup() |>
       dplyr::arrange(year, mfdb_gear_code, region, depth_class) |>
       dplyr::rename(ocean_depth_class = depth_class) |>
@@ -591,7 +591,7 @@ ok_group("R/01-plots_and_tables.R:catch_agg", {
       )
     ) |>
     dplyr::group_by(year, mfdb_gear_code, region, ocean_depth_class) |>
-    dplyr::summarise(c = sum(catch) / 1e6) |>
+    dplyr::summarise(c = sum(catch, na.rm = TRUE) / 1e6) |>
     dplyr::ungroup() |>
     dplyr::arrange(year, mfdb_gear_code, region, ocean_depth_class) |>
     dplyr::collect() |>
@@ -603,10 +603,10 @@ ok_group("R/01-plots_and_tables.R:catch_agg", {
     ut_cmp_equal(
       df_tidypax |>
         dplyr::group_by(year, mfdb_gear_code, region) |>
-        dplyr::summarise(c = sum(c)),
+        dplyr::summarise(c = sum(c, na.rm = TRUE)),
       df_newpax |>
         dplyr::group_by(year, mfdb_gear_code, region) |>
-        dplyr::summarise(c = sum(c))
+        dplyr::summarise(c = sum(c, na.rm = TRUE))
     ),
     "data frames match, ignoring ocean_depth_class"
   )
@@ -640,7 +640,7 @@ ok_group("assessment_model/00-setup/input_data.R:maturity_key", {
         year <= local(import_defs$year_end)
       ) |>
       dplyr::group_by(year, lgroup, age, region) |>
-      dplyr::summarise(p = mean(mat)) |>
+      dplyr::summarise(p = mean(mat, na.rm = TRUE)) |>
       dplyr::arrange(year, region, age, lgroup) |>
       dplyr::collect()
   )
@@ -664,7 +664,7 @@ ok_group("assessment_model/00-setup/input_data.R:maturity_key", {
       )
     ) |>
     dplyr::group_by(year, lgroup, age, region) |>
-    dplyr::summarise(p = mean(mat)) |>
+    dplyr::summarise(p = mean(mat, na.rm = TRUE)) |>
     dplyr::arrange(year, region, age, lgroup) |>
     dplyr::collect()
   ok(ut_cmp_equal(df_tidypax, df_newpax), "data frames match")

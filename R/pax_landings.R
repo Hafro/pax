@@ -23,8 +23,8 @@ pax_landings_by_gear <- function(
     pax_add_gear_group(gear_group) |>
     dplyr::group_by(year, species, gear_name, country, ices_area) |>
     dplyr::summarise(
-      catch = sum(catch),
-      num_boats = n_distinct(boat_id)
+      catch = sum(catch, na.rm = TRUE),
+      num_boats = dplyr::n_distinct(boat_id, na.rm = TRUE)
     )
 }
 
@@ -39,7 +39,7 @@ pax_landings_plot <- function(
 
   tbl |>
     dplyr::group_by(year, country) |>
-    dplyr::summarise(c = sum(catch)) |>
+    dplyr::summarise(c = sum(catch, na.rm = TRUE)) |>
     dplyr::arrange(desc(country)) |>
     ggplot2::ggplot(ggplot2::aes(year, c / 1e3, fill = country)) +
     ggplot2::geom_bar(stat = 'identity') +
@@ -191,6 +191,6 @@ pax_landings_fishingyear_summary <- function(
     ) |>
     dplyr::group_by(fishing_year) |>
     dplyr::summarize(
-      catch_kt = round(sum(catch) / 1000)
+      catch_kt = round(sum(catch, na.rm = TRUE) / 1000)
     )
 }

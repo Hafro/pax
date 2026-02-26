@@ -138,7 +138,7 @@ pax_ldist_by_year <- function(
   tbl |>
     dplyr::left_join(ldist_tbl, by = 'sample_id') |>
     dplyr::group_by(species, year, sex, length, mfdb_gear_code) |>
-    dplyr::summarise(n = sum(count)) |>
+    dplyr::summarise(n = sum(count, na.rm = TRUE)) |>
     dplyr::ungroup() |>
     dplyr::select(
       year,
@@ -160,11 +160,14 @@ pax_ldist_scale_abund <- function(
     dplyr::group_by(sample_id, species) |>
     dplyr::summarize(
       ratio_count_len = coalesce(
-        sum(ifelse(
-          measurement_type %in% c('LEN', 'LENM', 'LENC', 'OTOL'),
-          count,
-          0
-        )),
+        sum(
+          ifelse(
+            measurement_type %in% c('LEN', 'LENM', 'LENC', 'OTOL'),
+            count,
+            0
+          ),
+          na.rm = TRUE
+        ),
         0
       ),
       ratio_count_cnt = coalesce(
@@ -193,7 +196,10 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
   summ.dat <-
     tbl |>
     dplyr::group_by(year) |>
-    dplyr::summarise(mL = sum(length * n) / sum(n), n = sum(n))
+    dplyr::summarise(
+      mL = sum(length * n, na.rm = TRUE) / sum(n, na.rm = TRUE),
+      n = sum(n, na.rm = TRUE)
+    )
 
   if (expand) {
     ldist <-
@@ -213,7 +219,7 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
 
   ldist |>
     dplyr::group_by(year, length) |>
-    dplyr::summarise(n = sum(n)) |>
+    dplyr::summarise(n = sum(n, na.rm = TRUE)) |>
     dplyr::group_by(year) |>
     dplyr::mutate(p = ifelse(local(scale) == 1, n / sum(n), n)) |>
     dplyr::group_by(length) |>
@@ -223,11 +229,11 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
     ggplot2::geom_line(
       data = ldist |>
         dplyr::group_by(year, length) |>
-        dplyr::summarise(n = sum(n)) |>
+        dplyr::summarise(n = sum(n, na.rm = TRUE)) |>
         dplyr::group_by(year) |>
         dplyr::mutate(p = ifelse(local(scale) == 1, n / sum(n), n)) |>
         dplyr::group_by(length) |>
-        dplyr::summarise(mp = mean(p)),
+        dplyr::summarise(mp = mean(p, na.rm = TRUE)),
       ggplot2::aes(y = mp)
     ) +
     ggplot2::labs(x = 'Length', y = 'Proportion of catches') +
@@ -279,7 +285,7 @@ pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
       dplyr::collect(n = Inf) |>
       dplyr::left_join(pax_describe_mfdb_gear_code(), by = 'mfdb_gear_code') |>
       dplyr::group_by(year, mfdb_gear_code_desc, length) |>
-      dplyr::summarise(n = sum(n), .groups = 'drop') |>
+      dplyr::summarise(n = sum(n, na.rm = TRUE), .groups = 'drop') |>
       dplyr::group_by(year, mfdb_gear_code_desc) |>
       dplyr::mutate(p = n / sum(n)) |>
       dplyr::ungroup()

@@ -14,7 +14,7 @@ pax_sampling_overview_plot <- function(
 
   tbl |>
     dplyr::group_by(year, month, mfdb_gear_code, sampling_type) |>
-    dplyr::summarise(n = dplyr::n_distinct(sample_id)) |>
+    dplyr::summarise(n = dplyr::n_distinct(sample_id, na.rm = TRUE)) |>
     dplyr::group_by(mfdb_gear_code, year) |>
     dplyr::arrange(month) |>
     dplyr::mutate(p = (n) / sum(n)) |>
@@ -25,7 +25,7 @@ pax_sampling_overview_plot <- function(
         dplyr::filter(species = species) |>
         # Landings by gear
         dplyr::group_by(species, year, month, mfdb_gear_code) |>
-        dplyr::summarise(lnd = sum(landings)) |>
+        dplyr::summarise(lnd = sum(landings, na.rm = TRUE)) |>
         # Window working out proportion of landings per month
         dplyr::group_by(species, year, mfdb_gear_code) |>
         dplyr::mutate(p.lnd = ifelse(sum(lnd) == 0, 0, (lnd) / sum(lnd))) |>
@@ -81,9 +81,9 @@ pax_sampling_detail <- function(
     ) |>
     dplyr::group_by(year, mfdb_gear_code) |>
     dplyr::summarise(
-      n = dplyr::n_distinct(sample_id),
-      n_lengths = sum(count),
-      n_otol = sum(count * otol)
+      n = dplyr::n_distinct(sample_id, na.rm = TRUE),
+      n_lengths = sum(count, na.rm = TRUE),
+      n_otol = sum(count * otol, na.rm = TRUE)
     ) |>
     pax_describe_mfdb_gear_code(pcon) |>
     dplyr::select(-mfdb_gear_code) |>
@@ -109,6 +109,6 @@ pax_sampling_age_reading_status <- function(
     dplyr::filter(measurement_type %in% local(measurement_type)) |>
     dplyr::mutate(read = nvl2(age, 1, 0)) |>
     dplyr::group_by(year, species, sampling_type) |>
-    dplyr::summarise(total = n(), read = sum(read)) |>
+    dplyr::summarise(total = n(), read = sum(read, na.rm = TRUE)) |>
     dplyr::mutate(p = read / total)
 }

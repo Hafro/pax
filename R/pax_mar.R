@@ -169,7 +169,7 @@ pax_mar_ldist <- function(
     out |>
       # Re-group by columns we selected, ignoring maturity stage e.g.
       dplyr::group_by(sample_id, species, length, sex) |>
-      dplyr::summarize(count = sum(count)) |>
+      dplyr::summarize(count = sum(count, na.rm = TRUE)) |>
       decorate_mar()
   )
 }
@@ -200,8 +200,8 @@ pax_mar_aldist <- function(
       # Re-group by columns we selected, ignoring maturity stage e.g.
       dplyr::group_by(sample_id, species, length, age) |>
       dplyr::summarize(
-        count = sum(count),
-        weight = sum(weight * count) / sum(count)
+        count = sum(count, na.rm = TRUE),
+        weight = sum(weight * count, na.rm = TRUE) / sum(count, na.rm = TRUE)
       ) |>
       decorate_mar()
   )

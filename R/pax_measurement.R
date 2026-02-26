@@ -22,14 +22,38 @@ pax_measurement_type_summary <- function(tbl) {
   tbl |>
     dplyr::group_by(sample_id) |>
     dplyr::summarise(
-      n_total = sum(count),
-      n_LENC = sum(ifelse(measurement_type == 'LENC', 1, 0) * count),
-      n_CNT = sum(ifelse(measurement_type == 'CNT', 1, 0) * count),
-      n_LENM = sum(ifelse(measurement_type == 'LENM', 1, 0) * count),
-      n_SAMP = sum(ifelse(measurement_type == 'SAMP', 1, 0) * count),
-      n_OTOL = sum(ifelse(measurement_type == 'OTOL', 1, 0) * count),
-      n_LEN = sum(ifelse(measurement_type == 'LEN', 1, 0) * count),
-      n_CATC = sum(ifelse(measurement_type == 'CATC', 1, 0) * count),
-      n_TOTC = sum(ifelse(measurement_type == 'TOTC', 1, 0) * count),
+      n_total = sum(count, na.rm = TRUE),
+      n_LENC = sum(
+        ifelse(measurement_type == 'LENC', 1, 0) * count,
+        na.rm = TRUE
+      ),
+      n_CNT = sum(
+        ifelse(measurement_type == 'CNT', 1, 0) * count,
+        na.rm = TRUE
+      ),
+      n_LENM = sum(
+        ifelse(measurement_type == 'LENM', 1, 0) * count,
+        na.rm = TRUE
+      ),
+      n_SAMP = sum(
+        ifelse(measurement_type == 'SAMP', 1, 0) * count,
+        na.rm = TRUE
+      ),
+      n_OTOL = sum(
+        ifelse(measurement_type == 'OTOL', 1, 0) * count,
+        na.rm = TRUE
+      ),
+      n_LEN = sum(
+        ifelse(measurement_type == 'LEN', 1, 0) * count,
+        na.rm = TRUE
+      ),
+      n_CATC = sum(
+        ifelse(measurement_type == 'CATC', 1, 0) * count,
+        na.rm = TRUE
+      ),
+      n_TOTC = sum(
+        ifelse(measurement_type == 'TOTC', 1, 0) * count,
+        na.rm = TRUE
+      ),
     )
 }

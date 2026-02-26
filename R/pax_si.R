@@ -61,7 +61,7 @@ pax_si_scale_by_landings <- function(
       )
     ) |>
     dplyr::group_by(species, year, tgroup, gear_name) |>
-    dplyr::summarise(catch = sum(catch))
+    dplyr::summarise(catch = sum(catch, na.rm = TRUE))
 
   if (length(regions) > 1) {
     message("Scaling landings by logbook data to get per-area landings")
@@ -77,7 +77,7 @@ pax_si_scale_by_landings <- function(
         )
       ) |>
       dplyr::group_by(species, year, tgroup, gear_name, region) |>
-      dplyr::summarise(catch = sum(catch)) |>
+      dplyr::summarise(catch = sum(catch, na.rm = TRUE)) |>
       dplyr::group_by(species, year, tgroup, gear_name) |>
       dplyr::mutate(
         catch_proportion = pmax(coalesce(catch, 0), 1) /
@@ -195,7 +195,7 @@ pax_si_scale_by_strata <- function(
       dplyr::left_join(
         strata_tbl |>
           dplyr::group_by(h3_cell = sql("UNNEST(h3_cells)")) |>
-          dplyr::summarize(stratum = min(stratum)),
+          dplyr::summarize(stratum = min(stratum, na.rm = TRUE)),
         by = c("h3_cell")
       )
   } else {
@@ -241,8 +241,10 @@ pax_si_scale_by_strata <- function(
     dplyr::group_by(species, year, stratum, sampling_type, area) |>
     dplyr::mutate(
       # NB: Not summarise, i.e. window function
-      si_abund = area * si_abund / dplyr::n_distinct(sample_id),
-      si_biomass = area * si_biomass / dplyr::n_distinct(sample_id)
+      si_abund = area * si_abund / dplyr::n_distinct(sample_id, na.rm = TRUE),
+      si_biomass = area *
+        si_biomass /
+        dplyr::n_distinct(sample_id, na.rm = TRUE)
     )
 }
 
@@ -301,9 +303,9 @@ pax_si_strata_summary <- function(
     dplyr::summarise(
       si_N = n(),
       si_abund = sum(si_abund, na.rm = TRUE), # number of fish
-      si_abund_sd = sd(si_abund),
+      si_abund_sd = sd(si_abund, na.rm = TRUE),
       si_biomass = sum(si_biomass, na.rm = TRUE), # biomass of fish
-      si_biomass_sd = sd(si_biomass)
+      si_biomass_sd = sd(si_biomass, na.rm = TRUE)
     ) |>
     dplyr::mutate(
       si_abund_sd = ifelse(
@@ -338,12 +340,14 @@ pax_si_year_summary <- function(tbl) {
         sqrt(sum(
           coalesce(var_sd, 0)^2 *
             if_else(is.na(var_sd), 0, area)^2 /
-            if_else(is.na(var_sd), 1, si_N)
+            if_else(is.na(var_sd), 1, si_N),
+          na.rm = TRUE
         )) /
-          sum(if_else(is.na(var_sd), 1, area)) *
-          sum(area) /
+          sum(if_else(is.na(var_sd), 1, area), na.rm = TRUE) *
+          sum(area, na.rm = TRUE) /
           sum(
-            if_else(is.na(var_sd), 1, var) * if_else(is.na(var_sd), 1, area)
+            if_else(is.na(var_sd), 1, var) * if_else(is.na(var_sd), 1, area),
+            na.rm = TRUE
           ),
         list(
           var_sd = as.symbol(gsub("_cv$", "_sd", var_name)),

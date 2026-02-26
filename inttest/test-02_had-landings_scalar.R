@@ -138,8 +138,8 @@ ok_group("Commercial catch at age", {
           lgroup
         ) |>
         dplyr::summarise(
-          si_abund = sum(adj_N),
-          si_biomass = sum(adj_B),
+          si_abund = sum(adj_N, na.rm = TRUE),
+          si_biomass = sum(adj_B, na.rm = TRUE),
           catch = mean(catch)
         ) |>
         dplyr::select(
@@ -189,8 +189,8 @@ ok_group("Commercial catch at age", {
           lgroup
         ) |>
         dplyr::summarise(
-          si_abund = sum(si_abund),
-          si_biomass = sum(si_biomass),
+          si_abund = sum(si_abund, na.rm = TRUE),
+          si_biomass = sum(si_biomass, na.rm = TRUE),
           catch = mean(catch)
         ) |>
         dplyr::select(
