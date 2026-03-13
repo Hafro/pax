@@ -168,6 +168,7 @@ pax_landings_significantboats_plot <- function(tbl) {
 # Was: landings_by_fishing_year.csv
 pax_landings_fishingyear_summary <- function(
   tbl,
+  ignore_final_year = TRUE,
   fishingyear_cal_start = 9
 ) {
   pax_checkcols(
@@ -177,7 +178,11 @@ pax_landings_fishingyear_summary <- function(
     "catch"
   )
 
-  tbl |>
+  out <- tbl |>
+    dplyr::mutate(
+      # Assume yearly landings happen in month 6
+      month = coalesce(month, 6),
+    ) |>
     dplyr::mutate(
       fishing_year = dplyr::case_when(
         # Pre-1991 regulations were different, no fishingyear
@@ -193,4 +198,15 @@ pax_landings_fishingyear_summary <- function(
     dplyr::summarize(
       catch_kt = round(sum(catch, na.rm = TRUE) / 1000)
     )
+  if (isTRUE(ignore_final_year)) {
+    max_year <- tbl |>
+      dplyr::summarize(year = max(year, na.rm = TRUE)) |>
+      dplyr::pull(year)
+    out <- dplyr::filter(
+      out,
+      left(fishing_year, 4L) != local(max_year),
+      right(fishing_year, 4L) != local(max_year)
+    )
+  }
+  return(out |> dplyr::arrange(fishing_year))
 }
