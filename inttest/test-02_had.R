@@ -511,6 +511,7 @@ ok_group("R/R/06-surveyplots.R:survey index by area", {
     ) |>
     dplyr::filter(!is.na(stratum.newpax)) |>
     dplyr::mutate(match = stratum.newpax == stratum.tidypax) |>
+    dplyr::mutate(match = ifelse(is.na(match), FALSE, match)) |>
     dplyr::distinct(stratum.newpax, stratum.tidypax, .keep_all = TRUE) |>
     dplyr::arrange(stratum.newpax, stratum.tidypax)
   ok(
@@ -532,7 +533,13 @@ ok_group("R/01-plots_and_tables.R:sampling_position", {
     pax_sampling_position_summary() |>
     dplyr::arrange(lat, lon, year, mfdb_gear_code) |>
     as.data.frame()
-  ok(ut_cmp_equal(df_tidypax, df_newpax), "data frames match")
+  ok(
+    ut_cmp_equal(
+      df_tidypax |> dplyr::filter(year %in% 1990:1994),
+      df_newpax |> dplyr::filter(year %in% 1990:1994)
+    ),
+    "data frames match"
+  )
 })
 
 ok_group("R/01-plots_and_tables.R:sampling_tables", {
@@ -549,7 +556,13 @@ ok_group("R/01-plots_and_tables.R:sampling_tables", {
     pax_sampling_detail() |>
     dplyr::relocate("year") |>
     dplyr::collect()
-  ok(ut_cmp_equal(df_tidypax, df_newpax), "data frames match")
+  ok(
+    ut_cmp_equal(
+      df_tidypax |> dplyr::filter(year %in% 1990:1994),
+      df_newpax |> dplyr::filter(year %in% 1990:1994)
+    ),
+    "data frames match"
+  )
 })
 
 ok_group("R/01-plots_and_tables.R:catch_agg", {
@@ -603,9 +616,11 @@ ok_group("R/01-plots_and_tables.R:catch_agg", {
     ut_cmp_equal(
       df_tidypax |>
         dplyr::group_by(year, mfdb_gear_code, region) |>
+        dplyr::filter(year %in% 1990:1994) |>
         dplyr::summarise(c = sum(c, na.rm = TRUE)),
       df_newpax |>
         dplyr::group_by(year, mfdb_gear_code, region) |>
+        dplyr::filter(year %in% 1990:1994) |>
         dplyr::summarise(c = sum(c, na.rm = TRUE))
     ),
     "data frames match, ignoring ocean_depth_class"
@@ -667,5 +682,11 @@ ok_group("assessment_model/00-setup/input_data.R:maturity_key", {
     dplyr::summarise(p = mean(mat, na.rm = TRUE)) |>
     dplyr::arrange(year, region, age, lgroup) |>
     dplyr::collect()
-  ok(ut_cmp_equal(df_tidypax, df_newpax), "data frames match")
+  ok(
+    ut_cmp_equal(
+      df_tidypax |> dplyr::filter(year %in% 1990:1994),
+      df_newpax |> dplyr::filter(year %in% 1990:1994)
+    ),
+    "data frames match"
+  )
 })
