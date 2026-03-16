@@ -11,7 +11,13 @@ pax_ldist_alk <- function(
   ),
   tgroup = NULL,
   ygroup = NULL,
-  aldist_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "aldist")
+  aldist_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "aldist") |>
+    # NB: aldist isn't aggregated by it's columns: https://github.com/Hafro/pax/issues/17
+    dplyr::group_by(sample_id, species, length, age) |>
+    dplyr::summarize(
+      count = sum(count, na.rm = TRUE),
+      weight = sum(weight * count, na.rm = TRUE) / sum(count, na.rm = TRUE)
+    )
 ) {
   pax_checkcols(tbl, "sample_id")
   pax_checkcols(aldist_tbl, "sample_id", "age", "count")

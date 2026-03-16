@@ -175,6 +175,12 @@ ok_group("input_data.R:Generate the ALK from the survey", {
       dplyr::tbl(pcon, "aldist") |>
         dplyr::filter(sample_id %in% local(test_sample_ids)) |>
         dplyr::mutate(sample_id = as.numeric(sample_id)) |> # NB: sample_id is character, we need integer to sort it
+        # NB: aldist isn't aggregated by it's columns: https://github.com/Hafro/pax/issues/17
+        dplyr::group_by(sample_id, species, length, age) |>
+        dplyr::summarize(
+          count = sum(count, na.rm = TRUE),
+          weight = sum(weight * count, na.rm = TRUE) / sum(count, na.rm = TRUE)
+        ) |>
         dplyr::arrange(sample_id, species, length, age) |>
         as.data.frame(),
       end = NULL

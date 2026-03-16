@@ -198,11 +198,13 @@ pax_mar_aldist <- function(
   return(
     out |>
       # Re-group by columns we selected, ignoring maturity stage e.g.
-      dplyr::group_by(sample_id, species, length, age) |>
-      dplyr::summarize(
-        count = sum(count, na.rm = TRUE),
-        weight = sum(weight * count, na.rm = TRUE) / sum(count, na.rm = TRUE)
-      ) |>
+      # NB: We used to do the below, but lw_pred uses aldist as an ~unaggregated source of length-weight data.
+      #     https://github.com/Hafro/pax/issues/17
+      #      dplyr::group_by(sample_id, species, length, age) |>
+      #      dplyr::summarize(
+      #        count = sum(count, na.rm = TRUE),
+      #        weight = sum(weight * count, na.rm = TRUE) / sum(count, na.rm = TRUE)
+      #      ) |>
       decorate_mar()
   )
 }
