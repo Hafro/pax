@@ -225,11 +225,13 @@ ok_group("input_data.R:Generate the ALK from the survey", {
     dplyr::select(species = tegund_nr, length = lengd, weight = thyngd) |>
     dplyr::filter(!is.na(length), weight > 0) |>
     dplyr::collect(n = Inf)
+  # NB: Can't use gam::s inside formula, presumably something is looking for as.symbol("s")
+  s <- gam::s
   lw_pred <-
     tibble::tibble(species = import_defs$species, length = 1:150) |>
     modelr::add_predictions(
       gam::gam(
-        weight ~ gam::s(log(length), df = 8),
+        weight ~ s(log(length), df = 8),
         family = Gamma(link = log),
         data = tidypax_lw_dat
       ),
