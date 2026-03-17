@@ -244,6 +244,10 @@ ok_group("input_data.R:Generate the ALK from the survey", {
       var = 'weight'
     ) |>
     dplyr::mutate(weight = as.numeric(exp(weight)))
+  ok(ut_cmp_equal(
+    signif(lw_pred |> dplyr::filter(length %% 10 == 0) |> dplyr::arrange(length) |> dplyr::pull(weight), 5),
+    c(8.5151, 63.142, 231.1, 582.99, 1172.8, 2051.3, 3272.3, 4884.4, 6948.6, 9524, 12667, 16435, 20883, 26067, 32045)
+  ), "lw_pred matches baseline")
 
   tidypax_igfs_by_length <-
     tidypax::si_stations(mar) |>
