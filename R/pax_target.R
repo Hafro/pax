@@ -35,13 +35,13 @@ pax_tar_format_duckdb <- function() {
       stop("Not Implemented: unmarshal")
 
       # TODO: Dump (object) to temporary file
-      pcon <- pax::pax_connect()
-      DBI::dbExecute(
-        pcon,
-        dbplyr::build_sql("ATTACH ", tmp_path, " AS in_db;", con = object)
-      )
-      DBI::dbExecute(pcon, "COPY FROM DATABASE in_db TO memory;")
-      return(pcon)
+      #pcon <- pax::pax_connect()
+      #DBI::dbExecute(
+      #  pcon,
+      #  dbplyr::build_sql("ATTACH ", tmp_path, " AS in_db;", con = object)
+      #)
+      #DBI::dbExecute(pcon, "COPY FROM DATABASE in_db TO memory;")
+      #return(pcon)
     },
   )
 }
