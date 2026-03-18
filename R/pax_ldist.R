@@ -23,6 +23,17 @@ pax_ldist_alk <- function(
   pax_checkcols(aldist_tbl, "sample_id", "age", "count")
   pcon <- dbplyr::remote_con(tbl)
 
+  # NSE variables
+  sample_id <- NULL
+  species <- NULL
+  age <- NULL
+  count <- NULL
+  weight <- NULL
+  region <- NULL
+  gear_name <- NULL
+  lgroup <- NULL
+  n <- NULL
+
   # NB: This did rename gear -> mfdb_gear_code, moved to pax_si.hafropax()
   tbl |>
     dplyr::left_join(aldist_tbl, by = c('sample_id')) |>
@@ -104,11 +115,16 @@ pax_ldist_scale_tow_area <-
     )
   ) {
     pcon <- dbplyr::remote_con(tbl)
-    max_towlength <- NULL # Mask NSE variable
-    std_towlength <- NULL # Mask NSE variable
-    min_towlength <- NULL # Mask NSE variable
-    std_width <- NULL # Mask NSE variable
-    vf_adj <- NULL # Mask NSE variable
+
+    # NSE variables
+    species <- NULL
+    count <- NULL
+    tow_length <- NULL
+    max_towlength <- NULL
+    std_towlength <- NULL
+    min_towlength <- NULL
+    std_width <- NULL
+    vf_adj <- NULL
 
     tbl |>
       dplyr::left_join(pax_temptbl(pcon, towdims_tbl)) |>
@@ -141,6 +157,14 @@ pax_ldist_by_year <- function(
 ) {
   con <- dbplyr::remote_con(tbl)
 
+  # NSE variables
+  species <- NULL
+  year <- NULL
+  sex <- NULL
+  mfdb_gear_code <- NULL
+  count <- NULL
+  n <- NULL
+
   tbl |>
     dplyr::left_join(ldist_tbl, by = 'sample_id') |>
     dplyr::group_by(species, year, sex, length, mfdb_gear_code) |>
@@ -161,6 +185,15 @@ pax_ldist_scale_abund <- function(
   tbl,
   measurement_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "measurement")
 ) {
+  # NSE variables
+  sample_id <- NULL
+  species <- NULL
+  measurement_type <- NULL
+  count <- NULL
+  ratio_count_cnt <- NULL
+  ratio_count_len <- NULL
+  ratio <- NULL
+
   # Was: biota.skala_v
   ratio_tbl <- measurement_tbl |>
     dplyr::group_by(sample_id, species) |>
@@ -198,6 +231,14 @@ pax_ldist_scale_abund <- function(
 # Was: tidypax::ldist_plot
 pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
   pcon <- dbplyr::remote_con(tbl)
+
+  # NSE variables
+  year <- NULL
+  n <- NULL
+  p <- NULL
+  mp <- NULL
+  unit <- NULL
+  mL <- NULL
 
   summ.dat <-
     tbl |>
@@ -285,6 +326,13 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
 
 # Was: tidypax::ldist_joy_plot
 pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
+  # NSE variables
+  year <- NULL
+  mfdb_gear_code_desc <- NULL
+  n <- NULL
+  sex <- NULL
+  p <- NULL
+
   if (!split_by_sex) {
     pdat <-
       ldist |>

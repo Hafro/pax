@@ -2,6 +2,14 @@
 pax_quotatransfer_summary <- function(tbl) {
   con <- dbplyr::remote_con(tbl)
 
+  # NSE variables
+  varanlegt <- NULL
+  afli <- NULL
+  diffp <- NULL
+  stada <- NULL
+  kvoti <- NULL
+  timabil <- NULL
+
   tbl |>
     dplyr::mutate(
       diff = varanlegt - afli,
@@ -22,6 +30,17 @@ pax_quotatransfer_summary <- function(tbl) {
 # Was: quota_transfer_plot
 pax_quotatransfer_plot <- function(tbl) {
   con <- dbplyr::remote_con(tbl)
+
+  # NSE variables
+  m_ara <- NULL
+  n_ar <- NULL
+  onotad <- NULL
+  varanlegt <- NULL
+  tilf <- NULL
+  timabil <- NULL
+  m_p <- NULL
+  til_p <- NULL
+  value <- NULL
 
   tbl |>
     head(-1) |>

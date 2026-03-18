@@ -14,6 +14,11 @@ pax_si_scale_by_alk <- function(
   pax_checkcols(tbl, "si_abund", "si_biomass")
   pax_checkcols(alk_tbl, "agep")
 
+  # NSE variables
+  agep <- NULL
+  si_abund <- NULL
+  si_biomass <- NULL
+
   # NB: This did rename gear -> mfdb_gear_code, moved to pax_si.hafropax()
   tbl |>
     pax_add_groupings(
@@ -48,6 +53,15 @@ pax_si_scale_by_landings <- function(
   tgroup = list(t1 = 1:6, t2 = 7:12)
 ) {
   pcon <- dbplyr::remote_con(tbl)
+
+  # NSE variables
+  catch <- NULL
+  catch_proportion <- NULL
+  gear_name <- NULL
+  region <- NULL
+  si_abund <- NULL
+  si_biomass <- NULL
+  year <- NULL
 
   landings <-
     landings_tbl |>
@@ -123,6 +137,13 @@ pax_si_by_length <- function(
     dplyr::pull(species) |>
     dplyr::first()
 
+  # NSE variables
+  si_abund <- NULL
+  si_biomass <- NULL
+  species <- NULL
+  count <- NULL
+  weight <- NULL
+
   tbl |>
     ##  2. get length data
     dplyr::left_join(ldist, by = c("sample_id")) |>
@@ -149,6 +170,16 @@ pax_si_by_length <- function(
 }
 
 pax_si_scale_winsorize <- function(tbl, q = 0.95) {
+  # NSE variables
+  si_abund <- NULL
+  si_biomass <- NULL
+  year <- NULL
+  sample_id <- NULL
+  species <- NULL
+  B <- NULL
+  B_quantile <- NULL
+  B_scalar <- NULL
+
   winsor_table_b <-
     tbl |>
     dplyr::filter(si_biomass > 0) |>
@@ -186,6 +217,22 @@ pax_si_scale_by_strata <- function(
   }
   tbl_colnames <- colnames(tbl)
   strata_tbl_colnames <- colnames(strata_tbl)
+
+  # NSE variables
+  area <- NULL
+  geom <- NULL
+  gridcell <- NULL
+  h3_cells <- NULL
+  rall_area <- NULL
+  sample_id <- NULL
+  sampling_type <- NULL
+  si_abund <- NULL
+  si_biomass <- NULL
+  species <- NULL
+  station <- NULL
+  stratum <- NULL
+  tow_depth <- NULL
+  year <- NULL
 
   if ("h3_cells" %in% tbl_colnames && "h3_cells" %in% strata_tbl_colnames) {
     out <- tbl |>
@@ -267,6 +314,20 @@ pax_si_strata_summary <- function(
     "si_biomass"
   )
 
+  # NSE variables
+  area <- NULL
+  sample_id <- NULL
+  station <- NULL
+  species <- NULL
+  year <- NULL
+  stratum <- NULL
+  sampling_type <- NULL
+  si_abund <- NULL
+  si_abund_sd <- NULL
+  si_biomass <- NULL
+  si_biomass_sd <- NULL
+  si_N <- NULL
+
   tbl |>
     dplyr::mutate(
       si_biomass = ifelse(
@@ -331,6 +392,14 @@ pax_si_year_summary <- function(tbl) {
     "si_biomass",
     "si_biomass_sd"
   )
+
+  # NSE variables
+  species <- NULL
+  sampling_type <- NULL
+  year <- NULL
+  n <- NULL
+  si_abund <- NULL
+  si_biomass <- NULL
 
   # Generate code to calculate CV for both si_abund & si_biomass
   tmp <- sapply(

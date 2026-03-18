@@ -4,6 +4,14 @@ data_update_mar_strata <- function(
   strata_name,
   substratification = "default"
 ) {
+  # NSE variables
+  stratification <- NULL
+  lat <- NULL
+  lon <- NULL
+  stratum <- NULL
+  substratum <- NULL
+  geometry <- NULL
+
   shp_path <- paste0(
     "pax/inst/extdata/strata_",
     strata_name,

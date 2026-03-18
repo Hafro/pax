@@ -57,6 +57,11 @@ pax_tar_format_parquet <- function() {
   }
   convert <- function(object) {
     cols <- colnames(object)
+
+    # NSE variables
+    h3_cells <- NULL
+    geom <- NULL
+
     # TODO: Deselect anything that isn't going to fit? Special h3_cells serialisation format?
     if ("geom" %in% cols) {
       object <- dplyr::select(object, -geom)

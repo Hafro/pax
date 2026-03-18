@@ -127,6 +127,12 @@ pax_add_regions <- function(
   pcon <- dbplyr::remote_con(tbl)
   tbl_colnames <- colnames(tbl)
 
+  # NSE variables
+  gridcell <- NULL
+  division <- NULL
+  subdivision <- NULL
+  region <- NULL
+
   if (
     isTRUE(ignore_missing_col) &&
       !any(c("gridcell", "division") %in% tbl_colnames)
@@ -183,6 +189,14 @@ pax_add_regions <- function(
   return(out)
 }
 data_update_gridcell <- function(mar) {
+  # NSE variables
+  gridcell <- NULL
+  division <- NULL
+  subdivision <- NULL
+  lat <- NULL
+  lon <- NULL
+  id <- NULL
+
   mar::tbl_mar(mar, 'ops$bthe."reitmapping"') |>
     dplyr::filter(
       !is.na(gridcell),
@@ -207,6 +221,9 @@ pax_add_ocean_depth_class <- function(
   ignore_missing_col = FALSE
 ) {
   pcon <- dbplyr::remote_con(tbl)
+
+  # NSE variables
+  ocean_depth_class <- NULL
 
   if (isTRUE(ignore_missing_col) && !("ocean_depth" %in% colnames(tbl))) {
     # Column not present in this table, do nothing
@@ -256,6 +273,11 @@ pax_add_gear_group <- function(
   ignore_missing_col = FALSE
 ) {
   pcon <- dbplyr::remote_con(tbl)
+
+  # NSE variables
+  mfdb_gear_code <- NULL
+  gear_name <- NULL
+  coalesce <- NULL
 
   if (isTRUE(ignore_missing_col) && !("mfdb_gear_code" %in% colnames(tbl))) {
     # Column not present in this table, do nothing
@@ -315,6 +337,9 @@ pax_add_temporal_grouping <- function(
 ) {
   pcon <- dbplyr::remote_con(tbl)
 
+  # NSE variables
+  month <- NULL
+
   if (isTRUE(ignore_missing_col) && !("month" %in% colnames(tbl))) {
     # Column not present in this table, do nothing
     return(tbl)
@@ -356,6 +381,9 @@ pax_add_yearly_grouping <- function(
   ignore_missing_col = FALSE
 ) {
   pcon <- dbplyr::remote_con(tbl)
+
+  # NSE variables
+  year <- NULL
 
   if (isTRUE(ignore_missing_col) && !("year" %in% colnames(tbl))) {
     # Column not present in this table, do nothing

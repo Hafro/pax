@@ -9,6 +9,19 @@ pax_station_location_summary <- function(
   species_dummies <-
     tibble::tibble(species = 1:100, dummy = 1)
 
+  # NSE variables
+  sample_id <- NULL
+  begin_lat <- NULL
+  begin_lon <- NULL
+  year <- NULL
+  sampling_type <- NULL
+  species <- NULL
+  count <- NULL
+  a <- NULL
+  b <- NULL
+  tow_length <- NULL
+  bio <- NULL
+
   tbl |>
     dplyr::left_join(ldist, by = c("sample_id", "species")) |>
     dplyr::mutate(dummy = 1) |>

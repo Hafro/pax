@@ -1,4 +1,10 @@
 pax_sampling_position_summary <- function(tbl) {
+  # NSE variables
+  lat <- NULL
+  lon <- NULL
+  year <- NULL
+  mfdb_gear_code <- NULL
+
   tbl |>
     dplyr::select(lat, lon, year, mfdb_gear_code) |>
     dplyr::distinct()
@@ -11,6 +17,27 @@ pax_sampling_overview_plot <- function(
   landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings")
 ) {
   pcon <- dbplyr::remote_con(tbl)
+
+  # NSE variables
+  year <- NULL
+  month <- NULL
+  mfdb_gear_code <- NULL
+  sampling_type <- NULL
+  sample_id <- NULL
+  n <- NULL
+  p <- NULL
+  species <- NULL
+  landings <- NULL
+  lnd <- NULL
+  p.lnd <- NULL
+  sampling_type_desc <- NULL
+  pp <- NULL
+  element_blank <- NULL
+  element_line <- NULL
+  lat <- NULL
+  lon <- NULL
+  year <- NULL
+  mfdb_gear_code <- NULL
 
   tbl |>
     dplyr::group_by(year, month, mfdb_gear_code, sampling_type) |>
@@ -70,6 +97,16 @@ pax_sampling_detail <- function(
 ) {
   pcon <- dbplyr::remote_con(tbl)
 
+  # NSE variables
+  year <- NULL
+  sample_id <- NULL
+  count <- NULL
+  otol <- NULL
+  mfdb_gear_code_desc <- NULL
+  n <- NULL
+  n_lengths <- NULL
+  n_otol <- NULL
+
   tbl |>
     dplyr::filter(
       mfdb_gear_code %in% local(mfdb_gear_code),
@@ -106,7 +143,12 @@ pax_sampling_age_reading_status <- function(
   pcon <- dbplyr::remote_con(tbl)
 
   # NSE variables
+  age <- NULL
+  year <- NULL
   read <- NULL
+  species <- NULL
+  sampling_type <- NULL
+  total <- NULL
 
   tbl |>
     dplyr::filter(measurement_type %in% local(measurement_type)) |>

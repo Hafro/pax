@@ -15,6 +15,11 @@ pax_describe_sampling_type <- function(
 ) {
   pcon <- dbplyr::remote_con(tbl)
 
+  # NSE variables
+  sampling_type <- NULL
+  sampling_type_desc_is <- NULL
+  sampling_type_desc_en <- NULL
+
   st_tbl <- pax_temptbl(pcon, "paxdat_sampling_type_desc")
   if (lang == 'is') {
     st_tbl <- st_tbl |>
@@ -28,6 +33,11 @@ pax_describe_sampling_type <- function(
     dplyr::left_join(st_tbl, by = c('sampling_type'))
 }
 data_update_sampling_type_desc <- function(mar) {
+  # NSE variables
+  synaflokkur_nr <- NULL
+  enskt_heiti <- NULL
+  heiti <- NULL
+
   utils::write.table(
     mar::les_synaflokk(mar) |>
       dplyr::select(
@@ -47,6 +57,10 @@ pax_describe_mfdb_gear_code <- function(
 ) {
   pcon <- dbplyr::remote_con(tbl)
   tbl_colnames <- colnames(tbl)
+
+  # NSE variables
+  mfdb_gear_code <- NULL
+  mfdb_gear_code_desc <- NULL
 
   st_tbl <- pax_temptbl(pcon, "paxdat_mfdb_gear_code_desc")
   other_desc <- st_tbl |>

@@ -53,6 +53,25 @@ pax_mar_logbook <- function(
     stop("mar package not available, cannot import from DB")
   }
 
+  # NSE variables
+  id <- NULL
+  year <- NULL
+  month <- NULL
+  vessel_nr <- NULL
+  gear <- NULL
+  gear_size <- NULL
+  gridcell <- NULL
+  lat <- NULL
+  lon <- NULL
+  area <- NULL
+  towtime <- NULL
+  hooks <- NULL
+  nr_net <- NULL
+  num_traps <- NULL
+  depth <- NULL
+  catch <- NULL
+  total <- NULL
+
   # NB: Produced with https://gitlab.hafogvatn.is/dag/00-setup/-/blob/master/logbooks/catch.R
   # * sq / x / y / dx / dy / area produced by mar::encode_zchords(), rounding lon/lat
   out <- mar::tbl_mar(mar, 'ops$bthe."logbooks_compiled"') |>
@@ -109,6 +128,17 @@ pax_mar_landings <- function(
     stop("mar package not available, cannot import from DB")
   }
 
+  # NSE variables
+  tegund_nr <- NULL
+  ar <- NULL
+  man <- NULL
+  ices_svaedi <- NULL
+  land <- NULL
+  mfdb_gear_code <- NULL
+  skip_nr <- NULL
+  magn_oslaegt <- NULL
+  year <- NULL
+
   # Make an expression or'ing all parts of ices_area_like together
   ices_area_c <- quote(1 == 0)
   for (l in ices_area_like) {
@@ -151,6 +181,16 @@ pax_mar_ldist <- function(
     stop("mar package not available, cannot import from DB")
   }
 
+  # NSE variables
+  synis_id <- NULL
+  tegund_nr <- NULL
+  lengd <- NULL
+  kyn_nr <- NULL
+  fjoldi <- NULL
+  sample_id <- NULL
+  sex <- NULL
+  count <- NULL
+
   out <- mar::les_lengd(mar) |>
     mar::skala_med_taldir() |>
     dplyr::select(
@@ -181,6 +221,14 @@ pax_mar_aldist <- function(
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
+
+  # NSE variables
+  synis_id <- NULL
+  tegund_nr <- NULL
+  lengd <- NULL
+  thyngd <- NULL
+  aldur <- NULL
+  fjoldi <- NULL
 
   out <- mar::les_aldur(mar) |>
     dplyr::select(
@@ -236,7 +284,23 @@ pax_mar_measurement <- function(
     stop("mar package not available, cannot import from DB")
   }
 
-  kvarna_nr <- NULL # Mask NSE variable
+  # NSE variables
+  maeling_teg <- NULL
+  maeling_id <- NULL
+  synis_id <- NULL
+  tegund_nr <- NULL
+  lengd <- NULL
+  aldur <- NULL
+  kyn_nr <- NULL
+  kynthroski_nr <- NULL
+  thyngd <- NULL
+  kynfaeri <- NULL
+  magi <- NULL
+  lifur <- NULL
+  fjoldi <- NULL
+  ar <- NULL
+  year <- NULL
+  kvarna_nr <- NULL
 
   out <- mar::les_maelingu(mar) |>
     dplyr::mutate(
@@ -292,6 +356,12 @@ pax_mar_quotatransfer <- function(mar, species) {
     stop("mar package not available, cannot import from DB")
   }
 
+  # NSE variables
+  fteg <- NULL
+  synis_id <- NULL
+  kastad_breidd <- NULL
+  timabil <- NULL
+
   mar:::kvoti_stada_summarised(mar) |>
     dplyr::filter(fteg == local(species)) |>
     dplyr::collect(n = Inf) |>
@@ -327,6 +397,19 @@ pax_mar_sampling <- function(
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
+
+  # NSE variables
+  synis_id <- NULL
+  kastad_breidd <- NULL
+  kastad_lengd <- NULL
+  ar <- NULL
+  man <- NULL
+  synaflokkur_nr <- NULL
+  gear <- NULL
+  leidangur <- NULL
+  trip <- NULL
+  year <- NULL
+  tegund_nr <- NULL
 
   mar::les_stod(mar) |>
     dplyr::left_join(mar::les_syni(mar), by = 'stod_id') |>
@@ -398,6 +481,30 @@ pax_mar_station <- function(
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
+
+  # NSE variables
+  leidangur <- NULL
+  reitur <- NULL
+  smareitur <- NULL
+  tog_nr <- NULL
+  veidarfaeri <- NULL
+  synis_id <- NULL
+  ar <- NULL
+  man <- NULL
+  station <- NULL
+  synaflokkur_nr <- NULL
+  gridcell <- NULL
+  kastad_breidd <- NULL
+  kastad_lengd <- NULL
+  hift_breidd <- NULL
+  hift_lengd <- NULL
+  gear <- NULL
+  botndypi_kastad <- NULL
+  toglengd <- NULL
+  togbyrjun <- NULL
+  togendir <- NULL
+  fixed <- NULL
+  year <- NULL
 
   out <- mar::les_stod(mar) |>
     ## skip MAGEI and MOGUN, these are stomach samples and should be a seperate sampling type

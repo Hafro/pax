@@ -1,5 +1,15 @@
 # Was: 02-had:maturity_key
 pax_measurement_agelen_summary <- function(tbl) {
+  # NSE variables
+  measurement_type <- NULL
+  age <- NULL
+  maturity_stage <- NULL
+  species <- NULL
+  sample_id <- NULL
+  measurement_id <- NULL
+  weight <- NULL
+  count <- NULL
+
   tbl |>
     dplyr::filter(
       measurement_type == 'OTOL',
@@ -19,6 +29,11 @@ pax_measurement_agelen_summary <- function(tbl) {
 }
 
 pax_measurement_type_summary <- function(tbl) {
+  # NSE variables
+  sample_id <- NULL
+  count <- NULL
+  measurement_type <- NULL
+
   tbl |>
     dplyr::group_by(sample_id) |>
     dplyr::summarise(

@@ -29,6 +29,14 @@ pax_add_cpue <- function(tbl) {
   )
   con <- dbplyr::remote_con(tbl)
 
+  # NSE variables
+  mfdb_gear_code <- NULL
+  tow_time <- NULL
+  tow_hooks <- NULL
+  tow_num_nets <- NULL
+  catch <- NULL
+  effort <- NULL
+
   tbl |>
     dplyr::mutate(
       effort = coalesce(
@@ -53,6 +61,14 @@ pax_logbook_cpue_plot <- function(
   limit = 0.5
 ) {
   pax_checkcols(tbl, "year", "mfdb_gear_code", "cpue", "catch", "catch_total")
+
+  # NSE variables
+  year <- NULL
+  mfdb_gear_code <- NULL
+  cpue <- NULL
+  catch <- NULL
+  catch_total <- NULL
+  Prop <- NULL
 
   tbl |>
     dplyr::group_by(year, mfdb_gear_code) |>

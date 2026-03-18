@@ -19,6 +19,15 @@ pax_landings_by_gear <- function(
     "catch"
   )
 
+  # NSE variables
+  year <- NULL
+  species <- NULL
+  gear_name <- NULL
+  country <- NULL
+  ices_area <- NULL
+  catch <- NULL
+  boat_id <- NULL
+
   tbl |>
     pax_add_gear_group(gear_group) |>
     dplyr::group_by(year, species, gear_name, country, ices_area) |>
@@ -36,6 +45,12 @@ pax_landings_plot <- function(
   breaks = seq(0, 1e5, by = 10)
 ) {
   pax_checkcols(tbl, "year", "country", "catch")
+
+  # NSE variables
+  year <- NULL
+  country <- NULL
+  catch <- NULL
+  desc <- NULL
 
   tbl |>
     dplyr::group_by(year, country) |>
@@ -65,7 +80,13 @@ pax_landings_boat_summary <- function(tbl) {
     "num_boats"
   )
 
-  `Total catch` <- NULL # Mask NSE variable
+  # NSE variables
+  `Total catch` <- NULL
+  mfdb_gear_code_desc <- NULL
+  catch <- NULL
+  num_boats <- NULL
+  year <- NULL
+  Year <- NULL
 
   tbl |>
     # NB: Assumes groups have valid mfdb_gear_code names
@@ -102,6 +123,14 @@ pax_landings_significantboats_summary <- function(
   # i.e. pax_landings_boat_summary
   pax_checkcols(tbl, "year", "boat_id", "catch")
 
+  # NSE variables
+  year <- NULL
+  boat_id <- NULL
+  catch <- NULL
+  cc <- NULL
+  ct <- NULL
+  n <- NULL
+
   tbl |>
     dplyr::group_by(year, boat_id) |>
     dplyr::summarise(c = sum(catch, na.rm = TRUE)) |>
@@ -126,6 +155,11 @@ pax_landings_significantboats_plot <- function(tbl) {
     "num_boats_*",
     "catch_*"
   )
+
+  # NSE variables
+  catch <- NULL
+  n <- NULL
+  year <- NULL
 
   years <- tbl |> dplyr::distinct(years)
   breaks <- unique(years - years %% 5) # Round all years to nearest 5 years
@@ -177,6 +211,12 @@ pax_landings_fishingyear_summary <- function(
     "month",
     "catch"
   )
+
+  # NSE variables
+  month <- NULL
+  fishing_year <- NULL
+  catch <- NULL
+  year <- NULL
 
   out <- tbl |>
     dplyr::mutate(

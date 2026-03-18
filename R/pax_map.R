@@ -13,6 +13,11 @@ pax_map_base <- function(
     world <- 'worldHires'
   }
 
+  # NSE variables
+  long <- NULL
+  lat <- NULL
+  group <- NULL
+
   base <-
     ggplot2::ggplot() +
     ggplot2::theme_bw() +
@@ -82,6 +87,11 @@ pax_map_layer_depth <- function(
 ) {
   stopifnot(inherits(base, "ggplot2::ggplot"))
 
+  # NSE variables
+  lon <- NULL
+  lat <- NULL
+  ocean_depth <- NULL
+
   dd <-
     ocean_depth_tbl |>
     dplyr::filter(
@@ -126,6 +136,15 @@ pax_map_layer_catch <- function(
     "catch",
     switch(annotation, gear = "mfdb_gear_code", NULL)
   )
+
+  # NSE variables
+  lon <- NULL
+  lat <- NULL
+  catch <- NULL
+  level <- NULL
+  year <- NULL
+  description <- NULL
+  mfdb_gear_code <- NULL
 
   base <-
     base +

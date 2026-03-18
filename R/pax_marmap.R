@@ -7,6 +7,14 @@ pax_marmap_ocean_depth <- function(
   tmp_pcon <- pax_connect(":memory:")
   on.exit(DBI::dbDisconnect(tmp_pcon), add = TRUE)
 
+  # NSE variables
+  Var1 <- NULL
+  Var2 <- NULL
+  Freq <- NULL
+  lon <- NULL
+  lat <- NULL
+  ocean_depth <- NULL
+
   if (is.null(lat1) && is.null(lon1) && is.null(lat2) && is.null(lon2)) {
     # No bounds given, import pre-cached copy in package
     raw_ocean_depth_tbl_name <- pax_temptbl(
@@ -55,6 +63,14 @@ pax_marmap_ocean_depth <- function(
 
 # Fetch ocean_depth table via. marmap
 marmap_ocean_depth <- function(lat1, lon1, lat2, lon2) {
+  # NSE variables
+  Var1 <- NULL
+  Var2 <- NULL
+  Freq <- NULL
+  lon <- NULL
+  lat <- NULL
+  ocean_depth <- NULL
+
   raw_ocean_depth_tbl_name <-
     marmap::getNOAA.bathy(
       lon1 = lon1,
@@ -78,6 +94,11 @@ marmap_ocean_depth <- function(lat1, lon1, lat2, lon2) {
 }
 
 update_data_ocean_depth <- function() {
+  # NSE variables
+  gridcell <- NULL
+  lat <- NULL
+  lon <- NULL
+
   utils::data("gridcell", package = "pax")
   defbounds <- gridcell |>
     dplyr::summarize(
