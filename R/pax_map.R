@@ -118,6 +118,14 @@ pax_map_layer_catch <- function(
   label_y = 65
 ) {
   stopifnot(inherits(base, "ggplot2::ggplot"))
+  pax_checkcols(
+    data,
+    "year",
+    "lon",
+    "lat",
+    "catch",
+    switch(annotation, gear = "mfdb_gear_code", NULL)
+  )
 
   base <-
     base +

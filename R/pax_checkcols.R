@@ -1,5 +1,5 @@
 pax_checkcols <- function(tbl, ...) {
-  expected_cols <- as.character(list(...))
+  expected_cols <- as.character(unlist(list(...)))
   actual_cols <- colnames(tbl)
   missing_cols <- setdiff(expected_cols, actual_cols)
 
