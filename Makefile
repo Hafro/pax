@@ -46,7 +46,7 @@ test: install
 	for f in tests/test*.R; do echo "=== $$f ============="; Rscript $$f || exit 1; done
 
 inttest: install
-	for f in inttest/*/run.R; do echo "=== $$f ============="; Rscript $$f || exit 1; done
+	for f in inttest/test*.R; do echo "=== $$f ============="; Rscript $$f || exit 1; done
 
 coverage:
 	R --vanilla -e 'covr::package_coverage(type = "all", line_exclusions = list())'
