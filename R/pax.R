@@ -65,6 +65,10 @@ pax_connect <- function(
   return(pcon)
 }
 
+pax_contents <- function(pcon) {
+  dplyr::tbl(pcon, "pax_citation")
+}
+
 pax_import <- function(
   pcon,
   tbl,
@@ -290,7 +294,7 @@ pax_import <- function(
   invisible(NULL)
 }
 
-pax_decorate <- function(tbl, cite = deparse1(sys.call(-2)), name = NULL) {
+pax_decorate <- function(tbl, cite = deparse1(sys.call(-1)), name = NULL) {
   if (!is.null(cite)) {
     attr(tbl, "pax_cite") <- cite
   }
