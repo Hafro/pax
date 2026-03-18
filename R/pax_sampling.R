@@ -45,7 +45,7 @@ pax_sampling_overview_plot <- function(
     ggplot2::geom_text(ggplot2::aes(y = pp + 0.05, label = n)) +
     ggplot2::geom_line() +
     ggplot2::facet_grid(ar ~ mfdb_gear_code_desc) +
-    ggplot2::scale_fill_crayola() +
+    pax_scale_fill_crayola() +
     ggplot2::scale_x_continuous(breaks = c(seq(2, 12, by = 2))) +
     ggplot2::labs(x = 'Month', y = 'Percent samples/landings', fill = '') +
     ggplot2::theme(
