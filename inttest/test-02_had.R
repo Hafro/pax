@@ -18,15 +18,16 @@ import_defs <- list(
   year_end = 1994
 )
 
-if (!file.exists("/tmp/camel.duckdb")) {
-  pcon <- pax::pax_from_mar(
+test_db_path <- "/tmp/test-02_had.duckdb"
+if (!file.exists(test_db_path)) {
+  pcon <- pax_from_mar(
     species = import_defs$species,
     year_start = import_defs$year_start,
     year_end = import_defs$year_end,
-    dbdir = "/tmp/camel.duckdb"
+    dbdir = test_db_path
   )
 } else {
-  pcon <- pax::pax_connect("/tmp/camel.duckdb")
+  pcon <- pax::pax_connect(test_db_path)
 }
 
 ok_group("input_data.R:Generate the ALK from the survey", {
