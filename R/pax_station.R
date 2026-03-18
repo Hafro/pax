@@ -5,6 +5,7 @@ pax_station_location_summary <- function(
     pax_ldist_scale_abund() |>
     pax_ldist_add_weight()
 ) {
+  pcon <- dbplyr::remote_con(tbl)
   species_dummies <-
     tibble::tibble(species = 1:100, dummy = 1)
 
