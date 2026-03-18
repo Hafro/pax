@@ -20,11 +20,16 @@ import_defs <- list(
 
 test_db_path <- "/tmp/test-pax_map-catch.duckdb"
 if (!file.exists(test_db_path)) {
-  pcon <- pax::pax_from_mar(
-    species = import_defs$species,
-    year_start = import_defs$year_start,
-    year_end = import_defs$year_end,
-    dbdir = test_db_path
+  pcon <- pax::pax_connect(test_db_path)
+  pax_import(pcon, pax_marmap_ocean_depth())
+  pax_import(
+    pcon,
+    pax_mar_logbook(
+      mar,
+      species = import_defs$species,
+      year_start = import_defs$year_start,
+      year_end = import_defs$year_end
+    )
   )
 } else {
   pcon <- pax::pax_connect(test_db_path)
