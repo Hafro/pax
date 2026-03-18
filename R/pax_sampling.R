@@ -105,6 +105,9 @@ pax_sampling_age_reading_status <- function(
 ) {
   pcon <- dbplyr::remote_con(tbl)
 
+  # NSE variables
+  read <- NULL
+
   tbl |>
     dplyr::filter(measurement_type %in% local(measurement_type)) |>
     dplyr::mutate(read = nvl2(age, 1, 0)) |>
