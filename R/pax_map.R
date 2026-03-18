@@ -134,7 +134,7 @@ pax_map_layer_catch <- function(
       na.fill = na.fill,
       alpha = alpha,
       breaks = breaks,
-      data = data
+      data = data |> dplyr::collect()
     ) +
     ggplot2::labs(fill = fill_lab) +
     pax_scale_fill_crayola()
