@@ -9,7 +9,7 @@ Authors@R: c(person("Jamie", "Lentin", email="lentinj@shuttlethread.com",role = 
             person("Pamela J.","Woods", email = "pamela.woods@hafogvatn.is", role = c("aut")),
             person("Marine and Freshwater Research Institute (Iceland)", role = c("cph")))
 Maintainer: Bjarki Thor Elvarsson <bjarki.elvarsson@hafogvatn.is>
-Description: Calculate surveyindices and catch at age
+Description: Calculate surveyindices and catch at age.
 URL: https://github.com/hafro/pax/
 Encoding: UTF-8
 Depends: R (>= 4.2.0)
@@ -18,8 +18,10 @@ Imports:
     mapdata,
     metR,  
     marmap,
+    DBI,
     dplyr,
     digest (>= 0.6.35),
+    duckdb,
     forcats,
     ggplot2,
     ggridges,
@@ -28,10 +30,13 @@ Imports:
     mfdb,
     purrr,
     rlang,
+    tabulapdf,
+    tarchetypes,
     tibble,
     tidyr,
     tidyselect,
-    dbplyr
+    dbplyr,
+    stringr
 Suggests:
     knitr,
     rmarkdown,
