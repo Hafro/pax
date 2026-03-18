@@ -7,9 +7,9 @@
 pax_scale_col_crayola(n = 100, ...)
 }
 \arguments{
-\item{...}{Additional arguments passed to ggplot2::scale_fill_manual.}
+\item{n}{Defines Length of color entries in the vector of palettes is calculated as n*12 (this length should be longer than levels filled).}
 
-\item{defines}{Length of color entries in the vector of palettes is calculated as n*12 (this length should be longer than levels filled).}
+\item{...}{Additional arguments passed to ggplot2::scale_fill_manual.}
 }
 \value{
 Functions the same as ggplot2::scale_fill_manual but with color palette vector defined according to the 'crayola' spectrum

@@ -1,11 +1,10 @@
 #' crayola fills
 #'
-#' @param defines Length of color entries in the vector of palettes is calculated as n*12 (this length should be longer than levels filled).
+#' @param n Defines Length of color entries in the vector of palettes is calculated as n*12 (this length should be longer than levels filled).
 #' @param ... Additional arguments passed to ggplot2::scale_fill_manual.
 #'
 #' @return Functions the same as ggplot2::scale_fill_manual but with color palette vector defined according to the 'crayola' spectrum
 #' @export
-
 pax_scale_fill_crayola <- function(n = 100, ...) {
   # taken from RColorBrewer::brewer.pal(12, "Paired")
   pal <- c(
@@ -28,12 +27,11 @@ pax_scale_fill_crayola <- function(n = 100, ...) {
 
 #' crayola colors
 #'
-#' @param defines Length of color entries in the vector of palettes is calculated as n*12 (this length should be longer than levels filled).
+#' @param n Defines Length of color entries in the vector of palettes is calculated as n*12 (this length should be longer than levels filled).
 #' @param ... Additional arguments passed to ggplot2::scale_fill_manual.
 #'
 #' @return Functions the same as ggplot2::scale_fill_manual but with color palette vector defined according to the 'crayola' spectrum
 #' @export
-
 pax_scale_col_crayola <- function(n = 100, ...) {
   # taken from RColorBrewer::brewer.pal(12, "Paired")
   pal <- c(
