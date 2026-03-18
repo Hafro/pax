@@ -29,3 +29,28 @@ ok_group("pax_import:cite", {
     "pax_contents: Use function name by default, overrides worked"
   )
 })
+
+ok_group("pax_import:name", {
+  pcon <- pax::pax_connect(":memory:")
+  lovely_table <- data.frame(val = 1:100)
+  pax_import(pcon, lovely_table)
+  pax_import(pcon, lovely_table, name = "lovelier_table")
+
+  ok(
+    ut_cmp_equal(
+      pax:::ut_as_sort_df(pax_contents(pcon)),
+      data.frame(
+        tbl_name = c("lovelier_table", "lovely_table"),
+        citation = NA_character_
+      )
+    ),
+    "pax_contents: Used variable name when available"
+  )
+  ok(
+    ut_cmp_error(
+      pax_import(pcon, data.frame(val = 1:100)),
+      "No table name supplied"
+    ),
+    "pax_import: If we can't derive a name, fall over"
+  )
+})

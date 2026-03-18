@@ -78,6 +78,18 @@ pax_import <- function(
 ) {
   tbl_colnames <- colnames(tbl)
 
+  # Try copying name from incoming table variable
+  if (is.null(name)) {
+    name <- substitute(tbl)
+    if (is.symbol(name)) {
+      name <- deparse1(name)
+    } else {
+      stop(
+        "No table name supplied, and tbl wasn't a variable, so can't copy it's name"
+      )
+    }
+  }
+
   if (DBI::dbExistsTable(pcon, name)) {
     if (!isTRUE(overwrite)) {
       stop("A table ", name, " already exists")
@@ -271,25 +283,23 @@ pax_import <- function(
     )
   }
 
-  if (!is.null(cite)) {
-    if (!DBI::dbExistsTable(pcon, "pax_citation")) {
-      DBI::dbExecute(
-        pcon,
-        "CREATE TABLE pax_citation (tbl_name VARCHAR PRIMARY KEY, citation VARCHAR)"
-      )
-    }
+  if (!DBI::dbExistsTable(pcon, "pax_citation")) {
     DBI::dbExecute(
       pcon,
-      dbplyr::build_sql(
-        "INSERT OR REPLACE INTO pax_citation VALUES (",
-        name,
-        ", ",
-        cite,
-        ")",
-        con = pcon
-      )
+      "CREATE TABLE pax_citation (tbl_name VARCHAR PRIMARY KEY, citation VARCHAR)"
     )
   }
+  DBI::dbExecute(
+    pcon,
+    dbplyr::build_sql(
+      "INSERT OR REPLACE INTO pax_citation VALUES (",
+      name,
+      ", ",
+      ifelse(is.null(cite), NA, cite),
+      ")",
+      con = pcon
+    )
+  )
 
   invisible(NULL)
 }
