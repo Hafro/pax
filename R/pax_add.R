@@ -47,8 +47,7 @@ pax_def_groupings <- function(
   tgroup = NULL,
   ygroup = NULL,
   gear_group = NULL,
-  ocean_depth = NULL,
-  ...
+  ocean_depth = NULL
 ) {
   list(
     lgroups = lgroups,
@@ -56,8 +55,7 @@ pax_def_groupings <- function(
     tgroup = tgroup,
     ygroup = ygroup,
     gear_group = gear_group,
-    ocean_depth = ocean_depth,
-    ...
+    ocean_depth = ocean_depth
   )
 }
 
