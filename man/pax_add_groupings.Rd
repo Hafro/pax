@@ -62,13 +62,13 @@ pax_add_yearly_grouping(tbl, ygroup = NULL, ignore_missing_col = FALSE)
 
 \item{lgroups}{Vector of cut-off points. Values define lower bounds, everything above the final bound is considered part of the plus group}
 
-\item{regions}{List of region name to a vector of divisions, divisions are groups of gridcells described by \var{division_tbl}. Vectors can be NULL ("Other" value for gridcells without a matching division/region)}
+\item{regions}{List of region name to a vector of divisions, divisions are groups of gridcells described by \var{division_tbl}. Vectors can be \code{pax_add_other()} ("Other" value for gridcells without a matching division/region)}
 
 \item{tgroup}{List mapping temporal groups(seasons) to a vector of \code{month} integers, i.e. \code{1:12}. Vectors can contain NA for any columns without a month value. If not supplied, \code{list(year = 1:12)} is used.}
 
 \item{ygroup}{List mapping year groups to a vector of \code{year} integers, i.e. \code{1:12}. Vectors can contain NA for any columns without a year value. If not supplied, there will be one \code{ygroup} per \code{year}.}
 
-\item{gear_group}{List mapping gear names to a vector of \code{mfdb_gear_code} values. Vectors can contain NA (i.e. missing gear codes will be assigned here) or NULL ("Other" value used for unassigned gear codes)}
+\item{gear_group}{List mapping gear names to a vector of \code{mfdb_gear_code} values. Vectors can contain NA (i.e. missing gear codes will be assigned here) or \code{pax_add_other()} ("Other" value used for unassigned gear codes)}
 
 \item{division_tbl}{Mapping of gridcell -> division, by default the internal \link{gridcell} mapping}
 
