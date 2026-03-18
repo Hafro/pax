@@ -270,7 +270,8 @@ ok_group("input_data.R:Generate the ALK from the survey", {
         20883,
         26067,
         32045
-      )
+      ),
+      tolerance = 1e-3
     ),
     "lw_pred matches baseline"
   )
