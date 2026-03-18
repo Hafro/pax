@@ -18,7 +18,7 @@ import_defs <- list(
   year_end = 1994
 )
 
-test_db_path <- "/tmp/test-02_had-landings_scalar.duckdb"
+test_db_path <- "/tmp/test-pax_si-scale_by_landings.duckdb"
 if (!file.exists(test_db_path)) {
   pcon <- pax::pax_from_mar(
     species = import_defs$species,
