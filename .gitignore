@@ -14,3 +14,4 @@ core
 /vignettes/*_files/
 
 /marmap*.csv
+/*.pdf
