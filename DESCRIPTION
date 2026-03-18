@@ -33,7 +33,11 @@ Imports:
     tidyselect,
     dbplyr
 Suggests:
+    knitr,
+    rmarkdown,
+    targets,
     unittest (>= 1.4)
+VignetteBuilder: knitr
 License: GPL-2
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.0.2
