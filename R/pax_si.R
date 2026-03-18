@@ -194,7 +194,7 @@ pax_si_scale_by_strata <- function(
       dplyr::mutate(h3_cell = list_first(h3_cells)) |>
       dplyr::left_join(
         strata_tbl |>
-          dplyr::group_by(h3_cell = sql("UNNEST(h3_cells)")) |>
+          dplyr::group_by(h3_cell = dplyr::sql("UNNEST(h3_cells)")) |>
           dplyr::summarize(stratum = min(stratum, na.rm = TRUE)),
         by = c("h3_cell")
       )

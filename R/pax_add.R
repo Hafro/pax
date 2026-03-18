@@ -103,7 +103,7 @@ pax_add_lgroups <- function(
         # TODO: tidypax::add_lgroups' behaviour was including the lower bound in the previous group,
         #       use < instead of <= here to emulate this, but seems broken.
         #       https://github.com/Hafro/pax/issues/11
-        lgroup = sql(paste0(
+        lgroup = dplyr::sql(paste0(
           "list_last(list_filter([",
           paste(as.numeric(lgroups), collapse = ", "),
           "], lambda x : x < length))"
