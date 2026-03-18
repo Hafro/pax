@@ -208,7 +208,7 @@ data_update_gridcell <- function(mar) {
 }
 
 #' @param ocean_depth_tbl Table containing a mapping from ``h3_cell`` to ``ocean_depth``, used when the ``ocean_depth`` column is ``NA``
-#' @param breaks Ocean depth breaks, everything beyond the final group is part of a plus group
+#' @param ocean_depth,breaks Ocean depth breaks, everything beyond the final group is part of a plus group
 #' @return \subsection{pax_add_ocean_depth_class}{Query with an additional ``ocean_depth_class`` column, binning a ``ocean_depth`` or ``h3_cells`` column}
 #' @rdname pax_add_groupings
 # Was: tidypax::add_depth_labels
@@ -415,6 +415,7 @@ pax_add_yearly_grouping <- function(
 }
 
 #' @return \subsection{pax_add_other}{Placeholder to mark "other" group}
+#' @rdname pax_add_groupings
 pax_add_other <- function() {
   NULL
 }

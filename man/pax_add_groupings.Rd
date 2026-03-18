@@ -9,6 +9,7 @@
 \alias{pax_add_gear_group}
 \alias{pax_add_temporal_grouping}
 \alias{pax_add_yearly_grouping}
+\alias{pax_add_other}
 \title{Add multiple groupings simulataneously}
 \usage{
 pax_add_groupings(
@@ -23,8 +24,7 @@ pax_def_groupings(
   tgroup = NULL,
   ygroup = NULL,
   gear_group = NULL,
-  ocean_depth = NULL,
-  ...
+  ocean_depth = NULL
 )
 
 pax_add_lgroups(tbl, lgroups, ignore_missing_col = FALSE)
@@ -52,6 +52,8 @@ pax_add_temporal_grouping(
 )
 
 pax_add_yearly_grouping(tbl, ygroup = NULL, ignore_missing_col = FALSE)
+
+pax_add_other()
 }
 \arguments{
 \item{tbl}{A dplyr query to apply grouping operations to}
@@ -70,11 +72,11 @@ pax_add_yearly_grouping(tbl, ygroup = NULL, ignore_missing_col = FALSE)
 
 \item{gear_group}{List mapping gear names to a vector of \code{mfdb_gear_code} values. Vectors can contain NA (i.e. missing gear codes will be assigned here) or \code{pax_add_other()} ("Other" value used for unassigned gear codes)}
 
+\item{ocean_depth, breaks}{Ocean depth breaks, everything beyond the final group is part of a plus group}
+
 \item{division_tbl}{Mapping of gridcell -> division, by default the internal \link{gridcell} mapping}
 
 \item{ocean_depth_tbl}{Table containing a mapping from \code{h3_cell} to \code{ocean_depth}, used when the \code{ocean_depth} column is \code{NA}}
-
-\item{breaks}{Ocean depth breaks, everything beyond the final group is part of a plus group}
 }
 \value{
 \subsection{pax_add_groupings}{A dplyr query, with all grouping columns added}
@@ -92,6 +94,8 @@ pax_add_yearly_grouping(tbl, ygroup = NULL, ignore_missing_col = FALSE)
 \subsection{pax_add_temporal_grouping}{Query with an additional \code{tgroup} column, binning a \code{month} column}
 
 \subsection{pax_add_yearly_grouping}{Query with an additional \code{ygroup} column, binning a \code{year} column}
+
+\subsection{pax_add_other}{Placeholder to mark "other" group}
 }
 \description{
 Add columns that bin rows into groups. Either use \code{pax_add_groupings()} to
