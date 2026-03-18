@@ -301,7 +301,7 @@ pax_si_strata_summary <- function(
       area
     ) |>
     dplyr::summarise(
-      si_N = n(),
+      si_N = dplyr::n(),
       si_abund = sum(si_abund, na.rm = TRUE), # number of fish
       si_abund_sd = sd(si_abund, na.rm = TRUE),
       si_biomass = sum(si_biomass, na.rm = TRUE), # biomass of fish
@@ -363,7 +363,7 @@ pax_si_year_summary <- function(tbl) {
     dplyr::filter(si_abund > 0) |> ## remove strata with no fish to avoid division by zero
     dplyr::group_by(species, sampling_type, year) |>
     dplyr::summarise(
-      si_N = n(), # strata within a year
+      si_N = dplyr::n(), # strata within a year
       si_abund = sum(si_abund, na.rm = TRUE),
       !!!tmp[1],
       si_biomass = sum(si_biomass, na.rm = TRUE),

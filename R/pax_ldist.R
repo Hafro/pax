@@ -247,9 +247,9 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
     ggplot2::theme(
       legend.position = 'right',
       legend.key.size = unit(0.4, "cm"),
-      legend.text = element_text(size = 7),
-      strip.background = element_blank(),
-      strip.text = element_blank()
+      legend.text = ggplot2::element_text(size = 7),
+      strip.background = ggplot2::element_blank(),
+      strip.text = ggplot2::element_blank()
     ) +
     ggplot2::geom_label(
       data = ldist |> dplyr::select(year) |> dplyr::distinct(),
@@ -329,6 +329,6 @@ pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
       }
     } +
     ggplot2::theme_bw() +
-    ggplot2::theme(strip.background = element_blank()) +
+    ggplot2::theme(strip.background = ggplot2::element_blank()) +
     ggplot2::labs(y = 'Year', x = 'Length')
 }

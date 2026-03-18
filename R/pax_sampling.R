@@ -37,7 +37,7 @@ pax_sampling_overview_plot <- function(
     pax_describe_mfdb_gear_code(pcon) |>
     dplyr::collect(n = Inf) |>
 
-    ggplot2::ggplot(ggplot2::aes(man, p.lnd)) +
+    ggplot2::ggplot(ggplot2::aes(month, p.lnd)) +
     ggplot2::geom_bar(
       ggplot2::aes(y = p, fill = sampling_type_desc),
       stat = 'identity'
@@ -112,6 +112,6 @@ pax_sampling_age_reading_status <- function(
     dplyr::filter(measurement_type %in% local(measurement_type)) |>
     dplyr::mutate(read = nvl2(age, 1, 0)) |>
     dplyr::group_by(year, species, sampling_type) |>
-    dplyr::summarise(total = n(), read = sum(read, na.rm = TRUE)) |>
+    dplyr::summarise(total = dplyr::n(), read = sum(read, na.rm = TRUE)) |>
     dplyr::mutate(p = read / total)
 }

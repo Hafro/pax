@@ -46,7 +46,7 @@ pax_landings_plot <- function(
     ggplot2::theme_bw() +
     ggplot2::labs(y = ylab, x = xlab, fill = '') +
     ggplot2::theme(
-      legend.background = element_blank(),
+      legend.background = ggplot2::element_blank(),
       legend.position = c(0.15, 0.75)
     ) +
     ggplot2::scale_x_continuous(breaks = breaks) +
@@ -132,7 +132,7 @@ pax_landings_significantboats_plot <- function(tbl) {
   breaks <- c(breaks, max(breaks) + 5) # Add back on topmost year
 
   p1 <-
-    ggplot2::ggplot(tbl, ggplot2::aes(catch, n, label = ar)) +
+    ggplot2::ggplot(tbl, ggplot2::aes(catch, n, label = year)) +
     ggplot2::geom_path(colour = 4, linetype = 1, alpha = 0.5) +
     ggplot2::geom_text(
       hjust = 0,
@@ -151,7 +151,7 @@ pax_landings_significantboats_plot <- function(tbl) {
       legend.text = ggplot2::element_text(size = ggplot2::rel(0.5))
     )
 
-  p2 <- ggplot2::ggplot(tbl, ggplot2::aes(ar, n)) +
+  p2 <- ggplot2::ggplot(tbl, ggplot2::aes(year, n)) +
     ggplot2::geom_line(col = 4) +
     ggplot2::scale_x_continuous(limits = years, breaks = breaks) +
     #  ylim(0,250)+
