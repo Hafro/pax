@@ -19,8 +19,8 @@ pax_ldist_alk <- function(
       weight = sum(weight * count, na.rm = TRUE) / sum(count, na.rm = TRUE)
     )
 ) {
-  pax_checkcols(tbl, "sample_id")
-  pax_checkcols(aldist_tbl, "sample_id", "age", "count")
+  pax_checkcols(tbl, "sample_id", expected = "station")
+  pax_checkcols(aldist_tbl, "sample_id", "age", "count", expected = "aldist")
   pcon <- dbplyr::remote_con(tbl)
 
   # NSE variables

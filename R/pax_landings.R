@@ -16,7 +16,8 @@ pax_landings_by_gear <- function(
     "country",
     "mfdb_gear_code",
     "boat_id",
-    "catch"
+    "catch",
+    expected = "landings",
   )
 
   # NSE variables
@@ -44,7 +45,7 @@ pax_landings_plot <- function(
   xlab = 'Year',
   breaks = seq(0, 1e5, by = 10)
 ) {
-  pax_checkcols(tbl, "year", "country", "catch")
+  pax_checkcols(tbl, "year", "country", "catch", expected = "landings")
 
   # NSE variables
   year <- NULL
@@ -77,7 +78,8 @@ pax_landings_boat_summary <- function(tbl) {
     "country",
     "gear_name",
     "catch",
-    "num_boats"
+    "num_boats",
+    expected = "pax_landings_by_gear()",
   )
 
   # NSE variables
@@ -121,7 +123,13 @@ pax_landings_significantboats_summary <- function(
   tbl
 ) {
   # i.e. pax_landings_boat_summary
-  pax_checkcols(tbl, "year", "boat_id", "catch")
+  pax_checkcols(
+    tbl,
+    "year",
+    "boat_id",
+    "catch",
+    expected = "pax_landings_boat_summary()"
+  )
 
   # NSE variables
   year <- NULL
@@ -153,7 +161,8 @@ pax_landings_significantboats_plot <- function(tbl) {
     "boat_id",
     "catch",
     "num_boats_*",
-    "catch_*"
+    "catch_*",
+    expected = "pax_landings_significantboats_summary()"
   )
 
   # NSE variables
@@ -209,7 +218,8 @@ pax_landings_fishingyear_summary <- function(
     tbl,
     "year",
     "month",
-    "catch"
+    "catch",
+    expected = "landings"
   )
 
   # NSE variables

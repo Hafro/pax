@@ -25,7 +25,8 @@ pax_add_cpue <- function(tbl) {
     "mfdb_gear_code",
     "tow_hooks",
     "tow_time",
-    "tow_num_nets"
+    "tow_num_nets",
+    expected = "logbook"
   )
   con <- dbplyr::remote_con(tbl)
 
@@ -60,7 +61,15 @@ pax_logbook_cpue_plot <- function(
   year_end = lubridate::year(Sys.Date()),
   limit = 0.5
 ) {
-  pax_checkcols(tbl, "year", "mfdb_gear_code", "cpue", "catch", "catch_total")
+  pax_checkcols(
+    tbl,
+    "year",
+    "mfdb_gear_code",
+    "cpue",
+    "catch",
+    "catch_total",
+    expected = "logbook"
+  )
 
   # NSE variables
   year <- NULL

@@ -22,3 +22,19 @@ ok(
   "Missing column, NULL ignored"
 )
 ok(do_check(data.frame(a = 1, b = 2, c = 3)), "ok, NULL ignored")
+
+ok(
+  ut_cmp_error(
+    pax_checkcols(data.frame(), "a", expected = "camel"),
+    "Expecting a 'camel' table"
+  ),
+  "expected: table error"
+)
+
+ok(
+  ut_cmp_error(
+    pax_checkcols(data.frame(), "a", expected = "pax_moo()"),
+    "Expecting pax_moo\\(\\) output"
+  ),
+  "expected: function name error"
+)

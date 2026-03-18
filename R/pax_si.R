@@ -11,8 +11,8 @@ pax_si_scale_by_alk <- function(
 ) {
   pcon <- dbplyr::remote_con(tbl)
 
-  pax_checkcols(tbl, "si_abund", "si_biomass")
-  pax_checkcols(alk_tbl, "agep")
+  pax_checkcols(tbl, "si_abund", "si_biomass", expected = "pax_si_by_length()")
+  pax_checkcols(alk_tbl, "agep", expected = "pax_ldist_alk()")
 
   # NSE variables
   agep <- NULL
@@ -311,7 +311,8 @@ pax_si_strata_summary <- function(
     "sampling_type",
     "area",
     "si_abund",
-    "si_biomass"
+    "si_biomass",
+    expected = "pax_si_by_length()"
   )
 
   # NSE variables
@@ -390,7 +391,8 @@ pax_si_year_summary <- function(tbl) {
     "si_abund",
     "si_abund_sd",
     "si_biomass",
-    "si_biomass_sd"
+    "si_biomass_sd",
+    expected = "pax_si_by_length()"
   )
 
   # NSE variables

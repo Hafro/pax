@@ -134,7 +134,8 @@ pax_map_layer_catch <- function(
     "lon",
     "lat",
     "catch",
-    switch(annotation, gear = "mfdb_gear_code", NULL)
+    switch(annotation, gear = "mfdb_gear_code", NULL),
+    expected = "logbook"
   )
 
   # NSE variables
