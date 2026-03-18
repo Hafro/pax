@@ -9,13 +9,9 @@ pax_checkcols <- function(tbl, ...) {
   }
   callee <- deparse1(sys.call(which = -1)[[1]])
 
-  stop(
-    "Table is missing colums required by ",
-    callee,
-    ": ",
-    paste(missing_cols, collapse = ", "),
-    "\nFull column list: ",
-    paste(actual_cols, collapse = ", "),
-    ""
-  )
+  rlang::abort(c(
+    paste0("Table is missing columns required by ", callee),
+    i = paste0("Missing cols: ", paste(missing_cols, collapse = ", ")),
+    i = paste0("Table has columns: ", paste(actual_cols, collapse = ", "))
+  ))
 }

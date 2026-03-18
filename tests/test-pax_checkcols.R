@@ -18,7 +18,7 @@ do_check <- function(tbl) {
 }
 
 ok(
-  ut_cmp_error(do_check(data.frame(a = 1, b = 2)), "do_check: c\n"),
+  ut_cmp_error(do_check(data.frame(a = 1, b = 2)), "do_check.*Missing cols: c"),
   "Missing column, NULL ignored"
 )
 ok(do_check(data.frame(a = 1, b = 2, c = 3)), "ok, NULL ignored")
