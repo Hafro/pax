@@ -54,3 +54,30 @@ ok_group("pax_import:name", {
     "pax_import: If we can't derive a name, fall over"
   )
 })
+
+ok_group("pax_import:csvread", {
+  pcon <- pax::pax_connect(":memory:")
+  lovely_table <- data.frame(val = 1:100)
+  lovely_csv <- tempfile(fileext = ".csv")
+  write.csv(lovely_table, file = lovely_csv, row.names = FALSE)
+  pax_import(pcon, lovely_csv, cite = lovely_csv)
+
+  ok(
+    ut_cmp_equal(
+      pax:::ut_as_sort_df(pax_contents(pcon)),
+      data.frame(
+        tbl_name = c("lovely_csv"),
+        citation = lovely_csv
+      )
+    ),
+    "pax_contents: Imported CSV, used provided citation"
+  )
+
+  ok(
+    ut_cmp_equal(
+      pax:::ut_as_sort_df(dplyr::tbl(pcon, "lovely_csv")),
+      lovely_table
+    ),
+    "lovely_csv: Table imported"
+  )
+})
