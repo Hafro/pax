@@ -192,7 +192,7 @@ data_update_gridcell <- function(mar) {
       !is.na(lon)
     ) |>
     dplyr::select(-id) |>
-    write.table(file = "pax/data/gridcell.txt")
+    utils::write.table(file = "pax/data/gridcell.txt")
 }
 
 #' @param ocean_depth_tbl Table containing a mapping from ``h3_cell`` to ``ocean_depth``, used when the ``ocean_depth`` column is ``NA``

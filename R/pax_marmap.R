@@ -89,7 +89,7 @@ update_data_ocean_depth <- function() {
     as.data.frame() |>
     as.list()
 
-  write.table(
+  utils::write.table(
     do.call(marmap_ocean_depth, defbounds),
     file = "pax/data/raw_ocean_depth_defbounds.txt"
   )

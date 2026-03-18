@@ -28,7 +28,7 @@ pax_describe_sampling_type <- function(
     dplyr::left_join(st_tbl, by = c('sampling_type'))
 }
 data_update_sampling_type_desc <- function(mar) {
-  write.table(
+  utils::write.table(
     mar::les_synaflokk(mar) |>
       dplyr::select(
         sampling_type = synaflokkur_nr,
@@ -70,7 +70,7 @@ pax_describe_mfdb_gear_code <- function(
   return(out)
 }
 data_update_mfdb_gear_code_desc <- function() {
-  write.table(
+  utils::write.table(
     data.frame(
       mfdb_gear_code = c(as.character(mfdb::gear$name), NA),
       mfdb_gear_code_desc = c(

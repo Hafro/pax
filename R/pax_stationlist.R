@@ -160,7 +160,7 @@ data_update_stationlist <- function(
     ),
     function(csv_path) {
       # Read entire table
-      df <- read.csv(csv_path, header = FALSE)
+      df <- utils::read.csv(csv_path, header = FALSE)
 
       # Remove non-numeric rows (i.e. header)
       df <- df[grepl("^\\d", df[, 1]), ]
@@ -208,7 +208,10 @@ data_update_stationlist <- function(
     ifelse(is.na(station_df[, "tow_nr"]), 0, station_df[, "tow_nr"]) * 100 +
     gear_type
 
-  write.table(station_df, file = paste0("pax/data/stationlist_", name, ".txt"))
+  utils::write.table(
+    station_df,
+    file = paste0("pax/data/stationlist_", name, ".txt")
+  )
   invisible(station_df)
 }
 if (FALSE) {

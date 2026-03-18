@@ -92,7 +92,7 @@ pax_import <- function(
 
   # If handed a file name, read it in first
   if (is.character(tbl) && file.exists(tbl)) {
-    tbl <- read.csv(tbl)
+    tbl <- utils::read.csv(tbl)
   }
 
   if (DBI::dbExistsTable(pcon, name)) {
