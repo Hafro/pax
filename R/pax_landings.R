@@ -1,3 +1,16 @@
+#' Summarise and visualise landings data
+#'
+#' Functions to aggregate, plot and tabulate commercial landings data.
+#'
+#' @param tbl A dplyr query from a landings table
+#' @name pax_landings
+NULL
+
+#' @param gear_group Named list mapping gear group names to vectors of
+#'   ``mfdb_gear_code`` values
+#' @return \subsection{pax_landings_by_gear}{A dplyr query summarising catch
+#'   and boat counts by year, species, gear, country, and ICES area}
+#' @rdname pax_landings
 # Was: tidypax::landings_by_gear
 pax_landings_by_gear <- function(
   tbl,
@@ -38,6 +51,12 @@ pax_landings_by_gear <- function(
     )
 }
 
+#' @param ylab Y-axis label
+#' @param xlab X-axis label
+#' @param breaks X-axis tick positions
+#' @return \subsection{pax_landings_plot}{A ggplot2 stacked bar chart of
+#'   landings by country and year}
+#' @rdname pax_landings
 # Was tidypax::landings_plot
 pax_landings_plot <- function(
   tbl,
@@ -69,6 +88,10 @@ pax_landings_plot <- function(
     pax_scale_fill_crayola()
 }
 
+#' @return \subsection{pax_landings_boat_summary}{A data.frame with catch and
+#'   boat counts by gear and year, suitable for a summary table. Input should
+#'   be from ``pax_landings_by_gear()``.}
+#' @rdname pax_landings
 # Was: tidypax::boat_summary_table
 pax_landings_boat_summary <- function(tbl) {
   # i.e. pax_landings_by_gear()
@@ -118,6 +141,11 @@ pax_landings_boat_summary <- function(tbl) {
     })()
 }
 
+#' @return \subsection{pax_landings_significantboats_summary}{A dplyr query
+#'   with columns ``year``, ``n`` (number of vessels accounting for 95%% of
+#'   catch), and ``catch`` (in kt). Input should be from
+#'   ``pax_landings_by_gear()``.}
+#' @rdname pax_landings
 # Was: tidypax::num_boats_table
 pax_landings_significantboats_summary <- function(
   tbl
@@ -152,6 +180,10 @@ pax_landings_significantboats_summary <- function(
     dplyr::arrange(year)
 }
 
+#' @return \subsection{pax_landings_significantboats_plot}{A ggplot2 two-panel
+#'   plot of catch vs. number of vessels accounting for 95%% of catch. Input
+#'   should be from ``pax_landings_significantboats_summary()``.}
+#' @rdname pax_landings
 # Was: num_boats_plot
 pax_landings_significantboats_plot <- function(tbl) {
   # i.e. pax_landings_significantboats_summary
@@ -208,6 +240,11 @@ pax_landings_significantboats_plot <- function(tbl) {
   p2 + p1
 }
 
+#' @param ignore_final_year Boolean, exclude the final (likely incomplete) year?
+#' @param fishingyear_cal_start Month number (1--12) when the fishing year begins
+#' @return \subsection{pax_landings_fishingyear_summary}{A dplyr query with
+#'   columns ``fishing_year`` and ``catch_kt``, ordered by fishing year}
+#' @rdname pax_landings
 # Was: landings_by_fishing_year.csv
 pax_landings_fishingyear_summary <- function(
   tbl,

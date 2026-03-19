@@ -1,3 +1,19 @@
+#' Map plotting functions
+#'
+#' Functions to create base maps and add spatial layers for survey and
+#' catch data around Iceland.
+#'
+#' @name pax_map
+NULL
+
+#' @param plot_greenland Boolean, include Greenland coastline?
+#' @param plot_faroes Boolean, include Faroe Islands coastline?
+#' @param xlim Numeric vector of length 2, longitude limits
+#' @param ylim Numeric vector of length 2, latitude limits
+#' @param low_res Boolean, use low-resolution world map?
+#' @return \subsection{pax_map_base}{A ggplot2 object with Iceland coastline
+#'   and a clean theme, ready for additional layers}
+#' @rdname pax_map
 # Was tidypax::base_plot
 pax_map_base <- function(
   plot_greenland = FALSE,
@@ -79,6 +95,14 @@ pax_map_base <- function(
   return(base)
 }
 
+#' @param base A ggplot2 map object, as returned by [pax_map_base()]
+#' @param ocean_depth_tbl A dplyr query with columns ``lon``, ``lat``, and
+#'   ``ocean_depth``
+#' @param depth_lines Numeric vector of depth contour values to draw (negative,
+#'   in metres)
+#' @return \subsection{pax_map_layer_depth}{The ``base`` ggplot2 object with
+#'   depth contour lines added}
+#' @rdname pax_map
 # Was included in tidypax::base_plot
 pax_map_layer_depth <- function(
   base,
@@ -115,6 +139,19 @@ pax_map_layer_depth <- function(
     )
 }
 
+#' @param data A dplyr query with columns ``year``, ``lon``, ``lat``, and
+#'   ``catch``, and optionally ``mfdb_gear_code``
+#' @param breaks Numeric vector of contour fill break points
+#' @param fill_lab Legend label for the fill scale
+#' @param annotation Character, type of facet annotation: ``"year"`` or
+#'   ``"gear"``
+#' @param alpha Numeric, fill transparency (0--1)
+#' @param na.fill Fill value used for missing catch data in contour
+#'   interpolation
+#' @param label_x,label_y Coordinates for the annotation label
+#' @return \subsection{pax_map_layer_catch}{The ``base`` ggplot2 object with a
+#'   filled contour catch layer and facets added}
+#' @rdname pax_map
 # Was tidypax::add_catch_layer
 pax_map_layer_catch <- function(
   base,

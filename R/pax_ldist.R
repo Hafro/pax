@@ -1,3 +1,26 @@
+#' Length distribution functions
+#'
+#' Functions to compute, scale and plot length-frequency distributions from
+#' survey data.
+#'
+#' @param tbl A dplyr query, typically from the station table
+#' @name pax_ldist
+NULL
+
+#' @param lgroups Numeric vector of length group lower bounds
+#' @param regions Named list mapping region names to vectors of division codes
+#' @param gear_group Named list mapping gear group names to vectors of
+#'   ``mfdb_gear_code`` values
+#' @param tgroup Named list mapping temporal group names to vectors of month
+#'   integers, or ``NULL`` to use a single annual group
+#' @param ygroup Named list mapping year group names to vectors of year
+#'   integers, or ``NULL`` for one group per year
+#' @param aldist_tbl A dplyr query from the aldist table, pre-aggregated by
+#'   ``sample_id``, ``species``, ``length``, and ``age``
+#' @return \subsection{pax_ldist_alk}{A dplyr query with columns for grouping
+#'   variables, ``age``, and ``agep`` (proportion at age within each length
+#'   group)}
+#' @rdname pax_ldist
 # Was tidypax::si_make_alk
 pax_ldist_alk <- function(
   tbl,
@@ -62,10 +85,19 @@ pax_ldist_alk <- function(
     dplyr::select(-n)
 }
 
+#' @return \subsection{pax_ldist_scale_round}{A dplyr query with the ``length``
+#'   column rounded to the nearest integer}
+#' @rdname pax_ldist
 pax_ldist_scale_round <- function(tbl) {
   tbl |> dplyr::mutate(length = round(length))
 }
 
+#' @param lw_coeffs_tbl A dplyr query or table name for length-weight
+#'   coefficients, with columns ``a``, ``b``, and optionally ``species`` and
+#'   ``sex``
+#' @return \subsection{pax_ldist_add_weight}{A dplyr query with a ``weight``
+#'   column added, calculated as ``a * length^b``}
+#' @rdname pax_ldist
 pax_ldist_add_weight <- function(
   tbl,
   lw_coeffs_tbl = "lw_coeffs"
@@ -90,6 +122,14 @@ pax_ldist_add_weight <- function(
     dplyr::select(-a, -b)
 }
 
+#' @param towdims_tbl A data.frame of per-sampling-type tow dimension standards
+#'   with columns ``sampling_type``, ``min_towlength``, ``max_towlength``,
+#'   ``std_towlength``, and ``std_width``
+#' @param vfadj_tbl A data.frame of vertical fishing adjustments with columns
+#'   ``gear_id`` and ``vf_adj``
+#' @return \subsection{pax_ldist_scale_tow_area}{A dplyr query with ``count``
+#'   rescaled to fish per square nautical mile}
+#' @rdname pax_ldist
 # must result in fjoldi/square nautical mile
 # Was: tidypax::scale_by_tow_area
 pax_ldist_scale_tow_area <-
@@ -148,6 +188,11 @@ pax_ldist_scale_tow_area <-
       )
   }
 
+#' @param ldist_tbl A dplyr query from the ldist table, pre-processed with
+#'   [pax_ldist_scale_round()] and [pax_ldist_scale_abund()]
+#' @return \subsection{pax_ldist_by_year}{A dplyr query of length distributions
+#'   aggregated by species, year, sex, length, and gear}
+#' @rdname pax_ldist
 # Was: tidypax::ldist_by_year
 pax_ldist_by_year <- function(
   tbl, # probably dplyr::tbl(pcon, "station")
@@ -180,6 +225,12 @@ pax_ldist_by_year <- function(
     )
 }
 
+#' @param measurement_tbl A dplyr query from the measurement table, used to
+#'   compute the ratio of counted (CNT/WEI) to length-measured (LEN/LENM/LENC)
+#'   fish for abundance scaling
+#' @return \subsection{pax_ldist_scale_abund}{A dplyr query with ``count``
+#'   scaled up to represent total abundance based on subsample ratios}
+#' @rdname pax_ldist
 # Was: mar::skala_med_taldir
 pax_ldist_scale_abund <- function(
   tbl,
@@ -228,6 +279,13 @@ pax_ldist_scale_abund <- function(
     dplyr::select(-ratio, -ratio_count_len, -ratio_count_cnt)
 }
 
+#' @param scale Numeric; ``1`` to plot proportions (default), any other value
+#'   to plot raw counts
+#' @param expand Boolean, whether to expand the data to fill all
+#'   length/year combinations with zeroes
+#' @return \subsection{pax_ldist_plot}{A ggplot2 faceted plot of length
+#'   distributions by year, with mean length and sample size annotations}
+#' @rdname pax_ldist
 # Was: tidypax::ldist_plot
 pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
   pcon <- dbplyr::remote_con(tbl)
@@ -324,6 +382,13 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
     ggplot2::facet_wrap(~year)
 }
 
+#' @param ldist A data.frame or dplyr query of length distributions, with
+#'   columns ``year``, ``mfdb_gear_code``, ``length``, and ``n``
+#' @param max_height Maximum ridge height in plot units
+#' @param split_by_sex Boolean, whether to produce separate facets for each sex
+#' @return \subsection{pax_ldist_joy_plot}{A ggplot2 ridgeline plot of length
+#'   distributions faceted by gear and optionally by sex}
+#' @rdname pax_ldist
 # Was: tidypax::ldist_joy_plot
 pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
   # NSE variables

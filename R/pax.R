@@ -2,6 +2,16 @@
 # https://github.com/isaacbrodsky/h3-duckdb
 # https://duckdb.org/docs/stable/core_extensions/spatial/functions
 
+#' Connect to a pax DuckDB database
+#'
+#' Create or open a DuckDB database for use with pax, installing and loading
+#' the required ``spatial`` and ``h3`` extensions as needed.
+#'
+#' @param dbdir Path to a DuckDB database file, or ``":memory:"`` for an in-memory database
+#' @param read_only Boolean, open the database in read-only mode?
+#' @param h3_resolution H3 cell resolution to use for spatial indexing,
+#'   see \url{https://h3geo.org/docs/core-library/restable}
+#' @return A DBI database connection object
 pax_connect <- function(
   dbdir = ":memory:",
   read_only = FALSE,
@@ -71,10 +81,34 @@ pax_connect <- function(
   return(pcon)
 }
 
+#' List contents of a pax database
+#'
+#' Returns a dplyr query of all tables that have been imported into the
+#' database with [pax_import()].
+#'
+#' @param pcon A pax DBI connection, as returned by [pax_connect()]
+#' @return A dplyr query of the ``pax_citation`` table, with columns
+#'   ``tbl_name`` and ``citation``
 pax_contents <- function(pcon) {
   dplyr::tbl(pcon, "pax_citation")
 }
 
+#' Import a table into a pax database
+#'
+#' Import a data.frame, sf spatial object, or CSV file into a pax DuckDB
+#' database. Geometry and H3 spatial index columns are added automatically
+#' when the data contains a geometry column, ``lat``/``lon`` columns, or
+#' ``begin_lat``/``begin_lon``/``end_lat``/``end_lon`` columns.
+#'
+#' @param pcon A pax DBI connection, as returned by [pax_connect()]
+#' @param tbl Data to import: a data.frame, sf object, dplyr query, or path
+#'   to a CSV file
+#' @param overwrite Boolean, overwrite an existing table with the same name?
+#' @param name Name to use for the imported table. Defaults to the variable
+#'   name of ``tbl``, or the ``pax_name`` attribute set by [pax_decorate()]
+#' @param cite Citation string for the data source. Defaults to the
+#'   ``pax_cite`` attribute set by [pax_decorate()]
+#' @return Invisibly returns ``NULL``
 pax_import <- function(
   pcon,
   tbl,
@@ -317,6 +351,16 @@ pax_import <- function(
   invisible(NULL)
 }
 
+#' Attach metadata to a table for use with pax_import
+#'
+#' Add citation and/or name attributes to a data.frame or dplyr query.
+#' These attributes are used as defaults by [pax_import()].
+#'
+#' @param tbl A data.frame or dplyr query to decorate
+#' @param cite Citation string for the data source. Defaults to the calling
+#'   expression
+#' @param name Table name to use when importing, or ``NULL`` to leave unset
+#' @return ``tbl`` with ``pax_cite`` and/or ``pax_name`` attributes attached
 pax_decorate <- function(tbl, cite = deparse1(sys.call(-1)), name = NULL) {
   if (!is.null(cite)) {
     attr(tbl, "pax_cite") <- cite
@@ -327,6 +371,16 @@ pax_decorate <- function(tbl, cite = deparse1(sys.call(-1)), name = NULL) {
   return(tbl)
 }
 
+#' Make a table available as a DuckDB query
+#'
+#' Converts an R data.frame or string table reference into a dplyr SQL query
+#' against the pax database. If the input is already a database query, it is
+#' returned unchanged. String names beginning with ``paxdat_`` refer to
+#' package-internal datasets which are loaded on demand.
+#'
+#' @param pcon A pax DBI connection, as returned by [pax_connect()]
+#' @param tbl A data.frame, a table name string, or an existing dplyr SQL query
+#' @return A dplyr SQL query referencing the table within ``pcon``
 pax_temptbl <- function(pcon, tbl) {
   # If it's already a DB table, don't do anything. Let dplyr::join worry if the source matches
   if (inherits(tbl, "tbl_sql")) {

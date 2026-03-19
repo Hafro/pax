@@ -170,10 +170,25 @@ if (FALSE) {
   pax:::data_update_mar_strata(mar, "ghl_strata")
 }
 
+#' Strata definitions
+#'
+#' Functions to retrieve the coordinate reference system and strata shapefiles
+#' bundled with the pax package.
+#'
+#' @name pax_strata
+NULL
+
+#' @return \subsection{pax_def_crs}{The WGS84 coordinate reference system
+#'   (EPSG:4326) as an sf CRS object}
+#' @rdname pax_strata
 pax_def_crs <- function() {
   return(sf::st_crs(4326))
 }
 
+#' @return \subsection{pax_def_strata_list}{A character vector of strata names
+#'   available in the package, suitable for use as the ``strata`` argument to
+#'   [pax_from_mar()]}
+#' @rdname pax_strata
 pax_def_strata_list <- function() {
   shp_names <- list.files(
     system.file("extdata", package = "pax"),
@@ -182,6 +197,11 @@ pax_def_strata_list <- function() {
   gsub("^strata_|\\.shp$", "", shp_names)
 }
 
+#' @param strata_name A strata name, as returned by [pax_def_strata_list()]
+#' @return \subsection{pax_def_strata}{An sf data.frame of strata polygons
+#'   read from the bundled shapefile, decorated with ``pax_name`` for use with
+#'   [pax_import()]}
+#' @rdname pax_strata
 pax_def_strata <- function(strata_name) {
   shp_path <- system.file(
     "extdata",

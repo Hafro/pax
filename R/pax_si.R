@@ -1,3 +1,30 @@
+#' Survey index computation functions
+#'
+#' Functions to compute and scale survey indices of abundance and biomass.
+#' The typical workflow is:
+#' 1. [pax_si_by_length()] -- join station and length data, scale by tow area
+#' 2. [pax_si_scale_by_strata()] -- multiply by stratum area
+#' 3. [pax_si_strata_summary()] -- aggregate within strata
+#' 4. [pax_si_year_summary()] -- aggregate across strata to annual totals
+#'
+#' @param tbl A dplyr query, typically from the station table
+#' @name pax_si
+NULL
+
+#' @param lgroups Numeric vector of length group lower bounds
+#' @param regions Named list mapping region names to vectors of division codes
+#' @param tgroup Named list mapping temporal group names to vectors of month
+#'   integers, or ``NULL`` for a single annual group
+#' @param ygroup Named list mapping year group names to vectors of year
+#'   integers, or ``NULL`` for one group per year
+#' @param gear_group Named list mapping gear group names to vectors of
+#'   ``mfdb_gear_code`` values
+#' @param alk_tbl A dplyr query with ``agep`` column, as returned by
+#'   [pax_ldist_alk()]
+#' @return \subsection{pax_si_scale_by_alk}{A dplyr query with ``si_abund``
+#'   and ``si_biomass`` scaled by the age-length key proportions, filtered to
+#'   positive values}
+#' @rdname pax_si
 # Was tidypax:si_by_age
 pax_si_scale_by_alk <- function(
   tbl,
@@ -6,8 +33,7 @@ pax_si_scale_by_alk <- function(
   tgroup = NULL,
   ygroup = NULL,
   gear_group = NULL,
-  alk_tbl,
-  ...
+  alk_tbl
 ) {
   pcon <- dbplyr::remote_con(tbl)
 
@@ -38,6 +64,14 @@ pax_si_scale_by_alk <- function(
     dplyr::filter(si_biomass > 0, si_abund > 0)
 }
 
+#' @param species Integer species code
+#' @param landings_tbl A dplyr query from the landings table
+#' @param logbook_tbl A dplyr query from the logbook table, used to disaggregate
+#'   landings by area when more than one region is defined
+#' @return \subsection{pax_si_scale_by_landings}{A dplyr query with
+#'   ``si_abund`` and ``si_biomass`` rescaled so that total biomass matches
+#'   commercial landings}
+#' @rdname pax_si
 pax_si_scale_by_landings <- function(
   tbl,
   species,
@@ -124,6 +158,12 @@ pax_si_scale_by_landings <- function(
     )
 }
 
+#' @param ldist A dplyr query from the ldist table, pre-processed with
+#'   [pax_ldist_add_weight()] to provide a ``weight`` column
+#' @return \subsection{pax_si_by_length}{A dplyr query joining station and
+#'   length data, with ``si_abund`` (thousands of fish per stratum) and
+#'   ``si_biomass`` (tonnes per stratum) columns added}
+#' @rdname pax_si
 # NB: Removing the species filtering, and assume that the ldist table is pre-filtered
 # NB: Creates the si_biomass/si_abund values
 pax_si_by_length <- function(
@@ -169,6 +209,12 @@ pax_si_by_length <- function(
     dplyr::select(-c(count, weight))
 }
 
+#' @param q Quantile threshold above which station biomass values are
+#'   winsorized (default 0.95)
+#' @return \subsection{pax_si_scale_winsorize}{A dplyr query with extreme
+#'   ``si_abund`` and ``si_biomass`` values scaled down to the ``q``
+#'   quantile within each year and species}
+#' @rdname pax_si
 pax_si_scale_winsorize <- function(tbl, q = 0.95) {
   # NSE variables
   si_abund <- NULL
@@ -204,6 +250,15 @@ pax_si_scale_winsorize <- function(tbl, q = 0.95) {
     dplyr::select(-B_scalar)
 }
 
+#' @param strata_tbl A dplyr query or table name for strata polygons, with
+#'   columns ``stratum``, ``h3_cells``, ``rall_area``, and ``geom``
+#' @param area_col Name of the column in ``strata_tbl`` containing the
+#'   surveyable area in km² (default ``"rall_area"``)
+#' @return \subsection{pax_si_scale_by_strata}{A dplyr query with each station
+#'   assigned to a stratum, and ``si_abund`` and ``si_biomass`` multiplied by
+#'   the stratum area (in square nautical miles) and divided by the number of
+#'   stations in that stratum}
+#' @rdname pax_si
 # Was tidypax:si_add_strata
 pax_si_scale_by_strata <- function(
   tbl,
@@ -295,6 +350,15 @@ pax_si_scale_by_strata <- function(
     )
 }
 
+#' @param length_range Numeric vector of length 2, only fish within this length
+#'   range (exclusive) contribute to the summary
+#' @param std.cv Coefficient of variation used as a floor for the standard
+#'   deviation when all station values within a stratum are identical
+#' @return \subsection{pax_si_strata_summary}{A dplyr query aggregated by
+#'   species, year, stratum, sampling type, and area, with columns
+#'   ``si_N``, ``si_abund``, ``si_abund_sd``, ``si_biomass``, and
+#'   ``si_biomass_sd``}
+#' @rdname pax_si
 # Was tidypax::si_by_strata
 pax_si_strata_summary <- function(
   tbl,
@@ -383,6 +447,10 @@ pax_si_strata_summary <- function(
     )
 }
 
+#' @return \subsection{pax_si_year_summary}{A dplyr query aggregated by
+#'   species, sampling type, and year, with columns ``si_N``, ``si_abund``,
+#'   ``si_abund_cv``, ``si_biomass``, and ``si_biomass_cv``}
+#' @rdname pax_si
 # Was tidypax::si_by_year
 pax_si_year_summary <- function(tbl) {
   pax_checkcols(

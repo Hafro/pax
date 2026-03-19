@@ -1,3 +1,23 @@
+#' Create a pax database populated from the MAR database
+#'
+#' Opens a connection to the Hafro MAR Oracle database and imports all
+#' standard pax tables (station, measurement, logbook, landings, sampling,
+#' aldist, ldist, lw_coeffs, ocean depth, and strata) into a new pax DuckDB
+#' database.
+#'
+#' @param species Integer vector of species codes to import
+#' @param year_start Optional integer, earliest year to include
+#' @param year_end Optional integer, latest year to include
+#' @param sampling_type Integer vector of sampling type codes to include
+#' @param ices_area_like Character vector of SQL LIKE patterns for filtering
+#'   ICES areas, e.g. ``"5a%"``
+#' @param strata Character vector of strata names to import, from
+#'   [pax_def_strata_list()]
+#' @param mar_opts Named list of additional options passed to
+#'   ``mar::connect_mar()``
+#' @param dbdir Path to a DuckDB database file, or ``":memory:"`` for an
+#'   in-memory database
+#' @return A pax DBI connection containing all imported tables
 pax_from_mar <- function(
   species,
   year_start = NULL,

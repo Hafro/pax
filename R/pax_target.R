@@ -1,3 +1,14 @@
+#' targets format helpers for pax objects
+#'
+#' Custom ``targets`` storage formats for pax database connections and
+#' data.frames, for use with ``targets::tar_target()``.
+#'
+#' @name pax_tar_format
+NULL
+
+#' @return \subsection{pax_tar_format_duckdb}{A targets format object that
+#'   reads and writes a pax DuckDB connection to a file on disk}
+#' @rdname pax_tar_format
 # https://docs.ropensci.org/targets/reference/tar_format.html
 # https://docs.ropensci.org/targets/reference/tar_target.html
 # https://duckdb.org/docs/stable/clients/r
@@ -46,6 +57,10 @@ pax_tar_format_duckdb <- function() {
   )
 }
 
+#' @return \subsection{pax_tar_format_parquet}{A targets format object that
+#'   reads and writes a data.frame to a Parquet file, automatically dropping
+#'   geometry (``geom``) and H3 cell array (``h3_cells``) columns}
+#' @rdname pax_tar_format
 # tarchetypes::tar_format_nanoparquet, but with column filtering
 pax_tar_format_parquet <- function() {
   rlang::check_installed("nanoparquet")

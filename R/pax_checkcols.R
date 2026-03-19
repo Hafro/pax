@@ -1,3 +1,25 @@
+#' Check that a table contains required columns
+#'
+#' Validates that a data frame or table contains all expected columns.
+#' If any columns are missing, an informative error is raised naming the
+#' missing columns, the calling function, and the full list of columns
+#' actually present.
+#'
+#' @param tbl A data frame or object with \code{colnames()}.
+#' @param ... One or more column name strings that must be present in \code{tbl}.
+#' @param expected Either a table name or function call (ending with ()), that will be shown as a hint to the correct data source.
+#'
+#' @return \code{invisible(NULL)} if all expected columns are present.
+#'   Otherwise, \code{\link{stop}} is called.
+#'
+#' @examples
+#' df <- data.frame(a = 1, b = 2)
+#' pax_checkcols(df, "a", "b")   # passes silently
+#' \dontrun{
+#' pax_checkcols(df, "a", "c")   # error: missing column "c"
+#' }
+#'
+#' @keywords internal
 pax_checkcols <- function(tbl, ..., expected = NULL) {
   expected_cols <- as.character(unlist(list(...)))
   actual_cols <- colnames(tbl)

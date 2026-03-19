@@ -1,3 +1,17 @@
+#' Summarise measurement data
+#'
+#' Functions to extract structured summaries from a measurement table.
+#'
+#' @param tbl A dplyr query from a measurement table, as returned by
+#'   [pax_mar_measurement()]
+#' @name pax_measurement
+NULL
+
+#' @return \subsection{pax_measurement_agelen_summary}{A dplyr query of
+#'   otolith-aged individuals, with columns ``species``, ``sample_id``,
+#'   ``measurement_id``, ``age``, ``maturity_stage``, ``length``, ``weight``,
+#'   and ``count``}
+#' @rdname pax_measurement
 # Was: 02-had:maturity_key
 pax_measurement_agelen_summary <- function(tbl) {
   # NSE variables
@@ -28,6 +42,11 @@ pax_measurement_agelen_summary <- function(tbl) {
     )
 }
 
+#' @return \subsection{pax_measurement_type_summary}{A dplyr query aggregated
+#'   by ``sample_id`` with count columns for each measurement type:
+#'   ``n_total``, ``n_LENC``, ``n_CNT``, ``n_LENM``, ``n_SAMP``,
+#'   ``n_OTOL``, ``n_LEN``, ``n_CATC``, and ``n_TOTC``}
+#' @rdname pax_measurement
 pax_measurement_type_summary <- function(tbl) {
   # NSE variables
   sample_id <- NULL

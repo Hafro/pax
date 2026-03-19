@@ -1,3 +1,15 @@
+#' Summarise station locations and catch
+#'
+#' Joins station data to length distributions to produce per-station biomass
+#' estimates, used to visualise survey coverage and zero-catch stations.
+#'
+#' @param tbl A dplyr query from the station table
+#' @param ldist A dplyr query from the ldist table, pre-processed with
+#'   [pax_ldist_scale_abund()] and [pax_ldist_add_weight()]
+#' @return A dplyr query with columns ``sample_id``, ``begin_lat``,
+#'   ``begin_lon``, ``year``, ``sampling_type``, ``species``, ``bio``
+#'   (biomass index per station), and ``zero_station`` (``"Zero catch"`` or
+#'   ``"Non zero"``)
 # Was: tidypax::survey_locations
 pax_station_location_summary <- function(
   tbl,

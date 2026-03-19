@@ -1,3 +1,16 @@
+#' Quota transfer summaries and plots
+#'
+#' Functions to tabulate and visualise quota transfer data.
+#'
+#' @param tbl A dplyr query from a quota transfer table, as returned by
+#'   [pax_mar_quotatransfer()]
+#' @name pax_quotatransfer
+NULL
+
+#' @return \subsection{pax_quotatransfer_summary}{A dplyr query with columns
+#'   ``Period``, ``TAC``, ``Catch``, ``Diff``, ``TACtrans``, and
+#'   ``Diff_trans``}
+#' @rdname pax_quotatransfer
 # Was: tidypax::quota_transfer_table
 pax_quotatransfer_summary <- function(tbl) {
   con <- dbplyr::remote_con(tbl)
@@ -27,6 +40,10 @@ pax_quotatransfer_summary <- function(tbl) {
     )
 }
 
+#' @return \subsection{pax_quotatransfer_plot}{A ggplot2 four-panel bar chart
+#'   showing between-year and between-species quota transfers in absolute and
+#'   percentage terms}
+#' @rdname pax_quotatransfer
 # Was: quota_transfer_plot
 pax_quotatransfer_plot <- function(tbl) {
   con <- dbplyr::remote_con(tbl)

@@ -1,3 +1,17 @@
+#' Summarise and visualise sampling data
+#'
+#' Functions to extract position summaries, overview plots, and data quality
+#' tables from commercial sampling data.
+#'
+#' @param tbl A dplyr query from a sampling table, as returned by
+#'   [pax_mar_sampling()]
+#' @name pax_sampling
+NULL
+
+#' @return \subsection{pax_sampling_position_summary}{A dplyr query with
+#'   distinct combinations of ``lat``, ``lon``, ``year``, and
+#'   ``mfdb_gear_code``}
+#' @rdname pax_sampling
 pax_sampling_position_summary <- function(tbl) {
   # NSE variables
   lat <- NULL
@@ -10,6 +24,11 @@ pax_sampling_position_summary <- function(tbl) {
     dplyr::distinct()
 }
 
+#' @param landings_tbl A dplyr query from a landings table used to overlay
+#'   the proportion of landings per month
+#' @return \subsection{pax_sampling_overview_plot}{A ggplot2 plot showing the
+#'   monthly distribution of samples and landings by gear and year}
+#' @rdname pax_sampling
 # NB: translate option now "option(tidypax.lang)"
 # Was: tidypax::sampling_overview_plot
 pax_sampling_overview_plot <- function(
@@ -88,6 +107,14 @@ pax_sampling_overview_plot <- function(
     )
 }
 
+#' @param mfdb_gear_code Character vector of gear codes to include
+#' @param sampling_type Integer vector of sampling type codes to include
+#' @param measurement_type Character vector of measurement types to include
+#' @return \subsection{pax_sampling_detail}{A data.frame wide-pivoted by gear,
+#'   with columns ``year`` and per-gear columns for number of samples
+#'   (``n``), total lengths (``n_lengths``), and otolith readings
+#'   (``n_otol``)}
+#' @rdname pax_sampling
 # Was: tidypax::sampling_tables
 pax_sampling_detail <- function(
   tbl, # sampling joined to measurement
@@ -135,6 +162,11 @@ pax_sampling_detail <- function(
     dplyr::arrange(year)
 }
 
+#' @return \subsection{pax_sampling_age_reading_status}{A dplyr query with
+#'   columns ``year``, ``species``, ``sampling_type``, ``total`` (number of
+#'   otolith samples), ``read`` (number with an age assigned), and ``p``
+#'   (proportion read)}
+#' @rdname pax_sampling
 # Was: tidypax::age_reading_status
 pax_sampling_age_reading_status <- function(
   tbl, # sampling joined to measurement

@@ -42,6 +42,26 @@ decorate_mar <- function(tbl) {
   return(pax_decorate(tbl, name = name))
 }
 
+#' Import tables from the MAR database
+#'
+#' Functions to extract and standardise individual tables from the Hafro MAR
+#' Oracle database into pax-compatible data.frames. The returned tables carry
+#' ``pax_name`` and ``pax_cite`` attributes set by [pax_decorate()] and can be
+#' passed directly to [pax_import()].
+#'
+#' @param mar A MAR database connection, as returned by ``mar::connect_mar()``
+#' @param species Integer vector of species codes to filter by
+#' @param year_start Optional integer, earliest year to include
+#' @param year_end Optional integer, latest year to include
+#' @name pax_mar
+NULL
+
+#' @return \subsection{pax_mar_logbook}{A dplyr query with columns
+#'   ``logbook_id``, ``species``, ``year``, ``month``, ``vessel_nr``,
+#'   ``mfdb_gear_code``, ``gear_size``, ``gridcell``, ``lat``, ``lon``,
+#'   ``tow_area``, ``tow_time``, ``tow_hooks``, ``tow_num_nets``,
+#'   ``tow_num_traps``, ``ocean_depth``, ``catch``, and ``catch_total``}
+#' @rdname pax_mar
 # Was tidypax::catch_data
 pax_mar_logbook <- function(
   mar,
@@ -108,15 +128,13 @@ pax_mar_logbook <- function(
   return(out |> decorate_mar())
 }
 
+#' @param ices_area_like Character vector of SQL LIKE patterns for filtering
+#'   ICES areas, e.g. ``"5a%"``
+#' @return \subsection{pax_mar_landings}{A dplyr query with columns
+#'   ``year``, ``month``, ``species``, ``ices_area``, ``country``,
+#'   ``mfdb_gear_code``, ``boat_id``, and ``catch``}
+#' @rdname pax_mar
 # Was: tidypax::landings_by_gear
-# species - Species number (2)
-# mfdb_gear_code - Gear code (LLN)
-# ices_area - ICES statistical area ("5c")
-# year - Year (1998)
-# month - Month (2)
-# country - Country name ("iceland")
-# boat_id - Boat identifier (7028)
-# landings - Landings quantity (320)
 pax_mar_landings <- function(
   mar,
   species,
@@ -173,6 +191,9 @@ pax_mar_landings <- function(
   return(decorate_mar(out))
 }
 
+#' @return \subsection{pax_mar_ldist}{A dplyr query with columns
+#'   ``sample_id``, ``species``, ``length``, ``sex``, and ``count``}
+#' @rdname pax_mar
 pax_mar_ldist <- function(
   mar,
   species
@@ -214,6 +235,10 @@ pax_mar_ldist <- function(
   )
 }
 
+#' @return \subsection{pax_mar_aldist}{A dplyr query with columns
+#'   ``sample_id``, ``species``, ``length``, ``weight``, ``age``, and
+#'   ``count``}
+#' @rdname pax_mar
 pax_mar_aldist <- function(
   mar,
   species
@@ -257,6 +282,9 @@ pax_mar_aldist <- function(
   )
 }
 
+#' @return \subsection{pax_mar_lw_coeffs}{A dplyr query of length-weight
+#'   coefficients, filtered to the requested species}
+#' @rdname pax_mar
 pax_mar_lw_coeffs <- function(
   mar,
   species
@@ -272,6 +300,13 @@ pax_mar_lw_coeffs <- function(
   return(out |> decorate_mar())
 }
 
+#' @param measurement_type Character vector of measurement types to include,
+#'   e.g. ``c("LEN", "OTOL")``
+#' @return \subsection{pax_mar_measurement}{A dplyr query with columns
+#'   ``individual_id``, ``sample_id``, ``species``, ``measurement_type``,
+#'   ``length``, ``age``, ``sex``, ``maturity_stage``, ``weight_g``,
+#'   ``gonad_weight``, ``gut_weight``, ``liver_weight``, and ``count``}
+#' @rdname pax_mar
 # Was: tidypax::sampling_tables, tidypax::age_reading_status
 pax_mar_measurement <- function(
   mar,
@@ -350,6 +385,9 @@ pax_mar_measurement <- function(
   return(out |> decorate_mar())
 }
 
+#' @return \subsection{pax_mar_quotatransfer}{A data.frame of quota transfer
+#'   records for the requested species, arranged by species and period}
+#' @rdname pax_mar
 # Was: tidypax::quota_transfer_table & tidypax::quota_transfer_plot (common section at start)
 pax_mar_quotatransfer <- function(mar, species) {
   if (!requireNamespace("mar", quietly = TRUE)) {
@@ -385,6 +423,13 @@ pax_mar_quotatransfer <- function(mar, species) {
     decorate_mar()
 }
 
+#' @param mfdb_gear_code Character vector of gear codes to include
+#' @param sampling_type Integer vector of sampling type codes to include
+#' @return \subsection{pax_mar_sampling}{A dplyr query with columns
+#'   ``sample_id``, ``lat``, ``lon``, ``year``, ``month``,
+#'   ``sampling_type``, ``mfdb_gear_code``, and ``trip``, filtered to samples
+#'   with length measurements for the requested species}
+#' @rdname pax_mar
 # Was: tidypax::sampling_position
 pax_mar_sampling <- function(
   mar,
@@ -451,26 +496,14 @@ pax_mar_sampling <- function(
     decorate_mar()
 }
 
+#' @return \subsection{pax_mar_station}{A dplyr query with columns
+#'   ``sample_id``, ``year``, ``month``, ``station``, ``trip``,
+#'   ``sampling_type``, ``gridcell``, ``begin_lat``, ``begin_lon``,
+#'   ``end_lat``, ``end_lon``, ``mfdb_gear_code``, ``gear_id``,
+#'   ``tow_depth``, ``tow_number``, ``tow_length``, ``tow_start``,
+#'   ``tow_end``, and ``fixed``}
+#' @rdname pax_mar
 # Was: tidypax::si_stations
-# sample_id - Row ID (247621)
-# year - Sample year (1960)
-# month - Sample month (12)
-# station - Station (6650013)
-# trip - Trip identifier ("A1-92")
-# sampling_type - Sampling type number (30)
-# gridcell - Statistical gridcell (6652)
-# begin_lat - Location of tow start (67.0)
-# begin_lon - Location of tow start (-15.1)
-# end_lat - Location of tow end (67.0)
-# end_lon - Location of tow end (-15.1)
-# mfdb_gear_code - Gear used (PSE)
-# gear_id - Gear identifier (78)
-# tow_number - Tow number (12)
-# tow_depth - Tow depth (155)
-# tow_length - Tow length (4)
-# tow_start - Tow start time (1992-01-14 11:30:00)
-# tow_end - Tow end time (1992-01-14 11:45:00)
-# fixed - 0/1
 pax_mar_station <- function(
   mar,
   species = NULL, # NB: Ignored
