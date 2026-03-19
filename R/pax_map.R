@@ -22,11 +22,11 @@ pax_map_base <- function(
   ylim = c(63, 67.25),
   low_res = FALSE
 ) {
-  require(mapdata)
   if (low_res) {
-    world <- 'world'
+    world <- 'mapdata::worldLores'
   } else {
-    world <- 'worldHires'
+    x <- mapdata::worldLoresMapEnv # Reference to keep CMD check quiet
+    world <- 'mapdata::worldHires'
   }
 
   # NSE variables
