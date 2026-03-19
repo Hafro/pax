@@ -24,3 +24,6 @@ core
 ^pkgdown/
 ^[.]?air[.]toml$
 ^\.vscode$
+
+^[^/]\.csv$
+^[^/]\.pdf$
