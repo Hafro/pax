@@ -1,6 +1,6 @@
 Package: pax
 Type: Package
-Title: Tidy population analysis in unix
+Title: Tidy Population Analysis in Unix
 Version: 0.1-0-999
 Date: 2025-10-10
 Authors@R: c(person("Jamie", "Lentin", email="lentinj@shuttlethread.com",role = c("aut", "cre"), comment = c(ORCID = "0000-0001-5727-2996")),
