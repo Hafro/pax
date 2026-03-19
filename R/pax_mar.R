@@ -400,7 +400,7 @@ pax_mar_quotatransfer <- function(mar, species) {
   kastad_breidd <- NULL
   timabil <- NULL
 
-  mar:::kvoti_stada_summarised(mar) |>
+  mar::kvoti_stada_summarised(mar) |>
     dplyr::filter(fteg == local(species)) |>
     dplyr::collect(n = Inf) |>
     dplyr::mutate(
