@@ -193,9 +193,11 @@ pax_import <- function(
         dbplyr::ident(name),
         # NB: h3_polygon_wkt_to_cells doesn't support MULTIPOLYGON, so we have to dump as a list of POLYGONs and then re-combine
         #     https://github.com/isaacbrodsky/h3-duckdb/issues/175
+        # NB: It also doesn't support wkb, thus ST_AsText()
+        #     https://github.com/isaacbrodsky/h3-duckdb/issues/178
         " SET h3_cells = list_distinct(flatten(list_transform(",
         "   ST_Dump(geom),",
-        "   lambda x: h3_polygon_wkt_to_cells(x.geom, ",
+        "   lambda x: h3_polygon_wkt_to_cells(ST_AsText(x.geom), ",
         h3_resolution,
         ")",
         ")));",
