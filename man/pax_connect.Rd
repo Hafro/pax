@@ -12,7 +12,7 @@ pax_connect(dbdir = ":memory:", read_only = FALSE, h3_resolution = 8)
 \item{read_only}{Boolean, open the database in read-only mode?}
 
 \item{h3_resolution}{H3 cell resolution to use for spatial indexing,
-see \url{https://h3geo.org/docs/core-library/restable}}
+see \url{https://h3geo.org/docs/core-library/restable/}}
 }
 \value{
 A DBI database connection object

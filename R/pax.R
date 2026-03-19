@@ -10,7 +10,7 @@
 #' @param dbdir Path to a DuckDB database file, or ``":memory:"`` for an in-memory database
 #' @param read_only Boolean, open the database in read-only mode?
 #' @param h3_resolution H3 cell resolution to use for spatial indexing,
-#'   see \url{https://h3geo.org/docs/core-library/restable}
+#'   see \url{https://h3geo.org/docs/core-library/restable/}
 #' @return A DBI database connection object
 pax_connect <- function(
   dbdir = ":memory:",
@@ -68,7 +68,7 @@ pax_connect <- function(
   # TODO: Pre-define common schema items? If per-package, where do they hang?
 
   # Default h3 resolution for actions
-  # https://h3geo.org/docs/core-library/restable
+  # https://h3geo.org/docs/core-library/restable/
   if (!DBI::dbExistsTable(pcon, "h3_resolution")) {
     DBI::dbWriteTable(
       pcon,
