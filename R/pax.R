@@ -36,6 +36,12 @@ pax_connect <- function(
           con = pcon
         )
       )
+    } else {
+      # NB: DuckDB is coercing NA on the way out, thus suppresWarnings
+      suppressWarnings(DBI::dbGetQuery(
+        pcon,
+        paste0("UPDATE EXTENSIONS (", extensions[i, "extension_name"], ");")
+      ))
     }
     if (!isTRUE(extensions[i, "loaded"])) {
       DBI::dbExecute(
