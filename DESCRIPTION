@@ -42,6 +42,8 @@ Suggests:
     rmarkdown,
     targets,
     unittest (>= 1.4)
+Remotes:
+    gitlab@gitlab.hafogvatn.is::dev/mar
 VignetteBuilder: knitr
 License: GPL-2
 Roxygen: list(markdown = TRUE)
