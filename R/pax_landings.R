@@ -30,7 +30,7 @@ pax_landings_by_gear <- function(
     "mfdb_gear_code",
     "boat_id",
     "catch",
-    expected = "landings",
+    expected = "landings"
   )
 
   # NSE variables
@@ -102,7 +102,7 @@ pax_landings_boat_summary <- function(tbl) {
     "gear_name",
     "catch",
     "num_boats",
-    expected = "pax_landings_by_gear()",
+    expected = "pax_landings_by_gear()"
   )
 
   # NSE variables
