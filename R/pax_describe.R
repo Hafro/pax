@@ -11,7 +11,7 @@ NULL
 #' @rdname pax_describe
 pax_describe_sampling_type <- function(
   tbl,
-  lang = getOption('pax.lang')
+  lang = getOption('pax.lang', 'en')
 ) {
   pcon <- dbplyr::remote_con(tbl)
 
@@ -53,7 +53,7 @@ data_update_sampling_type_desc <- function(mar) {
 #' @rdname pax_describe
 pax_describe_mfdb_gear_code <- function(
   tbl,
-  lang = getOption('pax.lang')
+  lang = getOption('pax.lang', 'en')
 ) {
   pcon <- dbplyr::remote_con(tbl)
   tbl_colnames <- colnames(tbl)

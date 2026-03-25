@@ -6,9 +6,9 @@
 \alias{pax_describe_mfdb_gear_code}
 \title{Add description columns for known vocabularies}
 \usage{
-pax_describe_sampling_type(tbl, lang = getOption("pax.lang"))
+pax_describe_sampling_type(tbl, lang = getOption("pax.lang", "en"))
 
-pax_describe_mfdb_gear_code(tbl, lang = getOption("pax.lang"))
+pax_describe_mfdb_gear_code(tbl, lang = getOption("pax.lang", "en"))
 }
 \arguments{
 \item{tbl}{A dplyr query to apply descriptions to}
