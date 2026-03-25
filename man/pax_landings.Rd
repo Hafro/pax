@@ -7,13 +7,14 @@
 \alias{pax_landings_boat_summary}
 \alias{pax_landings_significantboats_summary}
 \alias{pax_landings_significantboats_plot}
+\alias{pax_add_fishing_year}
 \alias{pax_landings_fishingyear_summary}
 \title{Summarise and visualise landings data}
 \usage{
 pax_landings_by_gear(
   tbl,
-  gear_group = list(Other = "Var", BMT = c("BMT", "NPT", "SHT", "PGT"), LLN = "LLN", DSE
-    = c("PSE", "DSE"))
+  gear_group = list(Other = "Var", Other = pax_add_other(), BMT = c("BMT", "NPT", "SHT",
+    "PGT"), LLN = "LLN", DSE = c("PSE", "DSE"))
 )
 
 pax_landings_plot(
@@ -29,11 +30,9 @@ pax_landings_significantboats_summary(tbl)
 
 pax_landings_significantboats_plot(tbl)
 
-pax_landings_fishingyear_summary(
-  tbl,
-  ignore_final_year = TRUE,
-  fishingyear_cal_start = 9
-)
+pax_add_fishing_year(tbl)
+
+pax_landings_fishingyear_summary(tbl, ignore_final_year = TRUE)
 }
 \arguments{
 \item{tbl}{A dplyr query from a landings table}
@@ -48,8 +47,6 @@ pax_landings_fishingyear_summary(
 \item{breaks}{X-axis tick positions}
 
 \item{ignore_final_year}{Boolean, exclude the final (likely incomplete) year?}
-
-\item{fishingyear_cal_start}{Month number (1--12) when the fishing year begins}
 }
 \value{
 \subsection{pax_landings_by_gear}{A dplyr query summarising catch
@@ -70,6 +67,9 @@ catch), and \code{catch} (in kt). Input should be from
 \subsection{pax_landings_significantboats_plot}{A ggplot2 two-panel
 plot of catch vs. number of vessels accounting for 95\%\% of catch. Input
 should be from \code{pax_landings_significantboats_summary()}.}
+
+\subsection{pax_landings_fishingyear_summary}{
+Adds a \code{fishing_year} column to the incoming landings table}
 
 \subsection{pax_landings_fishingyear_summary}{A dplyr query with
 columns \code{fishing_year} and \code{catch_kt}, ordered by fishing year}

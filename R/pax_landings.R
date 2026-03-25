@@ -16,6 +16,7 @@ pax_landings_by_gear <- function(
   tbl,
   gear_group = list(
     Other = 'Var',
+    Other = pax_add_other(),
     BMT = c('BMT', 'NPT', 'SHT', 'PGT'),
     LLN = 'LLN',
     DSE = c('PSE', 'DSE')
@@ -240,16 +241,42 @@ pax_landings_significantboats_plot <- function(tbl) {
   p2 + p1
 }
 
+#' @return \subsection{pax_landings_fishingyear_summary}{
+#'   Adds a ``fishing_year`` column to the incoming landings table}
+#' @rdname pax_landings
+pax_add_fishing_year <- function(tbl) {
+  pax_checkcols(
+    tbl,
+    "year",
+    "month",
+    "catch",
+    expected = "landings"
+  )
+  fishingyear_cal_start <- 9
+
+  tbl |>
+    dplyr::mutate(
+      fishing_year = dplyr::case_when(
+        # Pre-1991 regulations were different, no fishingyear
+        year < 1991 ~ as.character(sql("year::INTEGER")),
+        year == 1991 && month < local(fishingyear_cal_start) ~
+          as.character(sql("year::INTEGER")),
+        month >= local(fishingyear_cal_start) ~
+          paste0(sql("year::INTEGER"), '/', sql("year::INTEGER + 1")),
+        TRUE ~ # NB: Includes NA months (yearly entries are month ~6)
+          paste0(sql("year::INTEGER - 1"), '/', sql("year::INTEGER"))
+      )
+    )
+}
+
 #' @param ignore_final_year Boolean, exclude the final (likely incomplete) year?
-#' @param fishingyear_cal_start Month number (1--12) when the fishing year begins
 #' @return \subsection{pax_landings_fishingyear_summary}{A dplyr query with
 #'   columns ``fishing_year`` and ``catch_kt``, ordered by fishing year}
 #' @rdname pax_landings
 # Was: landings_by_fishing_year.csv
 pax_landings_fishingyear_summary <- function(
   tbl,
-  ignore_final_year = TRUE,
-  fishingyear_cal_start = 9
+  ignore_final_year = TRUE
 ) {
   pax_checkcols(
     tbl,
@@ -266,21 +293,7 @@ pax_landings_fishingyear_summary <- function(
   year <- NULL
 
   out <- tbl |>
-    dplyr::mutate(
-      # Assume yearly landings happen in month 6
-      month = coalesce(month, 6),
-    ) |>
-    dplyr::mutate(
-      fishing_year = dplyr::case_when(
-        # Pre-1991 regulations were different, no fishingyear
-        year < 1991 ~ as.character(sql("year::INTEGER")),
-        year == 1991 && month < local(fishingyear_cal_start) ~
-          as.character(sql("year::INTEGER")),
-        month < local(fishingyear_cal_start) ~
-          paste0(sql("year::INTEGER - 1"), '/', sql("year::INTEGER")),
-        TRUE ~ paste0(sql("year::INTEGER"), '/', sql("year::INTEGER + 1"))
-      )
-    ) |>
+    pax_add_fishing_year() |>
     dplyr::group_by(fishing_year) |>
     dplyr::summarize(
       catch_kt = round(sum(catch, na.rm = TRUE) / 1000)
