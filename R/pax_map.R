@@ -210,7 +210,7 @@ pax_map_layer_catch <- function(
       ggplot2::geom_label(
         x = label_x,
         y = label_y,
-        ggplot2::aes(label = description),
+        ggplot2::aes(label = mfdb_gear_code_desc),
         data = data |>
           dplyr::select(mfdb_gear_code) |>
           dplyr::distinct() |>
