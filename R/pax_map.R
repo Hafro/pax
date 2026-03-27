@@ -183,6 +183,7 @@ pax_map_layer_catch <- function(
   year <- NULL
   description <- NULL
   mfdb_gear_code <- NULL
+  mfdb_gear_code_desc <- NULL
 
   base <-
     base +
