@@ -99,7 +99,6 @@ pax_landings_boat_summary <- function(tbl) {
   pax_checkcols(
     tbl,
     "year",
-    "country",
     "gear_name",
     "catch",
     "num_boats",
