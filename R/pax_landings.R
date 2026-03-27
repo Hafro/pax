@@ -116,15 +116,15 @@ pax_landings_boat_summary <- function(tbl) {
   tbl |>
     # NB: Assumes groups have valid mfdb_gear_code names
     pax_describe_mfdb_gear_code() |>
+    dplyr::select(year, mfdb_gear_code_desc, catch, num_boats) |>
     dplyr::collect() |>
     tidyr::pivot_wider(
       names_from = mfdb_gear_code_desc,
       values_from = c(catch, num_boats),
       values_fill = 0
     ) |>
-    dplyr::group_by(year) |>
     dplyr::mutate(
-      `Total catch` = sum(dplyr::c_across(dplyr::contains('catch_')))
+      `Total catch` = rowSums(dplyr::across(dplyr::starts_with('catch_')))
     ) |>
     dplyr::select(
       Year = year,
