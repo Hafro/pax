@@ -399,6 +399,7 @@ pax_mar_quotatransfer <- function(mar, species) {
   synis_id <- NULL
   kastad_breidd <- NULL
   timabil <- NULL
+  fishing_year <- NULL
 
   mar::kvoti_stada_summarised(mar) |>
     dplyr::filter(fteg == local(species)) |>
@@ -418,7 +419,11 @@ pax_mar_quotatransfer <- function(mar, species) {
         )
       )
     ) |>
-    dplyr::arrange(fteg, timabil) |>
+    dplyr::rename(
+      species = fteg,
+      fishing_year = timabil
+    ) |>
+    dplyr::arrange(species, fishing_year) |>
     dplyr::ungroup() |>
     decorate_mar()
 }

@@ -75,5 +75,6 @@ pax_from_mar <- function(
     pcon,
     pax_mar_lw_coeffs(mar, species = import_defs$species)
   )
+  pax_import(pcon, pax_mar_quotatransfer(mar, import_defs$species))
   return(pcon)
 }

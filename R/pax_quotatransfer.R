@@ -54,13 +54,12 @@ pax_quotatransfer_plot <- function(tbl) {
   onotad <- NULL
   varanlegt <- NULL
   tilf <- NULL
-  timabil <- NULL
+  fishing_year <- NULL
   m_p <- NULL
   til_p <- NULL
   value <- NULL
 
   tbl |>
-    head(-1) |>
     dplyr::ungroup() |>
     dplyr::mutate(
       #m_ara = n_ar,
@@ -69,8 +68,9 @@ pax_quotatransfer_plot <- function(tbl) {
       m_ara = (m_ara - n_ar - onotad) / 1e3,
       tilf = tilf / 1e3
     ) |>
-    dplyr::select(timabil, tilf, m_ara, m_p, til_p) |>
-    tidyr::gather(col, value, -timabil) |>
+    dplyr::select(fishing_year, tilf, m_ara, m_p, til_p) |>
+    dplyr::collect() |>
+    tidyr::gather(col, value, -fishing_year) |>
     dplyr::mutate(
       col = ifelse(
         col == 'm_ara',
@@ -82,7 +82,7 @@ pax_quotatransfer_plot <- function(tbl) {
         )
       )
     ) |>
-    ggplot2::ggplot(ggplot2::aes(timabil, value)) +
+    ggplot2::ggplot(ggplot2::aes(fishing_year, value)) +
     ggplot2::geom_bar(stat = 'identity') +
     ggplot2::facet_wrap(~col, ncol = 2, scale = 'free_y') +
     ggplot2::theme_bw() +
