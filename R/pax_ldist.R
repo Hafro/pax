@@ -295,7 +295,6 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
   n <- NULL
   p <- NULL
   mp <- NULL
-  unit <- NULL
   mL <- NULL
 
   summ.dat <-
@@ -345,7 +344,7 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
     ggplot2::theme_light() +
     ggplot2::theme(
       legend.position = 'right',
-      legend.key.size = unit(0.4, "cm"),
+      legend.key.size = ggplot2::unit(0.4, "cm"),
       legend.text = ggplot2::element_text(size = 7),
       strip.background = ggplot2::element_blank(),
       strip.text = ggplot2::element_blank()
@@ -401,8 +400,8 @@ pax_ldist_joy_plot <- function(ldist, max_height = 50, split_by_sex = FALSE) {
   if (!split_by_sex) {
     pdat <-
       ldist |>
+      pax_describe_mfdb_gear_code() |>
       dplyr::collect(n = Inf) |>
-      dplyr::left_join(pax_describe_mfdb_gear_code(), by = 'mfdb_gear_code') |>
       dplyr::group_by(year, mfdb_gear_code_desc, length) |>
       dplyr::summarise(n = sum(n, na.rm = TRUE), .groups = 'drop') |>
       dplyr::group_by(year, mfdb_gear_code_desc) |>
