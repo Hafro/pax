@@ -215,7 +215,7 @@ data_update_stationlist <- function(
   invisible(station_df)
 }
 if (FALSE) {
-  pax:::update_stationlist("hafro_smb")
-  pax:::update_stationlist("hafro_smh_shelf")
-  pax:::update_stationlist("hafro_smh_deep")
+  update_stationlist("hafro_smb")
+  update_stationlist("hafro_smh_shelf")
+  update_stationlist("hafro_smh_deep")
 }

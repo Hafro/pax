@@ -164,10 +164,10 @@ data_update_mar_strata <- function(
   invisible(out)
 }
 if (FALSE) {
-  pax:::data_update_mar_strata(mar, "old_strata")
-  pax:::data_update_mar_strata(mar, "new_strata", "spring")
-  pax:::data_update_mar_strata(mar, "new_strata", "autumn")
-  pax:::data_update_mar_strata(mar, "ghl_strata")
+  data_update_mar_strata(mar, "old_strata")
+  data_update_mar_strata(mar, "new_strata", "spring")
+  data_update_mar_strata(mar, "new_strata", "autumn")
+  data_update_mar_strata(mar, "ghl_strata")
 }
 
 #' Strata definitions
