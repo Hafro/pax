@@ -187,6 +187,10 @@ pax_add_regions <- function(
   return(out)
 }
 data_update_gridcell <- function(mar) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+
   # NSE variables
   gridcell <- NULL
   division <- NULL

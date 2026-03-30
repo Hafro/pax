@@ -28,6 +28,10 @@ pax_from_mar <- function(
   mar_opts = list(),
   dbdir = ":memory:"
 ) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+
   pcon <- pax_connect(dbdir = dbdir)
 
   # Open a connection to upstream hafro DB
