@@ -106,7 +106,7 @@ pax_landings_boat_summary <- function(tbl) {
   )
 
   # NSE variables
-  `Total catch` <- NULL
+  total_catch <- NULL
   mfdb_gear_code_desc <- NULL
   catch <- NULL
   num_boats <- NULL
@@ -124,21 +124,14 @@ pax_landings_boat_summary <- function(tbl) {
       values_fill = 0
     ) |>
     dplyr::mutate(
-      `Total catch` = rowSums(dplyr::across(dplyr::starts_with('catch_')))
+      total_catch = rowSums(dplyr::across(dplyr::starts_with('catch_')))
     ) |>
     dplyr::select(
       Year = year,
       dplyr::starts_with('num_boats_'),
       dplyr::starts_with('catch_'),
-      `Total catch`
-    ) |>
-    #dplyr::select(-num_boats_Other) |>
-    dplyr::arrange(Year) |>
-    (function(x) {
-      names(x) <- gsub('num_boats_', 'Nr. ', names(x))
-      names(x) <- gsub('catch_', '', names(x))
-      return(x)
-    })()
+      total_catch
+    )
 }
 
 #' @return \subsection{pax_landings_significantboats_summary}{A dplyr query
