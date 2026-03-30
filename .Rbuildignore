@@ -19,6 +19,7 @@ core
 
 ^vignettes/articles/
 ^baseline/
+^tools/
 
 ^_pkgdown.yml$
 ^pkgdown/
