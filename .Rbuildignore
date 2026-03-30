@@ -26,5 +26,5 @@ core
 ^[.]?air[.]toml$
 ^\.vscode$
 
-^[^/]\.csv$
-^[^/]\.pdf$
+^[^/]+\.csv$
+^[^/]+\.pdf$
