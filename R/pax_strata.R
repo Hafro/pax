@@ -4,6 +4,10 @@ data_update_mar_strata <- function(
   strata_name,
   substratification = "default"
 ) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+
   # NSE variables
   stratification <- NULL
   lat <- NULL

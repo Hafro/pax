@@ -33,6 +33,10 @@ pax_describe_sampling_type <- function(
     dplyr::left_join(st_tbl, by = c('sampling_type'))
 }
 data_update_sampling_type_desc <- function(mar) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+
   # NSE variables
   synaflokkur_nr <- NULL
   enskt_heiti <- NULL
