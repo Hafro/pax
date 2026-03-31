@@ -41,10 +41,9 @@ Suggests:
     rmarkdown,
     targets,
     nanoparquet,
-    mar,
     unittest (>= 1.4)
-Remotes:
-    gitlab@gitlab.hafogvatn.is::dev/mar
+Enhances:
+    mar
 VignetteBuilder: knitr
 License: GPL-2
 Roxygen: list(markdown = TRUE)
