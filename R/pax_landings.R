@@ -52,43 +52,6 @@ pax_landings_by_gear <- function(
     )
 }
 
-#' @param ylab Y-axis label
-#' @param xlab X-axis label
-#' @param breaks X-axis tick positions
-#' @return \subsection{pax_landings_plot}{A ggplot2 stacked bar chart of
-#'   landings by country and year}
-#' @rdname pax_landings
-# Was tidypax::landings_plot
-pax_landings_plot <- function(
-  tbl,
-  ylab = 'Landings (in kt)',
-  xlab = 'Year',
-  breaks = seq(0, 1e5, by = 10)
-) {
-  pax_checkcols(tbl, "year", "country", "catch", expected = "landings")
-
-  # NSE variables
-  year <- NULL
-  country <- NULL
-  catch <- NULL
-  desc <- NULL
-
-  tbl |>
-    dplyr::group_by(year, country) |>
-    dplyr::summarise(c = sum(catch, na.rm = TRUE)) |>
-    dplyr::arrange(desc(country)) |>
-    ggplot2::ggplot(ggplot2::aes(year, c / 1e3, fill = country)) +
-    ggplot2::geom_bar(stat = 'identity') +
-    ggplot2::theme_bw() +
-    ggplot2::labs(y = ylab, x = xlab, fill = '') +
-    ggplot2::theme(
-      legend.background = ggplot2::element_blank(),
-      legend.position = c(0.15, 0.75)
-    ) +
-    ggplot2::scale_x_continuous(breaks = breaks) +
-    pax_scale_fill_crayola()
-}
-
 #' @return \subsection{pax_landings_boat_summary}{A data.frame with catch and
 #'   boat counts by gear and year, suitable for a summary table. Input should
 #'   be from ``pax_landings_by_gear()``.}

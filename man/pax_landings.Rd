@@ -3,7 +3,6 @@
 \name{pax_landings}
 \alias{pax_landings}
 \alias{pax_landings_by_gear}
-\alias{pax_landings_plot}
 \alias{pax_landings_boat_summary}
 \alias{pax_landings_significantboats_summary}
 \alias{pax_add_fishing_year}
@@ -14,13 +13,6 @@ pax_landings_by_gear(
   tbl,
   gear_group = list(Other = "Var", Other = pax_add_other(), BMT = c("BMT", "NPT", "SHT",
     "PGT"), LLN = "LLN", DSE = c("PSE", "DSE"))
-)
-
-pax_landings_plot(
-  tbl,
-  ylab = "Landings (in kt)",
-  xlab = "Year",
-  breaks = seq(0, 1e+05, by = 10)
 )
 
 pax_landings_boat_summary(tbl)
@@ -37,20 +29,11 @@ pax_landings_fishingyear_summary(tbl, ignore_final_year = TRUE)
 \item{gear_group}{Named list mapping gear group names to vectors of
 \code{mfdb_gear_code} values}
 
-\item{ylab}{Y-axis label}
-
-\item{xlab}{X-axis label}
-
-\item{breaks}{X-axis tick positions}
-
 \item{ignore_final_year}{Boolean, exclude the final (likely incomplete) year?}
 }
 \value{
 \subsection{pax_landings_by_gear}{A dplyr query summarising catch
 and boat counts by year, species, gear, country, and ICES area}
-
-\subsection{pax_landings_plot}{A ggplot2 stacked bar chart of
-landings by country and year}
 
 \subsection{pax_landings_boat_summary}{A data.frame with catch and
 boat counts by gear and year, suitable for a summary table. Input should
