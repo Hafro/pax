@@ -194,8 +194,7 @@ pax_map_layer_catch <- function(
       breaks = breaks,
       data = data |> dplyr::collect()
     ) +
-    ggplot2::labs(fill = fill_lab) +
-    pax_scale_fill_crayola()
+    ggplot2::labs(fill = fill_lab)
 
   if (annotation == 'year') {
     base +
