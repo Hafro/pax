@@ -44,28 +44,6 @@ if (!file.exists(test_db_path)) {
   pcon <- pax::pax_connect(test_db_path)
 }
 
-ok_group("R/01-plots_and_tables.R:sampling_position", {
-  df_tidypax <- tidypax:::sampling_position(
-    mar,
-    species_nr = import_defs$species,
-    year_range = import_defs$year_start:import_defs$year_end
-  ) |>
-    dplyr::arrange(lat, lon, year, mfdb_gear_code) |>
-    as.data.frame()
-  df_newpax <- dplyr::tbl(pcon, "sampling") |>
-    dplyr::left_join(dplyr::tbl(pcon, "measurement"), by = "sample_id") |>
-    pax_sampling_position_summary() |>
-    dplyr::arrange(lat, lon, year, mfdb_gear_code) |>
-    as.data.frame()
-  ok(
-    ut_cmp_equal(
-      df_tidypax |> dplyr::filter(year %in% 1990:1994),
-      df_newpax |> dplyr::filter(year %in% 1990:1994)
-    ),
-    "data frames match"
-  )
-})
-
 ok_group("R/01-plots_and_tables.R:sampling_tables", {
   import_defs$species <- 2
   df_tidypax <- tidypax:::sampling_tables(

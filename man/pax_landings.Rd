@@ -6,7 +6,6 @@
 \alias{pax_landings_plot}
 \alias{pax_landings_boat_summary}
 \alias{pax_landings_significantboats_summary}
-\alias{pax_landings_significantboats_plot}
 \alias{pax_add_fishing_year}
 \alias{pax_landings_fishingyear_summary}
 \title{Summarise and visualise landings data}
@@ -27,8 +26,6 @@ pax_landings_plot(
 pax_landings_boat_summary(tbl)
 
 pax_landings_significantboats_summary(tbl)
-
-pax_landings_significantboats_plot(tbl)
 
 pax_add_fishing_year(tbl)
 
@@ -63,10 +60,6 @@ be from \code{pax_landings_by_gear()}.}
 with columns \code{year}, \code{n} (number of vessels accounting for 95\%\% of
 catch), and \code{catch} (in kt). Input should be from
 \code{pax_landings_by_gear()}.}
-
-\subsection{pax_landings_significantboats_plot}{A ggplot2 two-panel
-plot of catch vs. number of vessels accounting for 95\%\% of catch. Input
-should be from \code{pax_landings_significantboats_summary()}.}
 
 \subsection{pax_landings_fishingyear_summary}{
 Adds a \code{fishing_year} column to the incoming landings table}

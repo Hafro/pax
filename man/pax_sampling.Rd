@@ -2,19 +2,10 @@
 % Please edit documentation in R/pax_sampling.R
 \name{pax_sampling}
 \alias{pax_sampling}
-\alias{pax_sampling_position_summary}
-\alias{pax_sampling_overview_plot}
 \alias{pax_sampling_detail}
 \alias{pax_sampling_age_reading_status}
 \title{Summarise and visualise sampling data}
 \usage{
-pax_sampling_position_summary(tbl)
-
-pax_sampling_overview_plot(
-  tbl,
-  landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings")
-)
-
 pax_sampling_detail(
   tbl,
   mfdb_gear_code = c("BMT", "LLN", "DSE"),
@@ -28,9 +19,6 @@ pax_sampling_age_reading_status(tbl, measurement_type = c("OTOL"))
 \item{tbl}{A dplyr query from a sampling table, as returned by
 \code{\link[=pax_mar_sampling]{pax_mar_sampling()}}}
 
-\item{landings_tbl}{A dplyr query from a landings table used to overlay
-the proportion of landings per month}
-
 \item{mfdb_gear_code}{Character vector of gear codes to include}
 
 \item{sampling_type}{Integer vector of sampling type codes to include}
@@ -38,13 +26,6 @@ the proportion of landings per month}
 \item{measurement_type}{Character vector of measurement types to include}
 }
 \value{
-\subsection{pax_sampling_position_summary}{A dplyr query with
-distinct combinations of \code{lat}, \code{lon}, \code{year}, and
-\code{mfdb_gear_code}}
-
-\subsection{pax_sampling_overview_plot}{A ggplot2 plot showing the
-monthly distribution of samples and landings by gear and year}
-
 \subsection{pax_sampling_detail}{A data.frame wide-pivoted by gear,
 with columns \code{year} and per-gear columns for number of samples
 (\code{n}), total lengths (\code{n_lengths}), and otolith readings

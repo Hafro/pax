@@ -173,66 +173,6 @@ pax_landings_significantboats_summary <- function(
     dplyr::arrange(year)
 }
 
-#' @return \subsection{pax_landings_significantboats_plot}{A ggplot2 two-panel
-#'   plot of catch vs. number of vessels accounting for 95%% of catch. Input
-#'   should be from ``pax_landings_significantboats_summary()``.}
-#' @rdname pax_landings
-# Was: num_boats_plot
-pax_landings_significantboats_plot <- function(tbl) {
-  # i.e. pax_landings_significantboats_summary
-  pax_checkcols(
-    tbl,
-    "year",
-    "boat_id",
-    "catch",
-    "num_boats_*",
-    "catch_*",
-    expected = "pax_landings_significantboats_summary()"
-  )
-
-  # NSE variables
-  catch <- NULL
-  n <- NULL
-  year <- NULL
-
-  years <- tbl |> dplyr::distinct(years)
-  breaks <- unique(years - years %% 5) # Round all years to nearest 5 years
-  breaks <- c(breaks, max(breaks) + 5) # Add back on topmost year
-
-  p1 <-
-    ggplot2::ggplot(tbl, ggplot2::aes(catch, n, label = year)) +
-    ggplot2::geom_path(colour = 4, linetype = 1, alpha = 0.5) +
-    ggplot2::geom_text(
-      hjust = 0,
-      nudge_x = 0.05,
-      check_overlap = TRUE,
-      size = 3
-    ) +
-    ggplot2::theme_light() +
-    ggplot2::expand_limits(y = 0, x = 0) +
-    #  ylim(c(0,250))+
-    #  xlim(4000,12500)+
-    ggplot2::labs(y = "", x = "Catch (tonnes)", color = "Year") +
-    ggplot2::theme(
-      legend.position = c(0.9, 0.3),
-      legend.title = ggplot2::element_text(size = 5),
-      legend.text = ggplot2::element_text(size = ggplot2::rel(0.5))
-    )
-
-  p2 <- ggplot2::ggplot(tbl, ggplot2::aes(year, n)) +
-    ggplot2::geom_line(col = 4) +
-    ggplot2::scale_x_continuous(limits = years, breaks = breaks) +
-    #  ylim(0,250)+
-    ggplot2::expand_limits(y = 0) +
-    ggplot2::labs(
-      x = "Year",
-      y = "Number of vessles accounting for 95% of catch"
-    ) +
-    ggplot2::theme_light()
-
-  p2 + p1
-}
-
 #' @return \subsection{pax_landings_fishingyear_summary}{
 #'   Adds a ``fishing_year`` column to the incoming landings table}
 #' @rdname pax_landings
