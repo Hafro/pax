@@ -26,7 +26,6 @@ Imports:
     ggplot2,
     ggridges,
     lubridate,
-    mar,
     mfdb,
     purrr,
     rlang,
@@ -42,6 +41,7 @@ Suggests:
     rmarkdown,
     targets,
     nanoparquet,
+    mar,
     unittest (>= 1.4)
 Remotes:
     gitlab@gitlab.hafogvatn.is::dev/mar

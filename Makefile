@@ -17,7 +17,7 @@ build: roxygen
 	R CMD build .
 
 check: build
-	R CMD check "$(TARBALL)"
+	_R_CHECK_ASCII_DATA_=FALSE _R_CHECK_ASCII_CODE_=FALSE R CMD check "$(TARBALL)"
 
 check-as-cran: build
 	R CMD check --as-cran "$(TARBALL)"
