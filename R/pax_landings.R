@@ -132,7 +132,7 @@ pax_landings_significantboats_summary <- function(
     dplyr::mutate(cc = cumsum(c), ct = sum(c, na.rm = TRUE)) |>
     dplyr::filter(cc > 0.05 * ct) |>
     dplyr::summarise(n = n(), catch = sum(c, na.rm = TRUE) / 1e3) |>
-    dplyr::select(-cc, -ct) |>
+    dbplyr::window_order() |>
     dplyr::arrange(year)
 }
 
