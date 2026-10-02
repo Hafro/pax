@@ -2,8 +2,8 @@
 #'
 #' Opens a connection to the Hafro MAR Oracle database and imports all
 #' standard pax tables (station, measurement, logbook, landings, sampling,
-#' aldist, ldist, lw_coeffs, ocean depth, and strata) into a new pax DuckDB
-#' database.
+#' aldist, ldist, lw_coeffs, ocean depth, strata, and strata_stations) into a
+#' new pax DuckDB database.
 #'
 #' @param species Integer vector of species codes to import
 #' @param year_start Optional integer, earliest year to include
@@ -80,5 +80,6 @@ pax_from_mar <- function(
     pax_mar_lw_coeffs(mar, species = import_defs$species)
   )
   pax_import(pcon, pax_mar_quotatransfer(mar, import_defs$species))
+  pax_import(pcon, pax_mar_strata_stations(mar))
   return(pcon)
 }

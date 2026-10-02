@@ -42,6 +42,6 @@ A pax DBI connection containing all imported tables
 \description{
 Opens a connection to the Hafro MAR Oracle database and imports all
 standard pax tables (station, measurement, logbook, landings, sampling,
-aldist, ldist, lw_coeffs, ocean depth, and strata) into a new pax DuckDB
-database.
+aldist, ldist, lw_coeffs, ocean depth, strata, and strata_stations) into a
+new pax DuckDB database.
 }

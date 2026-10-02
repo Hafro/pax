@@ -11,6 +11,7 @@
 \alias{pax_mar_quotatransfer}
 \alias{pax_mar_sampling}
 \alias{pax_mar_station}
+\alias{pax_mar_strata_stations}
 \title{Import tables from the MAR database}
 \usage{
 pax_mar_logbook(mar, species, year_start = NULL, year_end = NULL)
@@ -55,6 +56,8 @@ pax_mar_station(
   year_start = NULL,
   year_end = NULL
 )
+
+pax_mar_strata_stations(mar)
 }
 \arguments{
 \item{mar}{A MAR database connection, as returned by \code{mar::connect_mar()}}
@@ -115,6 +118,12 @@ with length measurements for the requested species}
 \code{end_lat}, \code{end_lon}, \code{mfdb_gear_code}, \code{gear_id},
 \code{tow_depth}, \code{tow_number}, \code{tow_length}, \code{tow_start},
 \code{tow_end}, and \code{fixed}}
+
+\subsection{pax_mar_strata_stations}{A dplyr query of the fixed
+survey station to stratum lists, with columns \code{sampling_type},
+\code{stratification}, \code{station} and \code{stratum}. The groundfish surveys
+come from \code{biota.strata_stations}, the gillnet survey (\code{smn_strata})
+from \verb{ops$bthe."strata_stations"}}
 }
 \description{
 Functions to extract and standardise individual tables from the Hafro MAR
