@@ -175,6 +175,8 @@ pax_ldist_scale_tow_area <-
       ) |> ## for all other gears
       dplyr::mutate(
         tow_length = case_when(
+          # Fixed tow length (gillnet survey: each net counts as 0.5 nm)
+          min_towlength == max_towlength ~ std_towlength,
           tow_length == 0 ~ 1,
           tow_length > coalesce(max_towlength, 1e6) ~
             coalesce(max_towlength, 1),
