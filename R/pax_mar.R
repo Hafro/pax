@@ -543,6 +543,8 @@ pax_mar_station <- function(
   togendir <- NULL
   fixed <- NULL
   year <- NULL
+  syni_nr <- NULL
+  smn_tog_nr <- NULL
 
   out <- mar::les_stod(mar) |>
     ## skip MAGEI and MOGUN, these are stomach samples and should be a seperate sampling type
@@ -555,6 +557,32 @@ pax_mar_station <- function(
     dplyr::mutate(
       station = reitur * 10000 + nvl(tog_nr, 0) * 100 + veidarfaeri
     ) |> ## change to nautical miles^2
+    # Gillnet survey (SMN): one sample per net. A station is a net, numbered
+    # by gear 72 (gillnet) and the net number, as in strata_stations. Missing
+    # tow numbers are taken from the lowest tow number at the same position
+    # (rectangle, gridcell and position rounded to 0.1 degree), over all years
+    dplyr::group_by(
+      synaflokkur_nr,
+      reitur,
+      gridcell,
+      smn_lat = round(kastad_breidd, 1),
+      smn_lon = round(kastad_lengd, 1)
+    ) |>
+    dplyr::mutate(
+      smn_tog_nr = dplyr::coalesce(tog_nr, min(tog_nr, na.rm = TRUE))
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(
+      station = dplyr::case_when(
+        synaflokkur_nr == 34 ~
+          100 * (reitur * 10000 + nvl(smn_tog_nr, 0) * 100 + 72) + syni_nr,
+        TRUE ~ station
+      ),
+      tog_nr = dplyr::case_when(
+        synaflokkur_nr == 34 ~ smn_tog_nr,
+        TRUE ~ tog_nr
+      )
+    ) |>
     dplyr::left_join(
       mar::tbl_mar(mar, 'biota.gear_mapping'),
       by = 'veidarfaeri'
@@ -626,5 +654,35 @@ pax_mar_station <- function(
   if (!is.null(sampling_type)) {
     out <- dplyr::filter(out, sampling_type %in% local(sampling_type))
   }
+  return(out |> decorate_mar())
+}
+
+#' @return \subsection{pax_mar_strata_stations}{A dplyr query of the fixed
+#'   survey station to stratum lists, with columns ``sampling_type``,
+#'   ``stratification``, ``station`` and ``stratum``. The groundfish surveys
+#'   come from ``biota.strata_stations``, the gillnet survey (``smn_strata``)
+#'   from ``ops$bthe."strata_stations"``}
+#' @rdname pax_mar
+# Was: tidypax::si_add_strata(), via the station list
+pax_mar_strata_stations <- function(mar) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+
+  # NSE variables
+  synaflokkur <- stratification <- station <- stratum <- NULL
+
+  out <- mar::tbl_mar(mar, 'biota.strata_stations') |>
+    dplyr::union_all(
+      mar::tbl_mar(mar, 'ops$bthe."strata_stations"') |>
+        dplyr::filter(stratification == "smn_strata")
+    ) |>
+    dplyr::select(
+      sampling_type = synaflokkur,
+      stratification,
+      station,
+      stratum
+    ) |>
+    dplyr::mutate(stratum = as.integer(stratum))
   return(out |> decorate_mar())
 }
