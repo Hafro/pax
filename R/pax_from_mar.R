@@ -9,6 +9,9 @@
 #' @param year_start Optional integer, earliest year to include
 #' @param year_end Optional integer, latest year to include
 #' @param sampling_type Integer vector of sampling type codes to include
+#' @param landings_year_start Optional integer, earliest year of landings to
+#'   include (default \code{year_start}). The landings go back to 1903, e.g.
+#'   for figures of the landings history.
 #' @param ices_area_like Character vector of SQL LIKE patterns for filtering
 #'   ICES areas, e.g. ``"5a%"``
 #' @param strata Character vector of strata names to import, from
@@ -24,6 +27,7 @@ pax_from_mar <- function(
   year_end = NULL,
   sampling_type = c(1, 2, 8, 10, 11, 30, 35),
   ices_area_like = "5a%",
+  landings_year_start = year_start,
   strata = pax_def_strata_list(),
   mar_opts = list(),
   dbdir = ":memory:"
@@ -68,7 +72,7 @@ pax_from_mar <- function(
       mar,
       species = import_defs$species,
       ices_area_like = ices_area_like,
-      year_start = import_defs$year_start,
+      year_start = landings_year_start,
       year_end = import_defs$year_end
     )
   )

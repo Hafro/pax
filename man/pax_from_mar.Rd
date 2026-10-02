@@ -10,6 +10,7 @@ pax_from_mar(
   year_end = NULL,
   sampling_type = c(1, 2, 8, 10, 11, 30, 35),
   ices_area_like = "5a\%",
+  landings_year_start = year_start,
   strata = pax_def_strata_list(),
   mar_opts = list(),
   dbdir = ":memory:"
@@ -26,6 +27,10 @@ pax_from_mar(
 
 \item{ices_area_like}{Character vector of SQL LIKE patterns for filtering
 ICES areas, e.g. \code{"5a\%"}}
+
+\item{landings_year_start}{Optional integer, earliest year of landings to
+include (default \code{year_start}). The landings go back to 1903, e.g.
+for figures of the landings history.}
 
 \item{strata}{Character vector of strata names to import, from
 \code{\link[=pax_def_strata_list]{pax_def_strata_list()}}}

@@ -506,7 +506,7 @@ pax_mar_sampling <- function(
 #'   ``sampling_type``, ``gridcell``, ``begin_lat``, ``begin_lon``,
 #'   ``end_lat``, ``end_lon``, ``mfdb_gear_code``, ``gear_id``,
 #'   ``tow_depth``, ``tow_number``, ``tow_length``, ``tow_start``,
-#'   ``tow_end``, and ``fixed``}
+#'   ``tow_end``, ``fixed``, and ``vessel_id`` (vessel number, ``skip_nr``)}
 #' @rdname pax_mar
 # Was: tidypax::si_stations
 pax_mar_station <- function(
@@ -545,6 +545,7 @@ pax_mar_station <- function(
   year <- NULL
   syni_nr <- NULL
   smn_tog_nr <- NULL
+  skip_nr <- NULL
 
   out <- mar::les_stod(mar) |>
     ## skip MAGEI and MOGUN, these are stomach samples and should be a seperate sampling type
@@ -642,7 +643,8 @@ pax_mar_station <- function(
       tow_length = toglengd,
       tow_start = togbyrjun,
       tow_end = togendir,
-      fixed
+      fixed,
+      vessel_id = skip_nr
     )
 
   if (!is.null(year_start)) {

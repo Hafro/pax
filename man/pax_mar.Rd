@@ -117,7 +117,7 @@ with length measurements for the requested species}
 \code{sampling_type}, \code{gridcell}, \code{begin_lat}, \code{begin_lon},
 \code{end_lat}, \code{end_lon}, \code{mfdb_gear_code}, \code{gear_id},
 \code{tow_depth}, \code{tow_number}, \code{tow_length}, \code{tow_start},
-\code{tow_end}, and \code{fixed}}
+\code{tow_end}, \code{fixed}, and \code{vessel_id} (vessel number, \code{skip_nr})}
 
 \subsection{pax_mar_strata_stations}{A dplyr query of the fixed
 survey station to stratum lists, with columns \code{sampling_type},
