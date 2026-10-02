@@ -207,8 +207,10 @@ pax_import <- function(
     )
   }
 
-  if (!is.null(geom_types) && all(geom_types == "MULTIPOLYGON")) {
-    # geometry columns hold multi-polygons, add h3_cells
+  if (
+    !is.null(geom_types) && all(geom_types %in% c("POLYGON", "MULTIPOLYGON"))
+  ) {
+    # geometry columns hold (multi-)polygons, add h3_cells
 
     # NB: sub-queries not allowed in lambda expressions, so fetch first
     h3_resolution <- DBI::dbGetQuery(pcon, "SELECT res FROM h3_resolution;")[
