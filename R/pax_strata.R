@@ -2,7 +2,8 @@
 data_update_mar_strata <- function(
   mar,
   strata_name,
-  substratification = "default"
+  substratification = "default",
+  attributes_tbl = "biota.strata_attributes"
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
@@ -154,7 +155,7 @@ data_update_mar_strata <- function(
     dplyr::group_by(stratum) |>
     dplyr::summarise(geometry = sf::st_combine(geometry)) |>
     dplyr::left_join(
-      mar::tbl_mar(mar, 'biota.strata_attributes') |>
+      mar::tbl_mar(mar, attributes_tbl) |>
         dplyr::filter(stratification == local(strata_name)) |>
         dplyr::select(-stratification) |>
         dplyr::collect() |>
@@ -172,6 +173,12 @@ if (FALSE) {
   pax:::data_update_mar_strata(mar, "new_strata", "spring")
   pax:::data_update_mar_strata(mar, "new_strata", "autumn")
   pax:::data_update_mar_strata(mar, "ghl_strata")
+  # Gillnet survey (SMN), attributes not in biota yet
+  pax:::data_update_mar_strata(
+    mar,
+    "smn_strata",
+    attributes_tbl = 'ops$bthe."strata_attributes"'
+  )
 }
 
 #' Strata definitions
