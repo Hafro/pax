@@ -32,11 +32,17 @@ pax_add_groupings <- function(
     pax_add_yearly_grouping(
       groupings$ygroup,
       ignore_missing_col = ignore_missing_col
-    ) |>
-    pax_add_ocean_depth_class(
-      groupings$ocean_depth,
+    )
+  # NB: ocean_depth holds the depth breaks; it used to be passed as
+  #     ocean_depth_tbl, so tables with an ocean_depth column (logbooks) failed
+  if (!is.null(groupings$ocean_depth)) {
+    tbl <- pax_add_ocean_depth_class(
+      tbl,
+      breaks = groupings$ocean_depth,
       ignore_missing_col = ignore_missing_col
     )
+  }
+  tbl
 }
 
 #' @return \subsection{pax_def_groupings}{List of grouping parameters to hand to ``pax_add_groupings()``}
