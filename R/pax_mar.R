@@ -672,17 +672,20 @@ pax_mar_strata_stations <- function(mar) {
   # NSE variables
   synaflokkur <- stratification <- station <- stratum <- NULL
 
+  # NB: stratum is a number in biota, text in ops$bthe, so cast before union
+  #     (as.integer() comes back as text through JDBC)
   out <- mar::tbl_mar(mar, 'biota.strata_stations') |>
+    dplyr::mutate(stratum = as.numeric(stratum)) |>
     dplyr::union_all(
       mar::tbl_mar(mar, 'ops$bthe."strata_stations"') |>
-        dplyr::filter(stratification == "smn_strata")
+        dplyr::filter(stratification == "smn_strata") |>
+        dplyr::mutate(stratum = as.numeric(stratum))
     ) |>
     dplyr::select(
       sampling_type = synaflokkur,
       stratification,
       station,
       stratum
-    ) |>
-    dplyr::mutate(stratum = as.integer(stratum))
+    )
   return(out |> decorate_mar())
 }
