@@ -46,7 +46,8 @@ pax_mar_sampling(
   year_start = NULL,
   year_end = NULL,
   mfdb_gear_code = c("BMT", "LLN", "DSE"),
-  sampling_type = c(1, 2, 3, 4, 8)
+  sampling_type = c(1, 2, 3, 4, 8),
+  skip_trips = c("MAG\%", "MO\%")
 )
 
 pax_mar_station(
@@ -54,7 +55,8 @@ pax_mar_station(
   species = NULL,
   sampling_type = NULL,
   year_start = NULL,
-  year_end = NULL
+  year_end = NULL,
+  skip_trips = c("MAG\%", "MO\%")
 )
 
 pax_mar_strata_stations(mar)
@@ -77,6 +79,11 @@ e.g. \code{c("LEN", "OTOL")}}
 \item{mfdb_gear_code}{Character vector of gear codes to include}
 
 \item{sampling_type}{Integer vector of sampling type codes to include}
+
+\item{skip_trips}{SQL LIKE patterns of trips (\code{leidangur}) to leave out.
+By default the stomach-sampling trips \verb{MAG*} and \verb{MO*} (MAGEI,
+MOGUN), which should be a separate sampling type. \code{NULL} keeps all
+trips, as tidypax \code{si_stations()} did}
 }
 \value{
 \subsection{pax_mar_logbook}{A dplyr query with columns

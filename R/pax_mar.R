@@ -442,7 +442,8 @@ pax_mar_sampling <- function(
   year_start = NULL,
   year_end = NULL,
   mfdb_gear_code = c('BMT', 'LLN', 'DSE'),
-  sampling_type = c(1, 2, 3, 4, 8)
+  sampling_type = c(1, 2, 3, 4, 8),
+  skip_trips = c('MAG%', 'MO%')
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
@@ -478,12 +479,10 @@ pax_mar_sampling <- function(
       trip = leidangur
     ) |>
     dplyr::filter(
-      ## skip MAGEI and MOGUN, these are stomach samples and should be a seperate sampling type
-      !(trip %like% 'MAG%'),
-      !(trip %like% 'MO%'),
       sampling_type %in% local(sampling_type),
       mfdb_gear_code %in% local(mfdb_gear_code)
-    ) -> out
+    ) |>
+    mar_skip_trips(skip_trips) -> out
   if (!is.null(year_start)) {
     out <- dplyr::filter(out, year >= local(year_start))
   }
@@ -507,6 +506,10 @@ pax_mar_sampling <- function(
 #'   ``end_lat``, ``end_lon``, ``mfdb_gear_code``, ``gear_id``,
 #'   ``tow_depth``, ``tow_number``, ``tow_length``, ``tow_start``,
 #'   ``tow_end``, ``fixed``, and ``vessel_id`` (vessel number, ``skip_nr``)}
+#' @param skip_trips SQL LIKE patterns of trips (``leidangur``) to leave out.
+#'   By default the stomach-sampling trips ``MAG*`` and ``MO*`` (MAGEI,
+#'   MOGUN), which should be a separate sampling type. ``NULL`` keeps all
+#'   trips, as tidypax ``si_stations()`` did
 #' @rdname pax_mar
 # Was: tidypax::si_stations
 pax_mar_station <- function(
@@ -514,7 +517,8 @@ pax_mar_station <- function(
   species = NULL, # NB: Ignored
   sampling_type = NULL,
   year_start = NULL,
-  year_end = NULL
+  year_end = NULL,
+  skip_trips = c('MAG%', 'MO%')
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
@@ -548,11 +552,9 @@ pax_mar_station <- function(
   skip_nr <- NULL
 
   out <- mar::les_stod(mar) |>
-    ## skip MAGEI and MOGUN, these are stomach samples and should be a seperate sampling type
-    dplyr::filter(
-      !(leidangur %like% 'MAG%'),
-      !(leidangur %like% 'MO%')
-    ) |>
+    dplyr::rename(trip = leidangur) |>
+    mar_skip_trips(skip_trips) |>
+    dplyr::rename(leidangur = trip) |>
     dplyr::mutate(gridcell = 10 * reitur + smareitur) |> ## change to nautical miles^2
     dplyr::left_join(mar::les_syni(mar), by = 'stod_id') |>
     dplyr::mutate(
@@ -690,4 +692,17 @@ pax_mar_strata_stations <- function(mar) {
       stratum
     )
   return(out |> decorate_mar())
+}
+
+# Leave out trips matching any of the SQL LIKE patterns in skip_trips
+# (column trip). NB: NOT LIKE also drops rows with a NULL trip; there are
+#     none in biota.stod
+mar_skip_trips <- function(tbl, skip_trips) {
+  # NSE variables
+  trip <- NULL
+
+  for (p in skip_trips) {
+    tbl <- dplyr::filter(tbl, !(trip %like% local(p)))
+  }
+  tbl
 }

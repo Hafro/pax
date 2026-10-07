@@ -16,6 +16,9 @@
 #'   ICES areas, e.g. ``"5a%"``
 #' @param strata Character vector of strata names to import, from
 #'   [pax_def_strata_list()]
+#' @param skip_trips SQL LIKE patterns of trips to leave out of the station
+#'   and sampling tables, see [pax_mar_station()]. By default the
+#'   stomach-sampling trips ``MAG*`` and ``MO*``; ``NULL`` keeps all
 #' @param mar_opts Named list of additional options passed to
 #'   ``mar::connect_mar()``
 #' @param dbdir Path to a DuckDB database file, or ``":memory:"`` for an
@@ -29,6 +32,7 @@ pax_from_mar <- function(
   ices_area_like = "5a%",
   landings_year_start = year_start,
   strata = pax_def_strata_list(),
+  skip_trips = c("MAG%", "MO%"),
   mar_opts = list(),
   dbdir = ":memory:"
 ) {
@@ -61,7 +65,8 @@ pax_from_mar <- function(
       species = species,
       year_start = year_start,
       year_end = year_end,
-      sampling_type = sampling_type
+      sampling_type = sampling_type,
+      skip_trips = skip_trips
     )
   )
   pax_import(pcon, do.call(pax_mar_measurement, import_defs))
@@ -76,7 +81,10 @@ pax_from_mar <- function(
       year_end = import_defs$year_end
     )
   )
-  pax_import(pcon, do.call(pax_mar_sampling, import_defs))
+  pax_import(
+    pcon,
+    do.call(pax_mar_sampling, c(import_defs, list(skip_trips = skip_trips)))
+  )
   pax_import(pcon, pax_mar_aldist(mar, species = import_defs$species))
   pax_import(pcon, pax_mar_ldist(mar, species = import_defs$species))
   pax_import(

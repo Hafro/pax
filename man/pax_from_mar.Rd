@@ -12,6 +12,7 @@ pax_from_mar(
   ices_area_like = "5a\%",
   landings_year_start = year_start,
   strata = pax_def_strata_list(),
+  skip_trips = c("MAG\%", "MO\%"),
   mar_opts = list(),
   dbdir = ":memory:"
 )
@@ -34,6 +35,10 @@ for figures of the landings history.}
 
 \item{strata}{Character vector of strata names to import, from
 \code{\link[=pax_def_strata_list]{pax_def_strata_list()}}}
+
+\item{skip_trips}{SQL LIKE patterns of trips to leave out of the station
+and sampling tables, see \code{\link[=pax_mar_station]{pax_mar_station()}}. By default the
+stomach-sampling trips \verb{MAG*} and \verb{MO*}; \code{NULL} keeps all}
 
 \item{mar_opts}{Named list of additional options passed to
 \code{mar::connect_mar()}}

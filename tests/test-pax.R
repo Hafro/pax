@@ -81,3 +81,23 @@ ok_group("pax_import:csvread", {
     "lovely_csv: Table imported"
   )
 })
+
+ok_group("mar_skip_trips", {
+  pcon <- pax_connect(":memory:")
+  tbl <- pax:::ut_tbl(
+    pcon,
+    data.frame(trip = c("A1-2022", "MAG1-2022", "MOGUN22", "TB1-2022"))
+  )
+  ok(
+    ut_cmp_equal(
+      pax:::mar_skip_trips(tbl, c("MAG%", "MO%")) |> dplyr::pull(trip) |> sort(),
+      c("A1-2022", "TB1-2022")
+    ),
+    "Stomach-sampling trips left out by default patterns"
+  )
+  ok(
+    ut_cmp_equal(nrow(dplyr::collect(pax:::mar_skip_trips(tbl, NULL))), 4L),
+    "skip_trips = NULL keeps all trips"
+  )
+  DBI::dbDisconnect(pcon)
+})
