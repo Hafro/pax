@@ -5,7 +5,8 @@
 #'
 #' @param tbl A dplyr query from the station table
 #' @param ldist A dplyr query from the ldist table, pre-processed with
-#'   [pax_ldist_scale_abund()] and [pax_ldist_add_weight()]
+#'   [pax_ldist_add_weight()]. The ldist table from [pax_mar_ldist()] is
+#'   already raised to the counted fish, so it is not scaled again
 #' @return A dplyr query with columns ``sample_id``, ``begin_lat``,
 #'   ``begin_lon``, ``year``, ``sampling_type``, ``species``, ``bio``
 #'   (biomass index per station), and ``zero_station`` (``"Zero catch"`` or
@@ -14,7 +15,6 @@
 pax_station_location_summary <- function(
   tbl,
   ldist = dplyr::tbl(dbplyr::remote_con(tbl), "ldist") |>
-    pax_ldist_scale_abund() |>
     pax_ldist_add_weight()
 ) {
   pcon <- dbplyr::remote_con(tbl)
@@ -29,13 +29,15 @@ pax_station_location_summary <- function(
   sampling_type <- NULL
   species <- NULL
   count <- NULL
-  a <- NULL
-  b <- NULL
+  weight <- NULL
   tow_length <- NULL
   bio <- NULL
 
   tbl |>
-    dplyr::left_join(ldist, by = c("sample_id", "species")) |>
+    dplyr::left_join(
+      ldist,
+      by = intersect(c("sample_id", "species"), colnames(tbl))
+    ) |>
     dplyr::mutate(dummy = 1) |>
     dplyr::left_join(
       pax_temptbl(pcon, species_dummies),
@@ -50,13 +52,10 @@ pax_station_location_summary <- function(
       species
     ) |>
     dplyr::summarise(
+      # weight (g) from pax_ldist_add_weight(), so kg per nautical mile
       bio = sum(
-        abs(
-          coalesce(count, 0) *
-            coalesce(a, 0.01) *
-            abs(coalesce(length, 0))^coalesce(b, 3)
-        ) /
-          abs(coalesce(pmax(tow_length, 0.1), 4)),
+        abs(coalesce(count, 0) * coalesce(weight, 0)) /
+          abs(coalesce(pmax(tow_length, 0.1, na.rm = TRUE), 4)),
         na.rm = TRUE
       ) /
         1e3

@@ -35,3 +35,73 @@ ok_group("pax_ldist_scale_tow_area", {
     "Groundfish survey: missing or 0 tow length is 1, long tows clamped"
   )
 })
+
+ok_group("pax_ldist_by_year: ldist is already raised, not raised again", {
+  # pax_mar_ldist() raises the counts with mar::skala_med_taldir(), so the
+  # ldist table holds 2 x the measured fish when as many were counted
+  pcon <- pax_connect(":memory:")
+  pax_import(
+    pcon,
+    data.frame(
+      sample_id = c("1", "2"),
+      year = 2019,
+      sampling_type = 30,
+      mfdb_gear_code = "BMT",
+      begin_lat = 64,
+      begin_lon = -22,
+      tow_length = 4
+    ),
+    name = "station"
+  )
+  pax_import(
+    pcon,
+    data.frame(
+      sample_id = c("1", "1", "2"),
+      species = 1,
+      length = c(40.2, 50, 50),
+      sex = 1,
+      count = c(20, 20, 10)
+    ),
+    name = "ldist"
+  )
+  pax_import(
+    pcon,
+    data.frame(
+      sample_id = c("1", "1", "2"),
+      species = 1,
+      measurement_type = c("LEN", "CNT", "LEN"),
+      count = c(20, 20, 10)
+    ),
+    name = "measurement"
+  )
+  pax_import(
+    pcon,
+    data.frame(species = 1, a = 0.01, b = 3),
+    name = "lw_coeffs"
+  )
+  out <- dplyr::tbl(pcon, "station") |>
+    pax_ldist_by_year() |>
+    dplyr::arrange(length) |>
+    dplyr::collect()
+  ok(
+    ut_cmp_equal(out$length, c(40, 50)),
+    "Lengths rounded"
+  )
+  ok(
+    ut_cmp_equal(out$n, c(20, 30)),
+    "Counts summed as in ldist, sample 1 not raised a second time"
+  )
+
+  loc <- dplyr::tbl(pcon, "station") |>
+    pax_station_location_summary() |>
+    dplyr::arrange(sample_id) |>
+    dplyr::collect()
+  ok(
+    ut_cmp_equal(
+      loc$bio,
+      c(20 * 0.01 * 40.2^3 + 20 * 0.01 * 50^3, 10 * 0.01 * 50^3) / 4 / 1e3
+    ),
+    "pax_station_location_summary: kg/nm from the ldist counts and weights"
+  )
+  DBI::dbDisconnect(pcon)
+})

@@ -40,9 +40,7 @@ pax_ldist_scale_tow_area(
 
 pax_ldist_by_year(
   tbl,
- 
-    ldist_tbl = pax_ldist_scale_abund(pax_ldist_scale_round(dplyr::tbl(dbplyr::remote_con(tbl),
-    "ldist")))
+  ldist_tbl = pax_ldist_scale_round(dplyr::tbl(dbplyr::remote_con(tbl), "ldist"))
 )
 
 pax_ldist_scale_abund(
@@ -85,7 +83,9 @@ with columns \code{sampling_type}, \code{min_towlength}, \code{max_towlength},
 \code{gear_id} and \code{vf_adj}}
 
 \item{ldist_tbl}{A dplyr query from the ldist table, pre-processed with
-\code{\link[=pax_ldist_scale_round]{pax_ldist_scale_round()}} and \code{\link[=pax_ldist_scale_abund]{pax_ldist_scale_abund()}}}
+\code{\link[=pax_ldist_scale_round]{pax_ldist_scale_round()}}. The ldist table from \code{\link[=pax_mar_ldist]{pax_mar_ldist()}} is
+already raised to the counted fish (\code{mar::skala_med_taldir()}), so
+don't apply \code{\link[=pax_ldist_scale_abund]{pax_ldist_scale_abund()}} to it again}
 
 \item{measurement_tbl}{A dplyr query from the measurement table, used to
 compute the ratio of counted (CNT/WEI) to length-measured (LEN/LENM/LENC)
@@ -122,7 +122,9 @@ rescaled to fish per square nautical mile}
 aggregated by species, year, sex, length, and gear}
 
 \subsection{pax_ldist_scale_abund}{A dplyr query with \code{count}
-scaled up to represent total abundance based on subsample ratios}
+scaled up to represent total abundance based on subsample ratios. Only
+for unraised length counts: the ldist table from \code{\link[=pax_mar_ldist]{pax_mar_ldist()}} is
+already raised}
 
 \subsection{pax_ldist_plot}{A ggplot2 faceted plot of length
 distributions by year, with mean length and sample size annotations}

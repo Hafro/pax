@@ -191,7 +191,9 @@ pax_ldist_scale_tow_area <-
   }
 
 #' @param ldist_tbl A dplyr query from the ldist table, pre-processed with
-#'   [pax_ldist_scale_round()] and [pax_ldist_scale_abund()]
+#'   [pax_ldist_scale_round()]. The ldist table from [pax_mar_ldist()] is
+#'   already raised to the counted fish (``mar::skala_med_taldir()``), so
+#'   don't apply [pax_ldist_scale_abund()] to it again
 #' @return \subsection{pax_ldist_by_year}{A dplyr query of length distributions
 #'   aggregated by species, year, sex, length, and gear}
 #' @rdname pax_ldist
@@ -199,8 +201,7 @@ pax_ldist_scale_tow_area <-
 pax_ldist_by_year <- function(
   tbl, # probably dplyr::tbl(pcon, "station")
   ldist_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "ldist") |>
-    pax_ldist_scale_round() |>
-    pax_ldist_scale_abund()
+    pax_ldist_scale_round()
 ) {
   con <- dbplyr::remote_con(tbl)
 
@@ -231,7 +232,9 @@ pax_ldist_by_year <- function(
 #'   compute the ratio of counted (CNT/WEI) to length-measured (LEN/LENM/LENC)
 #'   fish for abundance scaling
 #' @return \subsection{pax_ldist_scale_abund}{A dplyr query with ``count``
-#'   scaled up to represent total abundance based on subsample ratios}
+#'   scaled up to represent total abundance based on subsample ratios. Only
+#'   for unraised length counts: the ldist table from [pax_mar_ldist()] is
+#'   already raised}
 #' @rdname pax_ldist
 # Was: mar::skala_med_taldir
 pax_ldist_scale_abund <- function(

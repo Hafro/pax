@@ -6,15 +6,15 @@
 \usage{
 pax_station_location_summary(
   tbl,
-  ldist = pax_ldist_add_weight(pax_ldist_scale_abund(dplyr::tbl(dbplyr::remote_con(tbl),
-    "ldist")))
+  ldist = pax_ldist_add_weight(dplyr::tbl(dbplyr::remote_con(tbl), "ldist"))
 )
 }
 \arguments{
 \item{tbl}{A dplyr query from the station table}
 
 \item{ldist}{A dplyr query from the ldist table, pre-processed with
-\code{\link[=pax_ldist_scale_abund]{pax_ldist_scale_abund()}} and \code{\link[=pax_ldist_add_weight]{pax_ldist_add_weight()}}}
+\code{\link[=pax_ldist_add_weight]{pax_ldist_add_weight()}}. The ldist table from \code{\link[=pax_mar_ldist]{pax_mar_ldist()}} is
+already raised to the counted fish, so it is not scaled again}
 }
 \value{
 A dplyr query with columns \code{sample_id}, \code{begin_lat},
