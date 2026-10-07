@@ -40,7 +40,8 @@ pax_add_ocean_depth_class(
   tbl,
   ocean_depth_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "ocean_depth"),
   breaks = c(0, 100, 200, 300),
-  ignore_missing_col = FALSE
+  ignore_missing_col = FALSE,
+  fill_resolution = 6
 )
 
 pax_add_gear_group(tbl, gear_group = NULL, ignore_missing_col = FALSE)
@@ -76,7 +77,9 @@ pax_add_other()
 
 \item{division_tbl}{Mapping of gridcell -> division, by default the internal \link{gridcell} mapping}
 
-\item{ocean_depth_tbl}{Table containing a mapping from \code{h3_cell} to \code{ocean_depth}, used when the \code{ocean_depth} column is \code{NA}}
+\item{ocean_depth_tbl}{Table containing a mapping from \code{h3_cells} to \code{ocean_depth}, used when the \code{ocean_depth} column is \code{NA}: the mean depth around the record's own \code{h3_cells}, see \code{fill_resolution}. Records without a position (or outside the table) stay \code{NA}, class \code{"Unknown"}}
+
+\item{fill_resolution}{H3 resolution at which the record's cells are matched to \code{ocean_depth_tbl} when filling missing depths (default 6, cells of about 36 km²; the bathymetry is too sparse for the database resolution). Cells without bathymetry at that resolution are matched at the two coarser resolutions}
 }
 \value{
 \subsection{pax_add_groupings}{A dplyr query, with all grouping columns added}

@@ -217,7 +217,8 @@ data_update_gridcell <- function(mar) {
     utils::write.table(file = "pax/data/gridcell.txt")
 }
 
-#' @param ocean_depth_tbl Table containing a mapping from ``h3_cell`` to ``ocean_depth``, used when the ``ocean_depth`` column is ``NA``
+#' @param ocean_depth_tbl Table containing a mapping from ``h3_cells`` to ``ocean_depth``, used when the ``ocean_depth`` column is ``NA``: the mean depth around the record's own ``h3_cells``, see ``fill_resolution``. Records without a position (or outside the table) stay ``NA``, class ``"Unknown"``
+#' @param fill_resolution H3 resolution at which the record's cells are matched to ``ocean_depth_tbl`` when filling missing depths (default 6, cells of about 36 km²; the bathymetry is too sparse for the database resolution). Cells without bathymetry at that resolution are matched at the two coarser resolutions
 #' @param ocean_depth,breaks Ocean depth breaks, everything beyond the final group is part of a plus group
 #' @return \subsection{pax_add_ocean_depth_class}{Query with an additional ``ocean_depth_class`` column, binning a ``ocean_depth`` or ``h3_cells`` column}
 #' @rdname pax_add_groupings
@@ -226,12 +227,20 @@ pax_add_ocean_depth_class <- function(
   tbl,
   ocean_depth_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "ocean_depth"),
   breaks = c(0, 100, 200, 300),
-  ignore_missing_col = FALSE
+  ignore_missing_col = FALSE,
+  fill_resolution = 6
 ) {
   pcon <- dbplyr::remote_con(tbl)
 
   # NSE variables
+  h3_parent <- NULL
   ocean_depth_class <- NULL
+  ocean_depth <- NULL
+  ocean_depth_fill <- NULL
+  od_depth <- NULL
+  od_h3_cells <- NULL
+  h3_cell <- NULL
+  h3_cells <- NULL
 
   if (isTRUE(ignore_missing_col) && !("ocean_depth" %in% colnames(tbl))) {
     # Column not present in this table, do nothing
@@ -243,21 +252,46 @@ pax_add_ocean_depth_class <- function(
   b_labs <- paste(breaks[-length(breaks)], breaks[-1], sep = '-')
   b_labs_plusgroup <- sprintf("%d+", b_max)
 
+  if ("h3_cells" %in% colnames(tbl)) {
+    # If depth missing, use the mean depth from ocean_depth_tbl around the
+    # record's own h3 cells. NB: This used to be a subquery
+    # "WHERE h3_cell IN h3_cells", where h3_cells bound to ocean_depth_tbl's
+    # own column, so every missing depth got the mean of the whole table
+    # Cells are matched at fill_resolution: the bathymetry has about one
+    # point per few cells of the database resolution. Cells without
+    # bathymetry at that resolution are tried at the two coarser ones
+    for (res in as.integer(fill_resolution) - 0:2) {
+      to_parent <- dplyr::sql(paste0(
+        "h3_cell_to_parent(h3_cell::UBIGINT, ",
+        res,
+        ")"
+      ))
+      od_cells <- ocean_depth_tbl |>
+        dplyr::select(od_h3_cells = h3_cells, od_depth = ocean_depth) |>
+        dplyr::mutate(h3_cell = dplyr::sql("UNNEST(od_h3_cells)")) |>
+        dplyr::mutate(h3_parent = to_parent) |>
+        dplyr::select(h3_parent, od_depth)
+      depth_fill <- tbl |>
+        dplyr::filter(is.na(ocean_depth), !is.na(h3_cells)) |>
+        dplyr::distinct(h3_cells) |>
+        dplyr::mutate(h3_cell = dplyr::sql("UNNEST(h3_cells)")) |>
+        dplyr::mutate(h3_parent = to_parent) |>
+        dplyr::inner_join(od_cells, by = "h3_parent") |>
+        dplyr::group_by(h3_cells) |>
+        # NB: Negative depths are land, a coastal cell is at least 0 m
+        dplyr::summarise(
+          ocean_depth_fill = pmax(mean(od_depth, na.rm = TRUE), 0, na.rm = TRUE)
+        ) |>
+        dplyr::ungroup()
+      tbl <- tbl |>
+        dplyr::left_join(depth_fill, by = "h3_cells") |>
+        dplyr::mutate(ocean_depth = coalesce(ocean_depth, ocean_depth_fill)) |>
+        dplyr::select(-ocean_depth_fill)
+    }
+  }
+
   tbl |>
     dplyr::mutate(
-      # If depth missing, use mean depth from ocean_depth_tbl
-      ocean_depth = case_when(
-        is.na(ocean_depth) ~
-          dplyr::sql(paste0(
-            "(
-        SELECT mean(od.ocean_depth)
-        FROM ",
-            dbplyr::remote_name(ocean_depth_tbl),
-            " od
-        WHERE h3_cell IN h3_cells)"
-          )),
-        TRUE ~ ocean_depth
-      ),
       ocean_depth_class = case_when(
         is.na(ocean_depth) ~ 'Unknown',
         ocean_depth > local(b_max) ~ b_labs_plusgroup,

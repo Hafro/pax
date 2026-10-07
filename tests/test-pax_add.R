@@ -113,3 +113,41 @@ ok_group("pax_add_regions", {
     "pax_add_regions: In-table division overrode gridcell"
   )
 })
+
+ok_group("pax_add_ocean_depth_class: missing depths from the record's own cells", {
+  pcon <- pax_connect(":memory:")
+  pax_import(
+    pcon,
+    data.frame(
+      lat = c(64.0, 66.5, 63.0),
+      lon = c(-22.0, -18.0, -14.5),
+      ocean_depth = c(50, 250, 800)
+    ),
+    name = "ocean_depth"
+  )
+  logbook <- pax:::ut_tbl(
+    pcon,
+    data.frame(
+      id = 1:5,
+      lat = c(64.0, 66.5, 63.0, 63.0, NA),
+      lon = c(-22.0, -18.0, -14.5, -14.5, NA),
+      ocean_depth = c(NA, NA, NA, 120, NA)
+    )
+  )
+  out <- logbook |>
+    pax_add_ocean_depth_class(breaks = c(0, 100, 200, 500)) |>
+    dplyr::arrange(id) |>
+    dplyr::collect()
+  ok(
+    ut_cmp_equal(out$ocean_depth, c(50, 250, 800, 120, NA)),
+    "Missing depths filled from each record's own cell, reported depth kept"
+  )
+  ok(
+    ut_cmp_equal(
+      out$ocean_depth_class,
+      c("0-100", "200-500", "500+", "100-200", "Unknown")
+    ),
+    "Depth classes, no position is Unknown"
+  )
+  DBI::dbDisconnect(pcon)
+})
