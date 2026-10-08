@@ -510,6 +510,10 @@ pax_mar_sampling <- function(
 #'   By default the stomach-sampling trips ``MAG*`` and ``MO*`` (MAGEI,
 #'   MOGUN), which should be a separate sampling type. ``NULL`` keeps all
 #'   trips, as tidypax ``si_stations()`` did
+#' @param gridcell_from_position If ``TRUE``, stations without a rectangle
+#'   or subrectangle (``reitur``, ``smareitur``) get the gridcell of their
+#'   position (as ``geo::d2sr()``). Otherwise (default) their gridcell is
+#'   ``NA``, they get no region, and e.g. match no age-length key
 #' @rdname pax_mar
 # Was: tidypax::si_stations
 pax_mar_station <- function(
@@ -518,13 +522,15 @@ pax_mar_station <- function(
   sampling_type = NULL,
   year_start = NULL,
   year_end = NULL,
-  skip_trips = c('MAG%', 'MO%')
+  skip_trips = c('MAG%', 'MO%'),
+  gridcell_from_position = FALSE
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
 
   # NSE variables
+  pos_gridcell <- NULL
   leidangur <- NULL
   reitur <- NULL
   smareitur <- NULL
@@ -556,6 +562,16 @@ pax_mar_station <- function(
     mar_skip_trips(skip_trips) |>
     dplyr::rename(leidangur = trip) |>
     dplyr::mutate(gridcell = 10 * reitur + smareitur) |> ## change to nautical miles^2
+    (function(tbl) {
+      if (!isTRUE(gridcell_from_position)) {
+        return(tbl)
+      }
+      # Stations without a rectangle/subrectangle, but with a position
+      tbl |>
+        mar_d2sr_gridcell() |>
+        dplyr::mutate(gridcell = dplyr::coalesce(gridcell, pos_gridcell)) |>
+        dplyr::select(-pos_gridcell)
+    })() |>
     dplyr::left_join(mar::les_syni(mar), by = 'stod_id') |>
     dplyr::mutate(
       station = reitur * 10000 + nvl(tog_nr, 0) * 100 + veidarfaeri
@@ -705,4 +721,52 @@ mar_skip_trips <- function(tbl, skip_trips) {
     tbl <- dplyr::filter(tbl, !(trip %like% local(p)))
   }
   tbl
+}
+
+# Statistical subrectangle (gridcell, 10 * rectangle + subrectangle) of the
+# position kastad_breidd/kastad_lengd as pos_gridcell, as geo::d2sr()
+mar_d2sr_gridcell <- function(tbl) {
+  # NSE variables
+  kastad_breidd <- kastad_lengd <- NULL
+  d2sr_lat <- d2sr_lon <- d2sr_r <- d2sr_rlat <- d2sr_rlon <- NULL
+  d2sr_dl <- pos_gridcell <- NULL
+
+  tbl |>
+    dplyr::mutate(
+      d2sr_lat = kastad_breidd + 1e-06,
+      d2sr_lon = -(kastad_lengd - 1e-06)
+    ) |>
+    dplyr::mutate(
+      d2sr_r = (floor(d2sr_lat) - 60) * 100 +
+        floor(d2sr_lon) +
+        dplyr::if_else(d2sr_lat - floor(d2sr_lat) > 0.5, 50, 0)
+    ) |>
+    dplyr::mutate(
+      d2sr_rlat = floor(d2sr_r / 100) +
+        60 +
+        dplyr::if_else(d2sr_r - 100 * floor(d2sr_r / 100) >= 50, 0.75, 0.25),
+      d2sr_rlon = -(d2sr_r - 50 * floor(d2sr_r / 50) + 0.5)
+    ) |>
+    dplyr::mutate(
+      d2sr_dl = sign(-(d2sr_lat - d2sr_rlat) + 1e-07) +
+        2 * sign(-(-d2sr_lon - d2sr_rlon) + 1e-07)
+    ) |>
+    dplyr::mutate(
+      pos_gridcell = 10 *
+        d2sr_r +
+        dplyr::case_when(
+          d2sr_dl == -3 ~ 2,
+          d2sr_dl == -1 ~ 4,
+          d2sr_dl == 1 ~ 1,
+          d2sr_dl == 3 ~ 3
+        )
+    ) |>
+    dplyr::select(
+      -d2sr_lat,
+      -d2sr_lon,
+      -d2sr_r,
+      -d2sr_rlat,
+      -d2sr_rlon,
+      -d2sr_dl
+    )
 }

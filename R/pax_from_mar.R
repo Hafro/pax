@@ -19,6 +19,8 @@
 #' @param skip_trips SQL LIKE patterns of trips to leave out of the station
 #'   and sampling tables, see [pax_mar_station()]. By default the
 #'   stomach-sampling trips ``MAG*`` and ``MO*``; ``NULL`` keeps all
+#' @param gridcell_from_position If ``TRUE``, stations without a
+#'   rectangle get the gridcell of their position, see [pax_mar_station()]
 #' @param mar_opts Named list of additional options passed to
 #'   ``mar::connect_mar()``
 #' @param dbdir Path to a DuckDB database file, or ``":memory:"`` for an
@@ -33,6 +35,7 @@ pax_from_mar <- function(
   landings_year_start = year_start,
   strata = pax_def_strata_list(),
   skip_trips = c("MAG%", "MO%"),
+  gridcell_from_position = FALSE,
   mar_opts = list(),
   dbdir = ":memory:"
 ) {
@@ -66,7 +69,8 @@ pax_from_mar <- function(
       year_start = year_start,
       year_end = year_end,
       sampling_type = sampling_type,
-      skip_trips = skip_trips
+      skip_trips = skip_trips,
+      gridcell_from_position = gridcell_from_position
     )
   )
   pax_import(pcon, do.call(pax_mar_measurement, import_defs))

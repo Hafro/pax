@@ -56,7 +56,8 @@ pax_mar_station(
   sampling_type = NULL,
   year_start = NULL,
   year_end = NULL,
-  skip_trips = c("MAG\%", "MO\%")
+  skip_trips = c("MAG\%", "MO\%"),
+  gridcell_from_position = FALSE
 )
 
 pax_mar_strata_stations(mar)
@@ -84,6 +85,11 @@ e.g. \code{c("LEN", "OTOL")}}
 By default the stomach-sampling trips \verb{MAG*} and \verb{MO*} (MAGEI,
 MOGUN), which should be a separate sampling type. \code{NULL} keeps all
 trips, as tidypax \code{si_stations()} did}
+
+\item{gridcell_from_position}{If \code{TRUE}, stations without a rectangle
+or subrectangle (\code{reitur}, \code{smareitur}) get the gridcell of their
+position (as \code{geo::d2sr()}). Otherwise (default) their gridcell is
+\code{NA}, they get no region, and e.g. match no age-length key}
 }
 \value{
 \subsection{pax_mar_logbook}{A dplyr query with columns

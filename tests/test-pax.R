@@ -101,3 +101,33 @@ ok_group("mar_skip_trips", {
   )
   DBI::dbDisconnect(pcon)
 })
+
+ok_group("mar_d2sr_gridcell", {
+  # geo::d2sr(), as in 07-bli's bli_d2sr()
+  d2sr <- function(lat, lon) {
+    lat <- lat + 1e-06
+    lon <- -(lon - 1e-06)
+    r <- (floor(lat) - 60) * 100 + floor(lon)
+    r <- ifelse(lat - floor(lat) > 0.5, r + 50, r)
+    r_lat <- (r %/% 100) + 60 + ifelse((r %% 100) >= 50, 0.75, 0.25)
+    r_lon <- -((r %% 100) %% 50 + 0.5)
+    dlat <- -(lat - r_lat)
+    dlon <- -(-lon - r_lon)
+    dl <- sign(dlat + 1e-07) + 2 * sign(dlon + 1e-07) + 4
+    floor(r * 10 + c(2, 0, 4, 0, 1, 0, 3)[dl])
+  }
+  set.seed(1)
+  pos <- data.frame(
+    kastad_breidd = c(64.1, 64.6, 66.25, 63.0, runif(200, 62, 68)),
+    kastad_lengd = c(-22.3, -22.8, -18.5, -14.0, runif(200, -30, -10))
+  )
+  pcon <- pax_connect(":memory:")
+  out <- pax:::ut_tbl(pcon, pos) |>
+    pax:::mar_d2sr_gridcell() |>
+    dplyr::collect()
+  ok(
+    ut_cmp_equal(out$pos_gridcell, d2sr(out$kastad_breidd, out$kastad_lengd)),
+    "Gridcell of a position as geo::d2sr()"
+  )
+  DBI::dbDisconnect(pcon)
+})

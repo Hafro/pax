@@ -13,6 +13,7 @@ pax_from_mar(
   landings_year_start = year_start,
   strata = pax_def_strata_list(),
   skip_trips = c("MAG\%", "MO\%"),
+  gridcell_from_position = FALSE,
   mar_opts = list(),
   dbdir = ":memory:"
 )
@@ -39,6 +40,9 @@ for figures of the landings history.}
 \item{skip_trips}{SQL LIKE patterns of trips to leave out of the station
 and sampling tables, see \code{\link[=pax_mar_station]{pax_mar_station()}}. By default the
 stomach-sampling trips \verb{MAG*} and \verb{MO*}; \code{NULL} keeps all}
+
+\item{gridcell_from_position}{If \code{TRUE}, stations without a
+rectangle get the gridcell of their position, see \code{\link[=pax_mar_station]{pax_mar_station()}}}
 
 \item{mar_opts}{Named list of additional options passed to
 \code{mar::connect_mar()}}
