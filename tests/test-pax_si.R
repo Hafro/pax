@@ -187,3 +187,65 @@ ok_group("pax_si_scale_by_landings: landings with unknown month", {
     "month_na = 6, gear_na = 'BMT': in t1 bottom trawl"
   )
 })
+
+ok_group("pax_si_scale_by_landings: landings with gears outside the groups", {
+  si <- pax:::ut_tbl(
+    pcon,
+    data.frame(
+      species = 1,
+      year = 2000,
+      tgroup = "t1",
+      gear_name = c("BMT", "Other"),
+      region = "all",
+      si_abund = 1,
+      si_biomass = 2
+    )
+  )
+  landings <- pax:::ut_tbl(
+    pcon,
+    data.frame(
+      species = 1,
+      year = 2000,
+      month = 3,
+      mfdb_gear_code = c("BMT", "GIL"),
+      catch = c(1000, 7000)
+    )
+  )
+  msg <- NULL
+  out <- withCallingHandlers(
+    pax_si_scale_by_landings(
+      si,
+      1,
+      landings_tbl = landings,
+      gear_group = list(BMT = "BMT"),
+      tgroup = list(t1 = 1:12)
+    ) |>
+      dplyr::collect(),
+    message = function(m) {
+      msg <<- c(msg, conditionMessage(m))
+      invokeRestart("muffleMessage")
+    }
+  )
+  ok(
+    any(grepl("outside the gear groups \\(7 t\\)", msg)),
+    "Message with the landings left out"
+  )
+  msg <- NULL
+  out <- withCallingHandlers(
+    pax_si_scale_by_landings(
+      si,
+      1,
+      landings_tbl = landings,
+      gear_group = list(BMT = "BMT", Other = pax_add_other()),
+      tgroup = list(t1 = 1:12)
+    ) |>
+      dplyr::arrange(gear_name) |>
+      dplyr::collect(),
+    message = function(m) {
+      msg <<- c(msg, conditionMessage(m))
+      invokeRestart("muffleMessage")
+    }
+  )
+  ok(!any(grepl("outside the gear groups", msg)), "No message with a default group")
+  ok(ut_cmp_equal(out$si_biomass, c(1000, 7000)), "Other gears in the default group")
+})

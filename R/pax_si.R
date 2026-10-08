@@ -137,6 +137,28 @@ pax_si_scale_by_landings <- function(
     }
   }
 
+  if (!is.null(gear_group) && !any(lengths(gear_group) == 0)) {
+    # No default group (pax_add_other()): landings with other gears get no
+    # gear group and are left out of the scaling
+    gear_codes <- unlist(gear_group)
+    catch_no_group <- landings_tbl |>
+      dplyr::filter(
+        !(mfdb_gear_code %in% local(gear_codes[!is.na(gear_codes)])),
+        local(!anyNA(gear_codes)) | !is.na(mfdb_gear_code)
+      ) |>
+      dplyr::semi_join(dplyr::distinct(tbl, species), by = "species") |>
+      dplyr::summarise(catch = sum(catch, na.rm = TRUE)) |>
+      dplyr::pull(catch)
+    if (isTRUE(catch_no_group > 0)) {
+      message(
+        "Landings with a gear outside the gear groups (",
+        round(catch_no_group / 1e3),
+        " t) are left out of the scaling, add a default group with ",
+        "pax_add_other()"
+      )
+    }
+  }
+
   landings <-
     landings_tbl |>
     pax_add_groupings(
