@@ -68,6 +68,11 @@ pax_si_scale_by_alk <- function(
 #' @param landings_tbl A dplyr query from the landings table
 #' @param logbook_tbl A dplyr query from the logbook table, used to disaggregate
 #'   landings by area when more than one region is defined
+#' @param month_na,gear_na Month and ``mfdb_gear_code`` to give landings with
+#'   an unknown month or gear (e.g. ``6`` and ``"BMT"``, as tidypax did).
+#'   Default ``NULL``: landings with an unknown month get no ``tgroup`` (unless
+#'   a ``tgroup`` contains ``NA``) and are left out of the scaling, with a
+#'   message giving their total
 #' @return \subsection{pax_si_scale_by_landings}{A dplyr query with
 #'   ``si_abund`` and ``si_biomass`` rescaled so that total biomass matches
 #'   commercial landings}
@@ -84,11 +89,15 @@ pax_si_scale_by_landings <- function(
     LLN = 'LLN',
     DSE = c('PSE', 'DSE')
   ),
-  tgroup = list(t1 = 1:6, t2 = 7:12)
+  tgroup = list(t1 = 1:6, t2 = 7:12),
+  month_na = NULL,
+  gear_na = NULL
 ) {
   pcon <- dbplyr::remote_con(tbl)
 
   # NSE variables
+  month <- NULL
+  mfdb_gear_code <- NULL
   catch <- NULL
   catch_proportion <- NULL
   gear_name <- NULL
@@ -96,6 +105,37 @@ pax_si_scale_by_landings <- function(
   si_abund <- NULL
   si_biomass <- NULL
   year <- NULL
+
+  if (!is.null(month_na)) {
+    landings_tbl <- dplyr::mutate(
+      landings_tbl,
+      month = coalesce(month, local(month_na))
+    )
+  }
+  if (!is.null(gear_na)) {
+    landings_tbl <- dplyr::mutate(
+      landings_tbl,
+      mfdb_gear_code = coalesce(mfdb_gear_code, local(gear_na))
+    )
+  }
+  if (
+    is.null(month_na) &&
+      !is.null(tgroup) &&
+      !any(is.na(unlist(tgroup)))
+  ) {
+    catch_no_month <- landings_tbl |>
+      dplyr::filter(is.na(month)) |>
+      dplyr::semi_join(dplyr::distinct(tbl, species), by = "species") |>
+      dplyr::summarise(catch = sum(catch, na.rm = TRUE)) |>
+      dplyr::pull(catch)
+    if (isTRUE(catch_no_month > 0)) {
+      message(
+        "Landings with unknown month (",
+        round(catch_no_month / 1e3),
+        " t) are left out of the scaling, see month_na"
+      )
+    }
+  }
 
   landings <-
     landings_tbl |>
@@ -151,10 +191,12 @@ pax_si_scale_by_landings <- function(
     dplyr::left_join(landings) |>
     dplyr::group_by(species, year, tgroup, gear_name, region) |>
     dplyr::mutate(
-      si_abund = si_abund * coalesce(catch, sum(si_biomass)) / sum(si_biomass),
+      si_abund = si_abund *
+        coalesce(catch, sum(si_biomass, na.rm = TRUE)) /
+        sum(si_biomass, na.rm = TRUE),
       si_biomass = si_biomass *
-        coalesce(catch, sum(si_biomass)) /
-        sum(si_biomass)
+        coalesce(catch, sum(si_biomass, na.rm = TRUE)) /
+        sum(si_biomass, na.rm = TRUE)
     )
 }
 

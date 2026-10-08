@@ -134,3 +134,56 @@ ok_group("pax_si_scale_by_strata: strata from a fixed station list", {
     "Stations not in the list get no stratum, as stations outside the strata"
   )
 })
+
+ok_group("pax_si_scale_by_landings: landings with unknown month", {
+  si <- pax:::ut_tbl(
+    pcon,
+    data.frame(
+      species = 1,
+      year = 2000,
+      tgroup = c("t1", "t2"),
+      gear_name = "BMT",
+      region = "all",
+      si_abund = 1,
+      si_biomass = 2
+    )
+  )
+  landings <- pax:::ut_tbl(
+    pcon,
+    data.frame(
+      species = 1,
+      year = 2000,
+      month = c(3, 9, NA),
+      mfdb_gear_code = c("BMT", "BMT", NA),
+      catch = c(1000, 3000, 5000)
+    )
+  )
+  msg <- NULL
+  out <- withCallingHandlers(
+    pax_si_scale_by_landings(si, 1, landings_tbl = landings) |>
+      dplyr::arrange(tgroup) |>
+      dplyr::collect(),
+    message = function(m) {
+      msg <<- c(msg, conditionMessage(m))
+      invokeRestart("muffleMessage")
+    }
+  )
+  ok(
+    ut_cmp_equal(out$si_biomass, c(1000, 3000)),
+    "Default: landings with unknown month left out"
+  )
+  ok(any(grepl("unknown month \\(5 t\\)", msg)), "...with a message")
+  out <- pax_si_scale_by_landings(
+    si,
+    1,
+    landings_tbl = landings,
+    month_na = 6,
+    gear_na = "BMT"
+  ) |>
+    dplyr::arrange(tgroup) |>
+    dplyr::collect()
+  ok(
+    ut_cmp_equal(out$si_biomass, c(6000, 3000)),
+    "month_na = 6, gear_na = 'BMT': in t1 bottom trawl"
+  )
+})

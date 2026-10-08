@@ -29,7 +29,9 @@ pax_si_scale_by_landings(
   regions = list(all = 101:115),
   gear_group = list(Other = "Var", BMT = c("BMT", "NPT", "SHT", "PGT"), LLN = "LLN", DSE
     = c("PSE", "DSE")),
-  tgroup = list(t1 = 1:6, t2 = 7:12)
+  tgroup = list(t1 = 1:6, t2 = 7:12),
+  month_na = NULL,
+  gear_na = NULL
 )
 
 pax_si_by_length(
@@ -75,6 +77,12 @@ integers, or \code{NULL} for one group per year}
 
 \item{logbook_tbl}{A dplyr query from the logbook table, used to disaggregate
 landings by area when more than one region is defined}
+
+\item{month_na, gear_na}{Month and \code{mfdb_gear_code} to give landings with
+an unknown month or gear (e.g. \code{6} and \code{"BMT"}, as tidypax did).
+Default \code{NULL}: landings with an unknown month get no \code{tgroup} (unless
+a \code{tgroup} contains \code{NA}) and are left out of the scaling, with a
+message giving their total}
 
 \item{ldist}{A dplyr query from the ldist table, pre-processed with
 \code{\link[=pax_ldist_add_weight]{pax_ldist_add_weight()}} to provide a \code{weight} column}
