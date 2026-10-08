@@ -132,7 +132,8 @@ records for the requested species, arranged by species and period}
 with length measurements for the requested species}
 
 \subsection{pax_mar_station}{A dplyr query with columns
-\code{sample_id}, \code{year}, \code{month}, \code{station}, \code{trip},
+\code{sample_id}, \code{haul_id} (the station visit, biota \code{stod_id}; in
+the gillnet survey one per set of nets), \code{year}, \code{month}, \code{station}, \code{trip},
 \code{sampling_type}, \code{gridcell}, \code{begin_lat}, \code{begin_lon},
 \code{end_lat}, \code{end_lon}, \code{mfdb_gear_code}, \code{gear_id},
 \code{tow_depth}, \code{tow_number}, \code{tow_length}, \code{tow_start},

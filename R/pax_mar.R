@@ -511,7 +511,8 @@ pax_mar_sampling <- function(
 }
 
 #' @return \subsection{pax_mar_station}{A dplyr query with columns
-#'   ``sample_id``, ``year``, ``month``, ``station``, ``trip``,
+#'   ``sample_id``, ``haul_id`` (the station visit, biota ``stod_id``; in
+#'   the gillnet survey one per set of nets), ``year``, ``month``, ``station``, ``trip``,
 #'   ``sampling_type``, ``gridcell``, ``begin_lat``, ``begin_lon``,
 #'   ``end_lat``, ``end_lon``, ``mfdb_gear_code``, ``gear_id``,
 #'   ``tow_depth``, ``tow_number``, ``tow_length``, ``tow_start``,
@@ -566,6 +567,7 @@ pax_mar_station <- function(
   syni_nr <- NULL
   smn_tog_nr <- NULL
   skip_nr <- NULL
+  stod_id <- NULL
 
   out <- mar::les_stod(mar) |>
     dplyr::rename(trip = leidangur) |>
@@ -653,6 +655,9 @@ pax_mar_station <- function(
     ) |>
     dplyr::select(
       sample_id = synis_id,
+      # The station visit (haul, or a gillnet survey set of several nets,
+      # one sample each), biota stod_id
+      haul_id = stod_id,
       year = ar,
       month = man,
       station,
