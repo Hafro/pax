@@ -23,6 +23,9 @@ pax_from_mar(
   medafli_species = NULL,
   foreign_tables = character(0),
   foreign_files = list(),
+  ger_survey_path = NULL,
+  ger_species = NULL,
+  ger_species_code = NULL,
   mar_opts = list(),
   dbdir = ":memory:"
 )
@@ -106,6 +109,15 @@ all years and trips, \code{\link[=pax_mar_sample]{pax_mar_sample()}}}
 \item{foreign_files}{Named list of foreign data files to import, read
 from the given paths when the database is built: names are the file
 types of \code{\link[=pax_foreign_file]{pax_foreign_file()}} (e.g. \code{list(greenland_logbooks = "path/to/logbooks_00-25.csv")}), values the paths. None by default}
+
+\item{ger_survey_path}{Directories or files of the Thünen-Institut
+exports of the German (Walther Herwig) Greenland survey, read when the
+database is built, see \code{\link[=pax_ger_survey]{pax_ger_survey()}}. \code{NULL} (default) for none.
+Adds the tables \code{ger_station}, \code{ger_catch}, \code{ger_ldist} and
+\code{ger_strata} (\code{\link[=pax_ger_strata]{pax_ger_strata()}})}
+
+\item{ger_species, ger_species_code}{The \code{species} and \code{species_code}
+of \code{\link[=pax_ger_survey]{pax_ger_survey()}}}
 
 \item{mar_opts}{Named list of additional options passed to
 \code{mar::connect_mar()}}

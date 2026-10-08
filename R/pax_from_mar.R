@@ -66,6 +66,13 @@
 #'   from the given paths when the database is built: names are the file
 #'   types of [pax_foreign_file()] (e.g. ``list(greenland_logbooks =
 #'   "path/to/logbooks_00-25.csv")``), values the paths. None by default
+#' @param ger_survey_path Directories or files of the Thünen-Institut
+#'   exports of the German (Walther Herwig) Greenland survey, read when the
+#'   database is built, see [pax_ger_survey()]. ``NULL`` (default) for none.
+#'   Adds the tables ``ger_station``, ``ger_catch``, ``ger_ldist`` and
+#'   ``ger_strata`` ([pax_ger_strata()])
+#' @param ger_species,ger_species_code The ``species`` and ``species_code``
+#'   of [pax_ger_survey()]
 #' @param mar_opts Named list of additional options passed to
 #'   ``mar::connect_mar()``
 #' @param dbdir Path to a DuckDB database file, or ``":memory:"`` for an
@@ -89,6 +96,9 @@ pax_from_mar <- function(
   medafli_species = NULL,
   foreign_tables = character(0),
   foreign_files = list(),
+  ger_survey_path = NULL,
+  ger_species = NULL,
+  ger_species_code = NULL,
   mar_opts = list(),
   dbdir = ":memory:"
 ) {
@@ -108,7 +118,7 @@ pax_from_mar <- function(
     stop("Unknown foreign_files: ", paste(unknown, collapse = ", "))
   }
   # Check the foreign files before the (slow) import from mar
-  for (f in foreign_files) {
+  for (f in c(foreign_files, if (length(ger_survey_path) > 0) list(ger_survey_path))) {
     if (!all(file.exists(f))) {
       stop("Foreign data file(s) not found: ", paste(f[!file.exists(f)], collapse = ", "))
     }
@@ -256,6 +266,17 @@ pax_from_mar <- function(
   }
   for (type in names(foreign_files)) {
     pax_import(pcon, pax_foreign_file(foreign_files[[type]], type))
+  }
+  if (length(ger_survey_path) > 0) {
+    ger <- pax_ger_survey(
+      ger_survey_path,
+      species = ger_species,
+      species_code = ger_species_code
+    )
+    for (t in ger) {
+      pax_import(pcon, t)
+    }
+    pax_import(pcon, pax_ger_strata())
   }
   return(pcon)
 }

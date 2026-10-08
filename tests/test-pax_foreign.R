@@ -157,6 +157,13 @@ if (requireNamespace("mar", quietly = TRUE)) {
       ),
       "Missing foreign file"
     )
+    ok(
+      ut_cmp_error(
+        pax_from_mar(1, ger_survey_path = file.path(dir, "badger")),
+        "not found"
+      ),
+      "Missing German survey path"
+    )
   })
 }
 
