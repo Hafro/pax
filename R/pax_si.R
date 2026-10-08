@@ -258,12 +258,20 @@ pax_si_scale_winsorize <- function(tbl, q = 0.95) {
 #'   assigned to a stratum, and ``si_abund`` and ``si_biomass`` multiplied by
 #'   the stratum area (in square nautical miles) and divided by the number of
 #'   stations in that stratum}
+#' @param strata_stations Optional fixed station list (e.g. the
+#'   ``strata_stations`` table filtered to one ``stratification``), a
+#'   data.frame or dplyr query with columns ``station`` and ``stratum``, and
+#'   optionally ``sampling_type``. If given, stations get their stratum from
+#'   it, as tidypax did, instead of from the h3 cell of the tow position;
+#'   stations not in the list get no stratum (as stations outside the
+#'   strata). Default ``NULL``, strata from tow positions
 #' @rdname pax_si
 # Was tidypax:si_add_strata
 pax_si_scale_by_strata <- function(
   tbl,
   strata_tbl,
-  area_col = "rall_area"
+  area_col = "rall_area",
+  strata_stations = NULL
 ) {
   pcon <- dbplyr::remote_con(tbl)
   # TODO: This should just be pax_temptbl()
@@ -289,7 +297,25 @@ pax_si_scale_by_strata <- function(
   tow_depth <- NULL
   year <- NULL
 
-  if ("h3_cells" %in% tbl_colnames && "h3_cells" %in% strata_tbl_colnames) {
+  if (!is.null(strata_stations)) {
+    strata_stations <- pax_temptbl(pcon, strata_stations)
+    ss_by <- intersect(
+      c("station", "sampling_type"),
+      intersect(colnames(strata_stations), tbl_colnames)
+    )
+    if (!("station" %in% ss_by)) {
+      stop("strata_stations and tbl need a station column")
+    }
+    out <- tbl |>
+      dplyr::left_join(
+        strata_stations |>
+          dplyr::select(dplyr::all_of(c(ss_by, "stratum"))) |>
+          dplyr::distinct(),
+        by = ss_by
+      )
+  } else if (
+    "h3_cells" %in% tbl_colnames && "h3_cells" %in% strata_tbl_colnames
+  ) {
     out <- tbl |>
       # First join to a de-duplicated map of h3_cell -> stratum ID
       # TODO: This is assuming the "first" h3_cell of the station is what to join against, not using stationlist, midpoint, etc.

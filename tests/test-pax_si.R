@@ -86,3 +86,51 @@ ok_group("pax_si_strata_summary/pax_si_year_summary", {
     "pax_si_strata_summary: Matches baseline"
   )
 })
+
+ok_group("pax_si_scale_by_strata: strata from a fixed station list", {
+  by_pos <- at_age |>
+    pax::pax_si_scale_by_strata("new_strata_spring") |>
+    dplyr::collect()
+  # Station list with the strata the positions gave, but one station moved
+  ss <- by_pos |>
+    dplyr::ungroup() |>
+    dplyr::distinct(sampling_type, station, stratum) |>
+    as.data.frame()
+  ss$stratum[ss$station == 6223777] <- 8
+  by_list <- at_age |>
+    pax::pax_si_scale_by_strata("new_strata_spring", strata_stations = ss) |>
+    dplyr::collect()
+  ok(
+    ut_cmp_equal(
+      by_list |>
+        dplyr::ungroup() |>
+        dplyr::distinct(station, stratum) |>
+        dplyr::arrange(station) |>
+        as.data.frame(),
+      ss |> dplyr::select(station, stratum) |> dplyr::arrange(station)
+    ),
+    "Stations get the stratum of the list"
+  )
+  s8 <- by_list |> dplyr::filter(stratum == 8)
+  s8_in <- at_age |>
+    dplyr::filter(station %in% local(unique(s8$station))) |>
+    dplyr::collect()
+  ok(
+    ut_cmp_equal(
+      sort(s8$si_abund),
+      sort(s8_in$si_abund * s8$area[[1]] / 2)
+    ),
+    "Stratum 8 now holds 2 stations, scaled by area / 2"
+  )
+  no_st <- at_age |>
+    pax::pax_si_scale_by_strata(
+      "new_strata_spring",
+      strata_stations = ss[ss$station != 6223777, ]
+    ) |>
+    dplyr::filter(station == 6223777) |>
+    dplyr::collect()
+  ok(
+    ut_cmp_equal(no_st$stratum, NA_real_) && ut_cmp_equal(no_st$area, NA_real_),
+    "Stations not in the list get no stratum, as stations outside the strata"
+  )
+})

@@ -39,7 +39,12 @@ pax_si_by_length(
 
 pax_si_scale_winsorize(tbl, q = 0.95)
 
-pax_si_scale_by_strata(tbl, strata_tbl, area_col = "rall_area")
+pax_si_scale_by_strata(
+  tbl,
+  strata_tbl,
+  area_col = "rall_area",
+  strata_stations = NULL
+)
 
 pax_si_strata_summary(tbl, length_range = c(5, 500), std.cv = 0.2)
 
@@ -82,6 +87,14 @@ columns \code{stratum}, \code{h3_cells}, \code{rall_area}, and \code{geom}}
 
 \item{area_col}{Name of the column in \code{strata_tbl} containing the
 surveyable area in km² (default \code{"rall_area"})}
+
+\item{strata_stations}{Optional fixed station list (e.g. the
+\code{strata_stations} table filtered to one \code{stratification}), a
+data.frame or dplyr query with columns \code{station} and \code{stratum}, and
+optionally \code{sampling_type}. If given, stations get their stratum from
+it, as tidypax did, instead of from the h3 cell of the tow position;
+stations not in the list get no stratum (as stations outside the
+strata). Default \code{NULL}, strata from tow positions}
 
 \item{length_range}{Numeric vector of length 2, only fish within this length
 range (exclusive) contribute to the summary}
