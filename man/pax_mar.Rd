@@ -57,7 +57,8 @@ pax_mar_station(
   year_start = NULL,
   year_end = NULL,
   skip_trips = c("MAG\%", "MO\%"),
-  gridcell_from_position = FALSE
+  gridcell_from_position = FALSE,
+  only_trips = NULL
 )
 
 pax_mar_strata_stations(mar)
@@ -95,6 +96,10 @@ trips, as tidypax \code{si_stations()} did}
 or subrectangle (\code{reitur}, \code{smareitur}) get the gridcell of their
 position (as \code{geo::d2sr()}). Otherwise (default) their gridcell is
 \code{NA}, they get no region, and e.g. match no age-length key}
+
+\item{only_trips}{SQL LIKE patterns of trips to keep, \code{NULL} (default)
+for all. With \code{skip_trips = NULL} and \code{only_trips = c("MAG\%", "MO\%")}, the stations of the stomach-sampling trips, see the
+\code{extra_tables} of \code{\link[=pax_from_mar]{pax_from_mar()}}}
 }
 \value{
 \subsection{pax_mar_logbook}{A dplyr query with columns

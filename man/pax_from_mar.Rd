@@ -2,6 +2,7 @@
 % Please edit documentation in R/pax_from_mar.R
 \name{pax_from_mar}
 \alias{pax_from_mar}
+\alias{pax_from_mar_extra_tables}
 \title{Create a pax database populated from the MAR database}
 \usage{
 pax_from_mar(
@@ -16,9 +17,15 @@ pax_from_mar(
   sampling_gear = c("BMT", "LLN", "DSE"),
   skip_trips = c("MAG\%", "MO\%"),
   gridcell_from_position = FALSE,
+  logbook_species = species,
+  logbook_year_start = year_start,
+  extra_tables = character(0),
+  medafli_species = NULL,
   mar_opts = list(),
   dbdir = ":memory:"
 )
+
+pax_from_mar_extra_tables()
 }
 \arguments{
 \item{species}{Integer vector of species codes to import}
@@ -53,6 +60,43 @@ stomach-sampling trips \verb{MAG*} and \verb{MO*}; \code{NULL} keeps all}
 \item{gridcell_from_position}{If \code{TRUE}, stations without a
 rectangle get the gridcell of their position, see \code{\link[=pax_mar_station]{pax_mar_station()}}}
 
+\item{logbook_species}{Species codes of the \code{logbook} table (and of
+the optional \code{logbook_old}), default \code{species}. Add other species for
+e.g. CPUE of the tows of another species, or the share of the stock's
+catch in them}
+
+\item{logbook_year_start}{Optional integer, earliest year of the
+\code{logbook} table (and \code{logbook_old}), default \code{year_start}. The
+compiled logbooks go back to 1969 for some species}
+
+\item{extra_tables}{Character vector of optional tables to add, none by
+default (see \link{pax_mar_extra}):
+\describe{
+\item{\code{"landings_vessel"}}{landings register by vessel, month,
+landings gear code, fishing area and fishing year, from
+\code{landings_year_start}, \code{\link[=pax_mar_landings_vessel]{pax_mar_landings_vessel()}}}
+\item{\code{"vessel"}}{the vessel register, \code{\link[=pax_mar_vessel]{pax_mar_vessel()}}}
+\item{\code{"logbook_release"}}{logbook catch records with their
+condition (released fish), \code{\link[=pax_mar_logbook_release]{pax_mar_logbook_release()}}}
+\item{\code{"research_landings"}}{landings of the research vessels
+during research trips, \code{\link[=pax_mar_research_landings]{pax_mar_research_landings()}}}
+\item{\code{"catch_disposition"}}{landed catch by disposition,
+\code{\link[=pax_mar_catch_disposition]{pax_mar_catch_disposition()}}}
+\item{\code{"landings_old"}}{the old cod landings,
+\code{\link[=pax_mar_landings_old]{pax_mar_landings_old()}}}
+\item{\code{"station_skipped"}}{the stations of the trips left out by
+\code{skip_trips} (the stomach-sampling trips), with the columns of
+\code{station}, \code{\link[=pax_mar_station]{pax_mar_station()}}}
+\item{\code{"sample"}}{all samples with measurements of the species,
+all years and trips, \code{\link[=pax_mar_sample]{pax_mar_sample()}}}
+\item{\code{"logbook_old"}}{the old logbook tables (\code{afli.afli}) of
+\code{logbook_species}, \code{\link[=pax_mar_logbook_old]{pax_mar_logbook_old()}}}
+}}
+
+\item{medafli_species}{Species codes of the old by-catch table
+(\code{afli.medafli}) for the \code{logbook_release} table, e.g. \code{2021}
+(released halibut)}
+
 \item{mar_opts}{Named list of additional options passed to
 \code{mar::connect_mar()}}
 
@@ -61,6 +105,9 @@ in-memory database}
 }
 \value{
 A pax DBI connection containing all imported tables
+
+\subsection{pax_from_mar_extra_tables}{The names of the optional
+tables of \code{\link[=pax_from_mar]{pax_from_mar()}} (argument \code{extra_tables})}
 }
 \description{
 Opens a connection to the Hafro MAR Oracle database and imports all

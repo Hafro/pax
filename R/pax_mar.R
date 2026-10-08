@@ -525,6 +525,10 @@ pax_mar_sampling <- function(
 #'   or subrectangle (``reitur``, ``smareitur``) get the gridcell of their
 #'   position (as ``geo::d2sr()``). Otherwise (default) their gridcell is
 #'   ``NA``, they get no region, and e.g. match no age-length key
+#' @param only_trips SQL LIKE patterns of trips to keep, ``NULL`` (default)
+#'   for all. With ``skip_trips = NULL`` and ``only_trips = c("MAG%",
+#'   "MO%")``, the stations of the stomach-sampling trips, see the
+#'   ``extra_tables`` of [pax_from_mar()]
 #' @rdname pax_mar
 # Was: tidypax::si_stations
 pax_mar_station <- function(
@@ -534,7 +538,8 @@ pax_mar_station <- function(
   year_start = NULL,
   year_end = NULL,
   skip_trips = c('MAG%', 'MO%'),
-  gridcell_from_position = FALSE
+  gridcell_from_position = FALSE,
+  only_trips = NULL
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
@@ -689,6 +694,9 @@ pax_mar_station <- function(
   if (!is.null(sampling_type)) {
     out <- dplyr::filter(out, sampling_type %in% local(sampling_type))
   }
+  if (length(only_trips) > 0) {
+    out <- mar_only_trips(out, only_trips)
+  }
   return(out |> decorate_mar())
 }
 
@@ -736,6 +744,22 @@ mar_skip_trips <- function(tbl, skip_trips) {
     tbl <- dplyr::filter(tbl, !(trip %like% local(p)))
   }
   tbl
+}
+
+# Keep only trips (column trip) matching any of the SQL LIKE patterns in
+# only_trips
+mar_only_trips <- function(tbl, only_trips) {
+  # NSE variables
+  trip <- NULL
+
+  cond <- quote(1 == 0)
+  for (p in only_trips) {
+    cond <- substitute(
+      cond | trip %like% p,
+      list(cond = cond, p = p)
+    )
+  }
+  dplyr::filter(tbl, !!cond)
 }
 
 # Statistical subrectangle (gridcell, 10 * rectangle + subrectangle) of the
