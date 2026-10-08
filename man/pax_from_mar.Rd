@@ -12,6 +12,7 @@ pax_from_mar(
   ices_area_like = "5a\%",
   landings_year_start = year_start,
   strata = pax_def_strata_list(),
+  sampling_gear = c("BMT", "LLN", "DSE"),
   skip_trips = c("MAG\%", "MO\%"),
   gridcell_from_position = FALSE,
   mar_opts = list(),
@@ -36,6 +37,10 @@ for figures of the landings history.}
 
 \item{strata}{Character vector of strata names to import, from
 \code{\link[=pax_def_strata_list]{pax_def_strata_list()}}}
+
+\item{sampling_gear}{Gear codes (\code{mfdb_gear_code}) of the commercial
+samples in the \code{sampling} table, \code{NULL} for all, see
+\code{\link[=pax_mar_sampling]{pax_mar_sampling()}}. Default bottom trawl, longline and Danish seine}
 
 \item{skip_trips}{SQL LIKE patterns of trips to leave out of the station
 and sampling tables, see \code{\link[=pax_mar_station]{pax_mar_station()}}. By default the

@@ -428,7 +428,8 @@ pax_mar_quotatransfer <- function(mar, species) {
     decorate_mar()
 }
 
-#' @param mfdb_gear_code Character vector of gear codes to include
+#' @param mfdb_gear_code Character vector of gear codes to include, ``NULL``
+#'   for all gears (including samples with unknown gear)
 #' @param sampling_type Integer vector of sampling type codes to include
 #' @return \subsection{pax_mar_sampling}{A dplyr query with columns
 #'   ``sample_id``, ``lat``, ``lon``, ``year``, ``month``,
@@ -478,11 +479,11 @@ pax_mar_sampling <- function(
       mfdb_gear_code = gear,
       trip = leidangur
     ) |>
-    dplyr::filter(
-      sampling_type %in% local(sampling_type),
-      mfdb_gear_code %in% local(mfdb_gear_code)
-    ) |>
+    dplyr::filter(sampling_type %in% local(sampling_type)) |>
     mar_skip_trips(skip_trips) -> out
+  if (!is.null(mfdb_gear_code)) {
+    out <- dplyr::filter(out, mfdb_gear_code %in% local(mfdb_gear_code))
+  }
   if (!is.null(year_start)) {
     out <- dplyr::filter(out, year >= local(year_start))
   }

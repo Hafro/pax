@@ -77,7 +77,8 @@ ICES areas, e.g. \code{"5a\%"}}
 \item{measurement_type}{Character vector of measurement types to include,
 e.g. \code{c("LEN", "OTOL")}}
 
-\item{mfdb_gear_code}{Character vector of gear codes to include}
+\item{mfdb_gear_code}{Character vector of gear codes to include, \code{NULL}
+for all gears (including samples with unknown gear)}
 
 \item{sampling_type}{Integer vector of sampling type codes to include}
 
