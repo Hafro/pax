@@ -151,3 +151,21 @@ ok_group("pax_add_ocean_depth_class: missing depths from the record's own cells"
   )
   DBI::dbDisconnect(pcon)
 })
+
+ok_group("pax_add_yearly_grouping: named year groups", {
+  pcon <- pax_connect(":memory:")
+  out <- pax:::ut_tbl(pcon, data.frame(year = c(1980, 1994, 1995, 2000))) |>
+    pax_add_yearly_grouping(ygroup = list(past = 1980:1994)) |>
+    dplyr::arrange(year) |>
+    dplyr::collect()
+  ok(
+    ut_cmp_equal(out$ygroup, c("past", "past", "1995", "2000")),
+    "Years in a group get its name, other years their own"
+  )
+  out <- pax:::ut_tbl(pcon, data.frame(year = c(1980, 1995))) |>
+    pax_add_yearly_grouping() |>
+    dplyr::arrange(year) |>
+    dplyr::collect()
+  ok(ut_cmp_equal(out$ygroup, c(1980, 1995)), "No ygroup: the (numeric) year")
+  DBI::dbDisconnect(pcon)
+})

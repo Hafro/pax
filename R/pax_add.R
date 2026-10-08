@@ -442,7 +442,9 @@ pax_add_yearly_grouping <- function(
 
   out <- tbl |>
     dplyr::left_join(pax_temptbl(pcon, ygroup_tbl), by = 'year') |>
-    dplyr::mutate(ygroup = coalesce(ygroup, year))
+    # NB: ygroup is the (text) group name, so years outside the groups are
+    #     text too (coalescing with the numeric year failed in DuckDB)
+    dplyr::mutate(ygroup = coalesce(ygroup, as.character(as.integer(year))))
 
   # Set any groups containing NA manually, as these won't join
   na_groups <- names(ygroup)[sapply(ygroup, function(x) any(is.na(x)))]
