@@ -58,3 +58,28 @@ ok_group("reitmapping", {
     "gridcell dataset is the subset of reitmapping with positions"
   )
 })
+
+ok_group("pax_fill_mfdb_gear_code", {
+  out <- pax:::ut_tbl(
+    pcon,
+    data.frame(
+      gear_id = c(91, 91, 6, 9999, NA),
+      mfdb_gear_code = c(NA, "LLN", NA, NA, "BMT"),
+      catch = 1:5
+    )
+  ) |>
+    pax_fill_mfdb_gear_code() |>
+    dplyr::arrange(catch) |>
+    as.data.frame()
+  ok(
+    ut_cmp_equal(
+      out,
+      data.frame(
+        gear_id = c(91, 91, 6, 9999, NA),
+        mfdb_gear_code = c("GIL", "LLN", "BMT", NA, "BMT"),
+        catch = 1:5
+      )
+    ),
+    "Missing codes filled, others unchanged, columns kept"
+  )
+})

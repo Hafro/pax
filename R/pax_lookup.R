@@ -79,3 +79,38 @@ data_update_noaa_bathymetry <- function(
   noaa_bathymetry$smareitur <- as.integer(noaa_bathymetry$smareitur)
   save(noaa_bathymetry, file = path, compress = "xz")
 }
+
+#' Fill missing MFDB gear codes from the gear mapping
+#'
+#' Gives rows with a missing ``mfdb_gear_code`` the MFDB gear code of their
+#' gear (``gear_id``) in the [gear_mapping] dataset, e.g. gear 91
+#' (anglerfish gillnet), which ``biota.gear_mapping`` leaves unmapped, as
+#' ``GIL``. Other rows are unchanged.
+#'
+#' @param tbl A dplyr query with ``gear_id`` and ``mfdb_gear_code`` columns,
+#'   e.g. the pax ``station`` or ``landings`` table
+#' @param gear_mapping_tbl The gear mapping, by default the [gear_mapping]
+#'   dataset
+#' @return ``tbl`` with ``mfdb_gear_code`` filled where it was missing
+pax_fill_mfdb_gear_code <- function(
+  tbl,
+  gear_mapping_tbl = pax_temptbl(dbplyr::remote_con(tbl), "paxdat_gear_mapping")
+) {
+  # NSE variables
+  gear_id <- mfdb_gear_code <- mfdb_gear_code_map <- NULL
+
+  tbl_colnames <- colnames(tbl)
+  tbl |>
+    dplyr::left_join(
+      gear_mapping_tbl |>
+        dplyr::select(gear_id, mfdb_gear_code_map = mfdb_gear_code),
+      by = "gear_id"
+    ) |>
+    dplyr::mutate(
+      mfdb_gear_code = dplyr::coalesce(
+        mfdb_gear_code,
+        as.character(mfdb_gear_code_map)
+      )
+    ) |>
+    dplyr::select(dplyr::all_of(tbl_colnames))
+}
