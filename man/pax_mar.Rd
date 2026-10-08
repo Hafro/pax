@@ -101,7 +101,8 @@ position (as \code{geo::d2sr()}). Otherwise (default) their gridcell is
 
 \subsection{pax_mar_landings}{A dplyr query with columns
 \code{year}, \code{month}, \code{species}, \code{ices_area}, \code{country},
-\code{mfdb_gear_code}, \code{boat_id}, and \code{catch}}
+\code{mfdb_gear_code}, \code{gear_id} (landings register gear code,
+\code{veidarfaeri}), \code{boat_id}, and \code{catch}}
 
 \subsection{pax_mar_ldist}{A dplyr query with columns
 \code{sample_id}, \code{species}, \code{length}, \code{sex}, and \code{count}}

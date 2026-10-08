@@ -132,7 +132,8 @@ pax_mar_logbook <- function(
 #'   ICES areas, e.g. ``"5a%"``
 #' @return \subsection{pax_mar_landings}{A dplyr query with columns
 #'   ``year``, ``month``, ``species``, ``ices_area``, ``country``,
-#'   ``mfdb_gear_code``, ``boat_id``, and ``catch``}
+#'   ``mfdb_gear_code``, ``gear_id`` (landings register gear code,
+#'   ``veidarfaeri``), ``boat_id``, and ``catch``}
 #' @rdname pax_mar
 # Was: tidypax::landings_by_gear
 pax_mar_landings <- function(
@@ -153,6 +154,7 @@ pax_mar_landings <- function(
   ices_svaedi <- NULL
   land <- NULL
   mfdb_gear_code <- NULL
+  veidarfaeri <- NULL
   skip_nr <- NULL
   magn_oslaegt <- NULL
   year <- NULL
@@ -178,6 +180,8 @@ pax_mar_landings <- function(
       ices_area = ices_svaedi,
       country = land,
       mfdb_gear_code = mfdb_gear_code,
+      # Landings register gear code (veidarfaeri), as station's gear_id
+      gear_id = veidarfaeri,
       boat_id = skip_nr,
       catch = magn_oslaegt
     )
