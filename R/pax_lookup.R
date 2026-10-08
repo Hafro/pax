@@ -63,3 +63,19 @@ data_update_gear_mapping <- function(mar, path = "pax/data/gear_mapping.txt") {
   stopifnot(!anyNA(out$mfdb_gear_code))
   utils::write.table(out, file = path)
 }
+
+data_update_noaa_bathymetry <- function(
+  mar,
+  path = "pax/data/noaa_bathymetry.rda"
+) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+
+  noaa_bathymetry <- mar::tbl_mar(mar, 'ops$bthe."noaa_bathymetry"') |>
+    dplyr::collect() |>
+    as.data.frame()
+  noaa_bathymetry$reitur <- as.integer(noaa_bathymetry$reitur)
+  noaa_bathymetry$smareitur <- as.integer(noaa_bathymetry$smareitur)
+  save(noaa_bathymetry, file = path, compress = "xz")
+}
