@@ -49,3 +49,43 @@ NULL
 #' @keywords data
 #' @references \url{https://www.hafogvatn.is/static/research/files/smh_manual_2025.pdf}
 NULL
+
+#' Statistical rectangle mapping (reitmapping)
+#'
+#' The full gridcell (subrectangle) to division and subdivision mapping, as
+#' used for the region maps of the tech reports. [gridcell] is the subset of
+#' rows with a gridcell, division, subdivision and position.
+#'
+#' @format A data.frame with columns ``id``, ``gridcell`` (10 x rectangle +
+#'   subrectangle), ``division``, ``subdivision``, ``lat`` and ``lon`` (centre
+#'   of the gridcell) and ``size`` (area, square nautical miles)
+#' @source ``ops$bthe."reitmapping"`` in mar, extracted 8 October 2026 by
+#'   ``pax:::data_update_reitmapping()``
+#' @name reitmapping
+#' @docType data
+#' @keywords data
+NULL
+
+#' Gear code (veidarfaeri) to MFDB gear code mapping
+#'
+#' The mapping of biota and landings gear codes (``veidarfaeri``, the
+#' ``gear_id`` of the pax station and landings tables) to MFDB gear codes.
+#'
+#' @format A data.frame with columns
+#'   \describe{
+#'     \item{gear_id}{Gear code (``veidarfaeri``)}
+#'     \item{mfdb_gear_code}{MFDB gear code, as ``biota.gear_mapping``, with
+#'       gear 91 (anglerfish gillnet) added as ``GIL``}
+#'     \item{source}{``"biota.gear_mapping"``, or ``"pax"`` for gear 91,
+#'       which is missing from ``biota.gear_mapping``. Rows with
+#'       ``source == "biota.gear_mapping"`` reproduce that table exactly}
+#'     \item{mfdb_gear_code_weight}{MFDB gear code of
+#'       ``ops$bthe."gear_mapping"``, used by the old cod code for the weights
+#'       at length of the commercial samples}
+#'   }
+#' @source ``biota.gear_mapping`` and ``ops$bthe."gear_mapping"`` in mar,
+#'   extracted 8 October 2026 by ``pax:::data_update_gear_mapping()``
+#' @name gear_mapping
+#' @docType data
+#' @keywords data
+NULL
