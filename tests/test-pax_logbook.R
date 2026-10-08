@@ -83,3 +83,23 @@ ok_group("pax_logbook_cpue_plot", {
       filename = tempfile(pattern = "test-pax_logbook", fileext = ".png")
     )
 })
+
+ok_group("pax_add_cpue: effort_na", {
+  pcon <- pax_connect(":memory:")
+  lb <- pax:::ut_tbl(
+    pcon,
+    data.frame(
+      id = 1:3,
+      mfdb_gear_code = "BMT",
+      tow_hooks = NA_real_,
+      tow_time = c(120, NA, 30),
+      tow_num_nets = NA_real_,
+      catch = 100
+    )
+  )
+  out <- lb |> pax_add_cpue() |> dplyr::arrange(id) |> dplyr::collect()
+  ok(ut_cmp_equal(out$cpue, c(50, 100, 200)), "Default: no tow time counts as 1 hour")
+  out <- lb |> pax_add_cpue(effort_na = NULL) |> dplyr::arrange(id) |> dplyr::collect()
+  ok(ut_cmp_equal(out$id, c(1L, 3L)), "effort_na = NULL: left out")
+  DBI::dbDisconnect(pcon)
+})

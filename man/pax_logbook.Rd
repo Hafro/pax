@@ -6,12 +6,16 @@
 \alias{pax_logbook_cpue_plot}
 \title{Create CPUE plot from logbook}
 \usage{
-pax_add_cpue(tbl)
+pax_add_cpue(tbl, effort_na = 1)
 
 pax_logbook_cpue_plot(tbl, year_end = lubridate::year(Sys.Date()), limit = 0.5)
 }
 \arguments{
 \item{tbl}{A dplyr query from a logbook table}
+
+\item{effort_na}{Effort of records with none of \code{tow_time},
+\code{tow_hooks} or \code{tow_num_nets} (e.g. a bottom trawl haul without tow
+time). Default \code{1}, i.e. one hour, as before; \code{NULL} leaves them out}
 
 \item{year_end}{Filter any data at/after this year}
 

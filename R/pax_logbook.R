@@ -15,10 +15,13 @@
 #' @name pax_logbook
 NULL
 
+#' @param effort_na Effort of records with none of ``tow_time``,
+#'   ``tow_hooks`` or ``tow_num_nets`` (e.g. a bottom trawl haul without tow
+#'   time). Default ``1``, i.e. one hour, as before; ``NULL`` leaves them out
 #' @return \subsection{pax_add_cpue}{A table with an additional cpue column, with effort calculated by the first available value from ``tow_time``, ``tow_hooks`` or ``tow_num_nets``}
 #' @rdname pax_logbook
 # Was: tidypax::cpue_plot (first half)
-pax_add_cpue <- function(tbl) {
+pax_add_cpue <- function(tbl, effort_na = 1) {
   pax_checkcols(
     tbl,
     "catch",
@@ -45,7 +48,7 @@ pax_add_cpue <- function(tbl) {
         tow_time / 60,
         tow_hooks / 1000,
         tow_num_nets,
-        1
+        local(if (is.null(effort_na)) NA_real_ else effort_na)
       )
     ) |>
     dplyr::filter(catch > 0, effort > 0) |>
