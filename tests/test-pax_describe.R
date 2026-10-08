@@ -28,3 +28,18 @@ ok_group("pax_describe_mfdb_gear_code", {
     "pax_describe_mfdb_gear_code: Added values, 'other'"
   )
 })
+
+ok_group("pax_describe_sampling_type", {
+  out <- pax:::ut_tbl(pcon, data.frame(sampling_type = c(1, 30))) |>
+    pax_describe_sampling_type(lang = "en") |>
+    dplyr::arrange(sampling_type) |>
+    dplyr::collect()
+  ok(is.character(out$sampling_type_desc), "Descriptions are text, not factors")
+  ok(
+    ut_cmp_equal(
+      ifelse(out$sampling_type == 1, out$sampling_type_desc, "x"),
+      c("Samples collected by inspectors", "x")
+    ),
+    "ifelse() keeps the text"
+  )
+})

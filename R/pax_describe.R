@@ -21,12 +21,19 @@ pax_describe_sampling_type <- function(
   sampling_type_desc_en <- NULL
 
   st_tbl <- pax_temptbl(pcon, "paxdat_sampling_type_desc")
+  # NB: The package data has factors (DuckDB ENUMs), return text
   if (lang == 'is') {
     st_tbl <- st_tbl |>
-      dplyr::select(sampling_type, sampling_type_desc = sampling_type_desc_is)
+      dplyr::transmute(
+        sampling_type,
+        sampling_type_desc = as.character(sampling_type_desc_is)
+      )
   } else {
     st_tbl <- st_tbl |>
-      dplyr::select(sampling_type, sampling_type_desc = sampling_type_desc_en)
+      dplyr::transmute(
+        sampling_type,
+        sampling_type_desc = as.character(sampling_type_desc_en)
+      )
   }
 
   tbl |>
