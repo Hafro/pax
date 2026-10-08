@@ -38,7 +38,7 @@ pax_mar_measurement(
   measurement_type = NULL
 )
 
-pax_mar_quotatransfer(mar, species)
+pax_mar_quotatransfer(mar, species, quota_species = species)
 
 pax_mar_sampling(
   mar,
@@ -76,6 +76,10 @@ ICES areas, e.g. \code{"5a\%"}}
 
 \item{measurement_type}{Character vector of measurement types to include,
 e.g. \code{c("LEN", "OTOL")}}
+
+\item{quota_species}{Quota species codes (\code{fteg}) of the quota
+transfers, when they differ from the species codes (e.g. \code{95} for
+demersal beaked redfish, species 61). Default \code{species}}
 
 \item{mfdb_gear_code}{Character vector of gear codes to include, \code{NULL}
 for all gears (including samples with unknown gear)}

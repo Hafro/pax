@@ -16,6 +16,8 @@
 #'   ICES areas, e.g. ``"5a%"``
 #' @param strata Character vector of strata names to import, from
 #'   [pax_def_strata_list()]
+#' @param quota_species Quota species codes (``fteg``) of the quotatransfer
+#'   table, see [pax_mar_quotatransfer()]. Default ``species``
 #' @param sampling_gear Gear codes (``mfdb_gear_code``) of the commercial
 #'   samples in the ``sampling`` table, ``NULL`` for all, see
 #'   [pax_mar_sampling()]. Default bottom trawl, longline and Danish seine
@@ -37,6 +39,7 @@ pax_from_mar <- function(
   ices_area_like = "5a%",
   landings_year_start = year_start,
   strata = pax_def_strata_list(),
+  quota_species = species,
   sampling_gear = c("BMT", "LLN", "DSE"),
   skip_trips = c("MAG%", "MO%"),
   gridcell_from_position = FALSE,
@@ -105,7 +108,10 @@ pax_from_mar <- function(
     pcon,
     pax_mar_lw_coeffs(mar, species = import_defs$species)
   )
-  pax_import(pcon, pax_mar_quotatransfer(mar, import_defs$species))
+  pax_import(
+    pcon,
+    pax_mar_quotatransfer(mar, import_defs$species, quota_species)
+  )
   pax_import(pcon, pax_mar_strata_stations(mar))
   return(pcon)
 }

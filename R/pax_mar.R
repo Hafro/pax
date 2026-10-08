@@ -389,11 +389,14 @@ pax_mar_measurement <- function(
   return(out |> decorate_mar())
 }
 
+#' @param quota_species Quota species codes (``fteg``) of the quota
+#'   transfers, when they differ from the species codes (e.g. ``95`` for
+#'   demersal beaked redfish, species 61). Default ``species``
 #' @return \subsection{pax_mar_quotatransfer}{A data.frame of quota transfer
 #'   records for the requested species, arranged by species and period}
 #' @rdname pax_mar
 # Was: tidypax::quota_transfer_table & tidypax::quota_transfer_plot (common section at start)
-pax_mar_quotatransfer <- function(mar, species) {
+pax_mar_quotatransfer <- function(mar, species, quota_species = species) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
@@ -405,8 +408,10 @@ pax_mar_quotatransfer <- function(mar, species) {
   timabil <- NULL
   fishing_year <- NULL
 
+  # NB: The quota code (fteg) is not always the species code, e.g. 95 for
+  #     demersal beaked redfish (species 61)
   mar::kvoti_stada_summarised(mar) |>
-    dplyr::filter(fteg == local(species)) |>
+    dplyr::filter(fteg %in% local(quota_species)) |>
     dplyr::collect(n = Inf) |>
     dplyr::mutate(
       timabil = ifelse(
