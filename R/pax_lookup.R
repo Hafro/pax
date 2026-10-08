@@ -4,7 +4,7 @@
 #   pax:::data_update_reitmapping(mar)
 #   pax:::data_update_gear_mapping(mar)
 
-data_update_reitmapping <- function(mar, path = "pax/data/reitmapping.txt") {
+data_update_reitmapping <- function(mar, path = "pax/data/reitmapping.rda") {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
@@ -12,7 +12,7 @@ data_update_reitmapping <- function(mar, path = "pax/data/reitmapping.txt") {
   # NSE variables
   id <- gridcell <- division <- subdivision <- lat <- lon <- size <- NULL
 
-  mar::tbl_mar(mar, 'ops$bthe."reitmapping"') |>
+  out <- mar::tbl_mar(mar, 'ops$bthe."reitmapping"') |>
     dplyr::collect() |>
     dplyr::transmute(
       id = as.integer(id),
@@ -24,8 +24,10 @@ data_update_reitmapping <- function(mar, path = "pax/data/reitmapping.txt") {
       size
     ) |>
     dplyr::arrange(id) |>
-    as.data.frame() |>
-    utils::write.table(file = path)
+    as.data.frame()
+  # NB: .rda, as write.table() keeps only 15 significant digits
+  reitmapping <- out
+  save(reitmapping, file = path, compress = "xz")
 }
 
 data_update_gear_mapping <- function(mar, path = "pax/data/gear_mapping.txt") {
@@ -113,4 +115,33 @@ pax_fill_mfdb_gear_code <- function(
       )
     ) |>
     dplyr::select(dplyr::all_of(tbl_colnames))
+}
+
+data_update_diel_correction_reg <- function(
+  mar,
+  path = "pax/data/diel_correction_reg.rda"
+) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+
+  out <- lapply(c('ops$krik."predressmb_05"', 'ops$krik."predressmh_05"'), function(t) {
+    x <- mar::tbl_mar(mar, t) |> dplyr::collect() |> as.data.frame()
+    data.frame(
+      fleet = x$fleet,
+      year = as.integer(x$ar),
+      time = x$kl.kastad,
+      length_group = as.integer(x$lgnr),
+      lengths = x$letxt,
+      mult = x$mult,
+      meanmult = x$meanmult,
+      scaledmult = x$scaledmult,
+      stringsAsFactors = FALSE
+    )
+  })
+  out <- do.call(rbind, out)
+  out <- out[order(out$fleet, out$time, out$length_group), ]
+  rownames(out) <- NULL
+  diel_correction_reg <- out
+  save(diel_correction_reg, file = path, compress = "xz")
 }

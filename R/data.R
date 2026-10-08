@@ -108,3 +108,23 @@ NULL
 #' @docType data
 #' @keywords data
 NULL
+
+#' Diel (time of day) correction of the golden redfish survey indices
+#'
+#' Multipliers of the catch of golden redfish by time of the tow and length
+#' group in the spring (``fleet == "smb"``) and autumn (``"smh"``) surveys,
+#' fitted for the 2005 benchmark (``Surveys/Data/DielVariation_05.rdata``).
+#' The survey length distributions are divided by ``scaledmult``, matched by
+#' the tow start time (rounded to 0.1 h) and length group.
+#'
+#' @format A data.frame with columns ``fleet``, ``year`` (first year of the
+#'   fit), ``time`` (tow start, hours, 0-24 by 0.1), ``length_group``,
+#'   ``lengths`` (length range of the group, cm, e.g. ``"33-34"``),
+#'   ``mult``, ``meanmult`` and ``scaledmult``
+#' @source ``ops$krik."predressmb_05"`` and ``ops$krik."predressmh_05"`` in
+#'   mar, extracted 8 October 2026 by
+#'   ``pax:::data_update_diel_correction_reg()``
+#' @name diel_correction_reg
+#' @docType data
+#' @keywords data
+NULL
