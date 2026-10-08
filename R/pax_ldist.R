@@ -293,7 +293,10 @@ pax_ldist_scale_abund <- function(
 #' @rdname pax_ldist
 # Was: tidypax::ldist_plot
 pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
-  pcon <- dbplyr::remote_con(tbl)
+  pcon <- if (is.data.frame(tbl)) NULL else dbplyr::remote_con(tbl)
+  # NB: Not ifelse(scale == 1, ...), which on a data.frame gives one value
+  #     per group
+  p_expr <- if (isTRUE(scale == 1)) quote(n / sum(n, na.rm = TRUE)) else quote(n)
 
   # NSE variables
   year <- NULL
@@ -319,7 +322,7 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
           dplyr::distinct() |>
           dplyr::collect() |>
           tidyr::expand(year, length) |>
-          pax_temptbl(pcon = pcon),
+          (function(x) if (is.null(pcon)) x else pax_temptbl(pcon, x))(),
         by = c('year', 'length')
       )
   } else {
@@ -330,9 +333,9 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
     dplyr::group_by(year, length) |>
     dplyr::summarise(n = sum(n, na.rm = TRUE)) |>
     dplyr::group_by(year) |>
-    dplyr::mutate(p = ifelse(local(scale) == 1, n / sum(n), n)) |>
+    dplyr::mutate(p = !!p_expr) |>
     dplyr::group_by(length) |>
-    dplyr::mutate(mp = mean(p)) |>
+    dplyr::mutate(mp = mean(p, na.rm = TRUE)) |>
     ggplot2::ggplot(ggplot2::aes(length, p)) +
     ggplot2::geom_density(stat = 'identity', fill = '#045a8d', col = NA) +
     ggplot2::geom_line(
@@ -340,7 +343,7 @@ pax_ldist_plot <- function(tbl, scale = 1, expand = FALSE) {
         dplyr::group_by(year, length) |>
         dplyr::summarise(n = sum(n, na.rm = TRUE)) |>
         dplyr::group_by(year) |>
-        dplyr::mutate(p = ifelse(local(scale) == 1, n / sum(n), n)) |>
+        dplyr::mutate(p = !!p_expr) |>
         dplyr::group_by(length) |>
         dplyr::summarise(mp = mean(p, na.rm = TRUE)),
       ggplot2::aes(y = mp)

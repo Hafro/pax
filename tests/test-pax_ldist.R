@@ -105,3 +105,34 @@ ok_group("pax_ldist_by_year: ldist is already raised, not raised again", {
   )
   DBI::dbDisconnect(pcon)
 })
+
+ok_group("pax_ldist_plot: data.frame and database table alike", {
+  pcon <- pax_connect(":memory:")
+  ld <- data.frame(
+    year = rep(c(2000, 2001), each = 3),
+    length = rep(c(10, 20, 30), 2),
+    n = c(1, 2, 1, 3, 1, 0)
+  )
+  p_df <- ggplot2::ggplot_build(pax_ldist_plot(ld))$data[[1]]
+  p_db <- ggplot2::ggplot_build(pax_ldist_plot(pax:::ut_tbl(pcon, ld)))$data[[1]]
+  ok(
+    ut_cmp_equal(
+      p_df[order(p_df$PANEL, p_df$x), "y"],
+      c(0.25, 0.5, 0.25, 0.75, 0.25, 0)
+    ),
+    "data.frame: proportions by length within year"
+  )
+  ok(
+    ut_cmp_equal(
+      p_db[order(p_db$PANEL, p_db$x), "y"],
+      p_df[order(p_df$PANEL, p_df$x), "y"]
+    ),
+    "Database table: the same"
+  )
+  p_df <- ggplot2::ggplot_build(pax_ldist_plot(ld, scale = 0, expand = TRUE))$data[[1]]
+  ok(
+    ut_cmp_equal(p_df[order(p_df$PANEL, p_df$x), "y"], ld$n),
+    "scale = 0: counts, expand works on a data.frame"
+  )
+  DBI::dbDisconnect(pcon)
+})
