@@ -21,6 +21,8 @@ pax_from_mar(
   logbook_year_start = year_start,
   extra_tables = character(0),
   medafli_species = NULL,
+  foreign_tables = character(0),
+  foreign_files = list(),
   mar_opts = list(),
   dbdir = ":memory:"
 )
@@ -96,6 +98,14 @@ all years and trips, \code{\link[=pax_mar_sample]{pax_mar_sample()}}}
 \item{medafli_species}{Species codes of the old by-catch table
 (\code{afli.medafli}) for the \code{logbook_release} table, e.g. \code{2021}
 (released halibut)}
+
+\item{foreign_tables}{Names of the foreign data tables in mar to import
+(Greenland and Faroese surveys, catches and samples), see
+\code{\link[=pax_foreign_mar_tables]{pax_foreign_mar_tables()}}. None by default}
+
+\item{foreign_files}{Named list of foreign data files to import, read
+from the given paths when the database is built: names are the file
+types of \code{\link[=pax_foreign_file]{pax_foreign_file()}} (e.g. \code{list(greenland_logbooks = "path/to/logbooks_00-25.csv")}), values the paths. None by default}
 
 \item{mar_opts}{Named list of additional options passed to
 \code{mar::connect_mar()}}

@@ -41,6 +41,7 @@ Suggests:
     rmarkdown,
     targets,
     nanoparquet,
+    readxl,
     unittest (>= 1.4)
 Enhances:
     mar

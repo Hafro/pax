@@ -59,6 +59,13 @@
 #' @param medafli_species Species codes of the old by-catch table
 #'   (``afli.medafli``) for the ``logbook_release`` table, e.g. ``2021``
 #'   (released halibut)
+#' @param foreign_tables Names of the foreign data tables in mar to import
+#'   (Greenland and Faroese surveys, catches and samples), see
+#'   [pax_foreign_mar_tables()]. None by default
+#' @param foreign_files Named list of foreign data files to import, read
+#'   from the given paths when the database is built: names are the file
+#'   types of [pax_foreign_file()] (e.g. ``list(greenland_logbooks =
+#'   "path/to/logbooks_00-25.csv")``), values the paths. None by default
 #' @param mar_opts Named list of additional options passed to
 #'   ``mar::connect_mar()``
 #' @param dbdir Path to a DuckDB database file, or ``":memory:"`` for an
@@ -80,6 +87,8 @@ pax_from_mar <- function(
   logbook_year_start = year_start,
   extra_tables = character(0),
   medafli_species = NULL,
+  foreign_tables = character(0),
+  foreign_files = list(),
   mar_opts = list(),
   dbdir = ":memory:"
 ) {
@@ -89,6 +98,20 @@ pax_from_mar <- function(
   unknown <- setdiff(extra_tables, pax_from_mar_extra_tables())
   if (length(unknown) > 0) {
     stop("Unknown extra_tables: ", paste(unknown, collapse = ", "))
+  }
+  unknown <- setdiff(foreign_tables, pax_foreign_mar_tables()$name)
+  if (length(unknown) > 0) {
+    stop("Unknown foreign_tables: ", paste(unknown, collapse = ", "))
+  }
+  unknown <- setdiff(names(foreign_files), pax_foreign_file_types())
+  if (length(unknown) > 0 || (length(foreign_files) > 0 && is.null(names(foreign_files)))) {
+    stop("Unknown foreign_files: ", paste(unknown, collapse = ", "))
+  }
+  # Check the foreign files before the (slow) import from mar
+  for (f in foreign_files) {
+    if (!all(file.exists(f))) {
+      stop("Foreign data file(s) not found: ", paste(f[!file.exists(f)], collapse = ", "))
+    }
   }
 
   pcon <- pax_connect(dbdir = dbdir)
@@ -225,6 +248,14 @@ pax_from_mar <- function(
         year_end = year_end
       )
     )
+  }
+
+  # Foreign data
+  for (t in foreign_tables) {
+    pax_import(pcon, pax_mar_foreign(mar, t))
+  }
+  for (type in names(foreign_files)) {
+    pax_import(pcon, pax_foreign_file(foreign_files[[type]], type))
   }
   return(pcon)
 }
