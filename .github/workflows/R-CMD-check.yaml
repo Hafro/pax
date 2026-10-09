@@ -1,16 +1,22 @@
-# For help debugging build failures open an issue on the RStudio community with the 'github-actions' tag.
-# https://community.rstudio.com/new-topic?category=Package%20development&tags=github-actions
+# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+#
+# pax:
+# * mar (Enhances) is an MFRI-internal package and can't be installed here;
+#   the tests and vignettes that need it skip without it.
+# * pax_connect() installs the DuckDB extensions spatial and h3 (community)
+#   from the internet, so the tests and vignettes need network access.
 on:
   push:
-    branches:
-      - main
-    tags:
-      - 'v*'
+    branches: [main, smn-survey]
+    tags: ['v*']
   pull_request:
-    branches:
-      - main
+    branches: [main, smn-survey]
+  workflow_dispatch:
 
-name: R-CMD-check
+name: R-CMD-check.yaml
+
+permissions: read-all
 
 jobs:
   R-CMD-check:
@@ -22,26 +28,29 @@ jobs:
       fail-fast: false
       matrix:
         config:
+          - {os: macos-latest,   r: 'release'}
           - {os: windows-latest, r: 'release'}
-          - {os: macOS-latest, r: 'release'}
-          - {os: ubuntu-latest, r: 'release'}
+          - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
+          - {os: ubuntu-latest,  r: 'release'}
+          - {os: ubuntu-latest,  r: 'oldrel-1'}
 
     env:
-      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
-      RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      GITHUB_CI: true
+      R_KEEP_PKG_SOURCE: yes
+      # As tools/check.env: the package data contain Icelandic
+      _R_CHECK_ASCII_DATA_: false
+      _R_CHECK_ASCII_CODE_: false
 
     steps:
       - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
-
-      - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -52,3 +61,4 @@ jobs:
         with:
           upload-snapshots: true
           args: 'c("--no-manual")'
+          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'

@@ -1,5 +1,16 @@
 # pax
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/Hafro/pax/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Hafro/pax/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://github.com/Hafro/pax/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/Hafro/pax/actions/workflows/pkgdown.yaml)
+<!-- badges: end -->
+
+Documentation, with worked examples (vignettes) for building a pax database,
+survey indices, length distributions and age-length keys, landings and
+logbooks, and the Gadget bootstrap: <https://hafro.github.io/pax/>.
+The badges and the site work once the workflows have run on GitHub and
+GitHub Pages is switched on for the `gh-pages` branch.
+
 ## Main features / differences to tidypax
 
 ### Local DuckDB database
