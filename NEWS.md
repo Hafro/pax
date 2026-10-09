@@ -12,6 +12,14 @@
 * `pax_landings_fishingyear_summary()`: the column `catch_kt` is renamed
   `catch_t`. The value, `round(sum(catch) / 1000)`, is in tonnes when
   `catch` is in kg (as in the `landings` table), not in thousand tonnes.
+* The default `gear_group` of `pax_ldist_alk()`, `pax_si_scale_by_landings()`
+  and `pax_landings_by_gear()` had `Other = 'Var'`, but the gear code is
+  `'VAR'` (`gear_mapping`) and the join is case-sensitive, so 'Var' matched
+  nothing. It is now `'VAR'`. `pax_landings_by_gear()` gives the same result
+  (its default also has a `pax_add_other()` group, which took VAR before);
+  with the defaults of `pax_ldist_alk()` and `pax_si_scale_by_landings()`,
+  VAR samples and landings now form the "Other" group instead of getting no
+  group.
 
 ## Survey indices by length range (October 2026)
 

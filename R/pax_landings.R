@@ -15,7 +15,7 @@ NULL
 pax_landings_by_gear <- function(
   tbl,
   gear_group = list(
-    Other = 'Var',
+    Other = 'VAR',
     Other = pax_add_other(),
     BMT = c('BMT', 'NPT', 'SHT', 'PGT'),
     LLN = 'LLN',

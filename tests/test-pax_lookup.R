@@ -30,6 +30,15 @@ ok_group("gear_mapping", {
     ),
     "With gear 91, ops$bthe.gear_mapping (weights) is the same mapping"
   )
+  # The default gear groups only name codes that exist (the join is
+  # case-sensitive: 'Var' matched nothing, the code is 'VAR')
+  for (fn in c("pax_ldist_alk", "pax_landings_by_gear", "pax_si_scale_by_landings")) {
+    codes <- unlist(eval(formals(getFromNamespace(fn, "pax"))$gear_group))
+    ok(
+      all(codes %in% gm$mfdb_gear_code),
+      paste0(fn, "(): default gear groups only name codes in gear_mapping")
+    )
+  }
 })
 
 ok_group("reitmapping", {

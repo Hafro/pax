@@ -27,7 +27,7 @@ pax_si_scale_by_landings(
   landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings"),
   logbook_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "logbook"),
   regions = list(all = 101:115),
-  gear_group = list(Other = "Var", BMT = c("BMT", "NPT", "SHT", "PGT"), LLN = "LLN", DSE
+  gear_group = list(Other = "VAR", BMT = c("BMT", "NPT", "SHT", "PGT"), LLN = "LLN", DSE
     = c("PSE", "DSE")),
   tgroup = list(t1 = 1:6, t2 = 7:12),
   month_na = NULL,

@@ -11,7 +11,7 @@
 \usage{
 pax_landings_by_gear(
   tbl,
-  gear_group = list(Other = "Var", Other = pax_add_other(), BMT = c("BMT", "NPT", "SHT",
+  gear_group = list(Other = "VAR", Other = pax_add_other(), BMT = c("BMT", "NPT", "SHT",
     "PGT"), LLN = "LLN", DSE = c("PSE", "DSE"))
 )
 

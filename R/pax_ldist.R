@@ -27,7 +27,7 @@ pax_ldist_alk <- function(
   lgroups = seq(0, 200, 5),
   regions = list(all = 101:115),
   gear_group = list(
-    Other = 'Var',
+    Other = 'VAR',
     BMT = c('BMT', 'NPT', 'SHT', 'PGT'),
     LLN = 'LLN',
     DSE = c('PSE', 'DSE')
