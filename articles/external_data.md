@@ -38,7 +38,7 @@ pcon <- pax::pax_connect()
 ```
 
     ## duckdb keeps downloaded extensions and secrets in a temporary directory:
-    ## ℹ /tmp/Rtmp6eWp6g/duckdb
+    ## ℹ /tmp/RtmpILWg62/duckdb
     ## This is removed when the R session ends.
     ## • Extensions are re-downloaded each session.
     ## • Secrets are lost.
@@ -52,7 +52,7 @@ pax_import(pcon, pax_marmap_ocean_depth())
 ```
 
     ## duckdb keeps downloaded extensions and secrets in a temporary directory:
-    ## ℹ /tmp/Rtmp6eWp6g/duckdb
+    ## ℹ /tmp/RtmpILWg62/duckdb
     ## This is removed when the R session ends.
     ## • Extensions are re-downloaded each session.
     ## • Secrets are lost.
@@ -170,14 +170,14 @@ dplyr::tbl(pcon, "logbook_gl") |>
     ## # A query:    ?? x 2
     ## # Database:   DuckDB 1.5.6 [unknown@Linux 6.17.0-1022-azure:R 4.6.1/:memory:]
     ## # Ordered by: fishing_year
-    ##   fishing_year catch_kt
-    ##   <chr>           <dbl>
-    ## 1 1999/2000        3731
-    ## 2 2000/2001        6241
-    ## 3 2001/2002        6233
-    ## 4 2002/2003        5277
-    ## 5 2003/2004        5193
-    ## 6 2004/2005        6106
+    ##   fishing_year catch_t
+    ##   <chr>          <dbl>
+    ## 1 1999/2000       3731
+    ## 2 2000/2001       6241
+    ## 3 2001/2002       6233
+    ## 4 2002/2003       5277
+    ## 5 2003/2004       5193
+    ## 6 2004/2005       6106
 
 ``` r
 
@@ -188,14 +188,14 @@ dplyr::tbl(pcon, "logbook_fo") |>
     ## # A query:    ?? x 2
     ## # Database:   DuckDB 1.5.6 [unknown@Linux 6.17.0-1022-azure:R 4.6.1/:memory:]
     ## # Ordered by: fishing_year
-    ##   fishing_year catch_kt
-    ##   <chr>           <dbl>
-    ## 1 1999/2000        4010
-    ## 2 2000/2001        5711
-    ## 3 2001/2002        4901
-    ## 4 2002/2003        5692
-    ## 5 2003/2004        6885
-    ## 6 2004/2005        5950
+    ##   fishing_year catch_t
+    ##   <chr>          <dbl>
+    ## 1 1999/2000       4010
+    ## 2 2000/2001       5711
+    ## 3 2001/2002       4901
+    ## 4 2002/2003       5692
+    ## 5 2003/2004       6885
+    ## 6 2004/2005       5950
 
 ``` r
 
@@ -207,14 +207,14 @@ dplyr::tbl(pcon, "logbook_gl") |>
     ## # A query:    ?? x 2
     ## # Database:   DuckDB 1.5.6 [unknown@Linux 6.17.0-1022-azure:R 4.6.1/:memory:]
     ## # Ordered by: fishing_year
-    ##   fishing_year catch_kt
-    ##   <chr>           <dbl>
-    ## 1 1999/2000        7741
-    ## 2 2000/2001       11952
-    ## 3 2001/2002       11134
-    ## 4 2002/2003       10970
-    ## 5 2003/2004       12078
-    ## 6 2004/2005       12056
+    ##   fishing_year catch_t
+    ##   <chr>          <dbl>
+    ## 1 1999/2000       7741
+    ## 2 2000/2001      11952
+    ## 3 2001/2002      11134
+    ## 4 2002/2003      10970
+    ## 5 2003/2004      12078
+    ## 6 2004/2005      12056
 
 ``` r
 
@@ -300,10 +300,10 @@ tar_dir(local({ # tar_dir() runs code from a temp dir
 ```
 
     ## + logbook_fo dispatched
-    ## ✔ logbook_fo completed [0ms, 7.36 kB]
+    ## ✔ logbook_fo completed [1ms, 7.36 kB]
     ## + pax_db dispatched
     ## duckdb keeps downloaded extensions and secrets in a temporary directory:
-    ## ℹ /tmp/Rtmp06bpPx/duckdb
+    ## ℹ /tmp/RtmpKeRKH7/duckdb
     ## This is removed when the R session ends.
     ## • Extensions are re-downloaded each session.
     ## • Secrets are lost.
@@ -313,7 +313,7 @@ tar_dir(local({ # tar_dir() runs code from a temp dir
     ## ✔ pax_db completed [1.6s, 1.06 MB]
     ## + db_contents dispatched
     ## duckdb keeps downloaded extensions and secrets in a temporary directory:
-    ## ℹ /tmp/Rtmp06bpPx/duckdb
+    ## ℹ /tmp/RtmpKeRKH7/duckdb
     ## This is removed when the R session ends.
     ## • Extensions are re-downloaded each session.
     ## • Secrets are lost.

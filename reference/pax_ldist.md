@@ -10,7 +10,7 @@ pax_ldist_alk(
   tbl,
   lgroups = seq(0, 200, 5),
   regions = list(all = 101:115),
-  gear_group = list(Other = "Var", BMT = c("BMT", "NPT", "SHT", "PGT"), LLN = "LLN", DSE
+  gear_group = list(Other = "VAR", BMT = c("BMT", "NPT", "SHT", "PGT"), LLN = "LLN", DSE
     = c("PSE", "DSE")),
   tgroup = NULL,
   ygroup = NULL,

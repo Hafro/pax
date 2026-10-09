@@ -82,7 +82,7 @@ The typical workflow is:</p><ol><li><p><code>pax_si_by_length()</code> – join 
 <span>  landings_tbl <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/remote_name.html" class="external-link">remote_con</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span>, <span class="st">"landings"</span><span class="op">)</span>,</span>
 <span>  logbook_tbl <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="fu">dbplyr</span><span class="fu">::</span><span class="fu"><a href="https://dbplyr.tidyverse.org/reference/remote_name.html" class="external-link">remote_con</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span>, <span class="st">"logbook"</span><span class="op">)</span>,</span>
 <span>  regions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>all <span class="op">=</span> <span class="fl">101</span><span class="op">:</span><span class="fl">115</span><span class="op">)</span>,</span>
-<span>  gear_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Other <span class="op">=</span> <span class="st">"Var"</span>, BMT <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BMT"</span>, <span class="st">"NPT"</span>, <span class="st">"SHT"</span>, <span class="st">"PGT"</span><span class="op">)</span>, LLN <span class="op">=</span> <span class="st">"LLN"</span>, DSE</span>
+<span>  gear_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Other <span class="op">=</span> <span class="st">"VAR"</span>, BMT <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BMT"</span>, <span class="st">"NPT"</span>, <span class="st">"SHT"</span>, <span class="st">"PGT"</span><span class="op">)</span>, LLN <span class="op">=</span> <span class="st">"LLN"</span>, DSE</span>
 <span>    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PSE"</span>, <span class="st">"DSE"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  tgroup <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>t1 <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, t2 <span class="op">=</span> <span class="fl">7</span><span class="op">:</span><span class="fl">12</span><span class="op">)</span>,</span>
 <span>  month_na <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -233,7 +233,12 @@ length data, with <code>si_abund</code> (thousands of fish per stratum) and
 <h3 id="pax-si-scale-winsorize">pax_si_scale_winsorize<a class="anchor" aria-label="anchor" href="#pax-si-scale-winsorize"></a></h3>
 <p>A dplyr query with extreme
 <code>si_abund</code> and <code>si_biomass</code> values scaled down to the <code>q</code>
-quantile within each year and species</p>
+quantile within each year and species. The station biomass (the sum of
+<code>si_biomass</code> over the rows of a <code>sample_id</code>, stations with biomass
+above zero only) is compared with the <code>q</code> quantile of the station
+biomass of its year and species; every row of a station above it has
+<code>si_biomass</code> and <code>si_abund</code> multiplied by quantile / station biomass,
+so the station's biomass becomes the quantile</p>
 </div>
 
 <div class="section">

@@ -68,9 +68,9 @@ tbl(pcon, "landings") |>
 #> # A tibble: 4 × 3
 #>   gear_id mfdb_gear_code     n
 #>     <dbl> <chr>          <dbl>
-#> 1       1 LLN               48
-#> 2       9 NPT               48
-#> 3      91 NA                48
+#> 1      91 NA                48
+#> 2       1 LLN               48
+#> 3       9 NPT               48
 #> 4       6 BMT               48
 
 tbl(pcon, "landings") |>
@@ -80,10 +80,10 @@ tbl(pcon, "landings") |>
 #> # A tibble: 4 × 3
 #>   gear_id mfdb_gear_code     n
 #>     <dbl> <chr>          <dbl>
-#> 1       1 LLN               48
-#> 2       6 BMT               48
-#> 3      91 GIL               48
-#> 4       9 NPT               48
+#> 1      91 GIL               48
+#> 2       9 NPT               48
+#> 3       1 LLN               48
+#> 4       6 BMT               48
 ```
 
 Only missing codes are filled. 13-cas does this on its stations before
@@ -135,13 +135,9 @@ lists drive the age–length keys and the advice and tech report figures
 `hr_techreport_plot_landings_gear()`), so use the stock’s own groups
 there.
 
-The landings by fishing year (September to August, from 1991). Two
-caveats in this version of pax: `catch_kt` is `sum(catch) / 1000`, so it
-is in tonnes when `catch` is in kg, as in the `landings` table; and the
-function needs dplyr attached
-([`library(dplyr)`](https://dplyr.tidyverse.org)), as it calls
-[`sql()`](https://dplyr.tidyverse.org/reference/sql.html) without
-`dplyr::`.
+The landings by fishing year (September to August, from 1991). `catch_t`
+is `round(sum(catch) / 1000)`, in tonnes when `catch` is in kg, as in
+the `landings` table (it was called `catch_kt` before October 2026).
 
 ``` r
 
@@ -149,13 +145,13 @@ tbl(pcon, "landings") |>
   pax_landings_fishingyear_summary(ignore_final_year = FALSE) |>
   collect()
 #> # A tibble: 5 × 2
-#>   fishing_year catch_kt
-#>   <chr>           <dbl>
-#> 1 2020/2021        4480
-#> 2 2021/2022        6720
-#> 3 2022/2023        6720
-#> 4 2023/2024        6720
-#> 5 2024/2025        2240
+#>   fishing_year catch_t
+#>   <chr>          <dbl>
+#> 1 2020/2021       4480
+#> 2 2021/2022       6720
+#> 3 2022/2023       6720
+#> 4 2023/2024       6720
+#> 5 2024/2025       2240
 ```
 
 ## Depth classes of logbook records

@@ -2,6 +2,38 @@
 
 ## pax (development version)
 
+### Bug fixes (review, October 2026)
+
+- [`pax_si_scale_winsorize()`](https://hafro.github.io/pax/reference/pax_si.md)
+  took the quantile of a column `B` that doesn’t exist (a leftover from
+  tidypax’s `si_winsorize()`), so no station was ever above it and
+  nothing changed. It now takes the `q` quantile of the station biomass
+  (`si_biomass` summed by `sample_id`) within each year and species, and
+  scales every station above it down to the quantile (quantile / station
+  biomass, as the old 22-ghl and 07-bli scripts; tidypax scaled to the
+  smallest station above the quantile instead).
+- [`pax_landings_fishingyear_summary()`](https://hafro.github.io/pax/reference/pax_landings.md):
+  the column `catch_kt` is renamed `catch_t`. The value,
+  `round(sum(catch) / 1000)`, is in tonnes when `catch` is in kg (as in
+  the `landings` table), not in thousand tonnes.
+- The default `gear_group` of
+  [`pax_ldist_alk()`](https://hafro.github.io/pax/reference/pax_ldist.md),
+  [`pax_si_scale_by_landings()`](https://hafro.github.io/pax/reference/pax_si.md)
+  and
+  [`pax_landings_by_gear()`](https://hafro.github.io/pax/reference/pax_landings.md)
+  had `Other = 'Var'`, but the gear code is `'VAR'` (`gear_mapping`) and
+  the join is case-sensitive, so ‘Var’ matched nothing. It is now
+  `'VAR'`.
+  [`pax_landings_by_gear()`](https://hafro.github.io/pax/reference/pax_landings.md)
+  gives the same result (its default also has a
+  [`pax_add_other()`](https://hafro.github.io/pax/reference/pax_add_groupings.md)
+  group, which took VAR before); with the defaults of
+  [`pax_ldist_alk()`](https://hafro.github.io/pax/reference/pax_ldist.md)
+  and
+  [`pax_si_scale_by_landings()`](https://hafro.github.io/pax/reference/pax_si.md),
+  VAR samples and landings now form the “Other” group instead of getting
+  no group.
+
 ### Survey indices by length range (October 2026)
 
 - New

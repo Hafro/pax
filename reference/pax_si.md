@@ -31,7 +31,7 @@ pax_si_scale_by_landings(
   landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings"),
   logbook_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "logbook"),
   regions = list(all = 101:115),
-  gear_group = list(Other = "Var", BMT = c("BMT", "NPT", "SHT", "PGT"), LLN = "LLN", DSE
+  gear_group = list(Other = "VAR", BMT = c("BMT", "NPT", "SHT", "PGT"), LLN = "LLN", DSE
     = c("PSE", "DSE")),
   tgroup = list(t1 = 1:6, t2 = 7:12),
   month_na = NULL,
@@ -174,7 +174,12 @@ columns added
 ### pax_si_scale_winsorize
 
 A dplyr query with extreme `si_abund` and `si_biomass` values scaled
-down to the `q` quantile within each year and species
+down to the `q` quantile within each year and species. The station
+biomass (the sum of `si_biomass` over the rows of a `sample_id`,
+stations with biomass above zero only) is compared with the `q` quantile
+of the station biomass of its year and species; every row of a station
+above it has `si_biomass` and `si_abund` multiplied by quantile /
+station biomass, so the station's biomass becomes the quantile
 
 ### pax_si_scale_by_strata
 

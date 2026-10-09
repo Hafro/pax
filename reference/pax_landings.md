@@ -7,7 +7,7 @@ Functions to aggregate, plot and tabulate commercial landings data.
 ``` r
 pax_landings_by_gear(
   tbl,
-  gear_group = list(Other = "Var", Other = pax_add_other(), BMT = c("BMT", "NPT", "SHT",
+  gear_group = list(Other = "VAR", Other = pax_add_other(), BMT = c("BMT", "NPT", "SHT",
     "PGT"), LLN = "LLN", DSE = c("PSE", "DSE"))
 )
 
@@ -59,5 +59,5 @@ Adds a `fishing_year` column to the incoming landings table
 
 ### pax_landings_fishingyear_summary
 
-A dplyr query with columns `fishing_year` and `catch_kt`, ordered by
+A dplyr query with columns `fishing_year` and `catch_t`, ordered by
 fishing year

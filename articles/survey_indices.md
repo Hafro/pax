@@ -297,9 +297,10 @@ missing year shifts the index ratio.
 - **Large hauls.** Old scripts scaled named hauls down (e.g. to 5%); use
   `hr_input_data_si_index(haul_scalar = ...)` for that, not
   [`pax_si_scale_winsorize()`](https://hafro.github.io/pax/reference/pax_si.md),
-  which is a different, generic rule (and in this version of pax changes
-  nothing: it takes the quantile of a column that doesn’t exist, so no
-  haul is above it).
+  which is a different, generic rule: every station whose biomass is
+  above the `q` quantile of its year is scaled down to that quantile.
+  (Until October 2026 it took the quantile of a column that doesn’t
+  exist, and changed nothing.)
 - **The ldist table is already raised** to the counted fish at import,
   so don’t apply
   [`pax_ldist_scale_abund()`](https://hafro.github.io/pax/reference/pax_ldist.md)

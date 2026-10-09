@@ -132,9 +132,9 @@ it:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
 <span><span class="co">#&gt;   gear_id mfdb_gear_code     n</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       1 LLN               48</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       9 NPT               48</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      91 <span style="color: #BB0000;">NA</span>                48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      91 <span style="color: #BB0000;">NA</span>                48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       1 LLN               48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       9 NPT               48</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       6 BMT               48</span></span>
 <span></span>
 <span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">pcon</span>, <span class="st">"landings"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -144,10 +144,10 @@ it:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
 <span><span class="co">#&gt;   gear_id mfdb_gear_code     n</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       1 LLN               48</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       6 BMT               48</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      91 GIL               48</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       9 NPT               48</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      91 GIL               48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       9 NPT               48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       1 LLN               48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       6 BMT               48</span></span></code></pre></div>
 <p>Only missing codes are filled. 13-cas does this on its stations
 before the length distributions; do it on the landings too before
 grouping by gear.</p>
@@ -192,24 +192,22 @@ and tech report figures
 (<code>hafroreports::hr_advice_plot_landings()</code>,
 <code>hr_techreport_plot_landings_gear()</code>), so use the stock’s own
 groups there.</p>
-<p>The landings by fishing year (September to August, from 1991). Two
-caveats in this version of pax: <code>catch_kt</code> is
-<code>sum(catch) / 1000</code>, so it is in tonnes when
-<code>catch</code> is in kg, as in the <code>landings</code> table; and
-the function needs dplyr attached (<code><a href="https://dplyr.tidyverse.org" class="external-link">library(dplyr)</a></code>), as it
-calls <code><a href="https://dplyr.tidyverse.org/reference/sql.html" class="external-link">sql()</a></code> without <code>dplyr::</code>.</p>
+<p>The landings by fishing year (September to August, from 1991).
+<code>catch_t</code> is <code>round(sum(catch) / 1000)</code>, in tonnes
+when <code>catch</code> is in kg, as in the <code>landings</code> table
+(it was called <code>catch_kt</code> before October 2026).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/tbl.html" class="external-link">tbl</a></span><span class="op">(</span><span class="va">pcon</span>, <span class="st">"landings"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/pax_landings.html">pax_landings_fishingyear_summary</a></span><span class="op">(</span>ignore_final_year <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/compute.html" class="external-link">collect</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
-<span><span class="co">#&gt;   fishing_year catch_kt</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 2020/2021        <span style="text-decoration: underline;">4</span>480</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2021/2022        <span style="text-decoration: underline;">6</span>720</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2022/2023        <span style="text-decoration: underline;">6</span>720</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 2023/2024        <span style="text-decoration: underline;">6</span>720</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 2024/2025        <span style="text-decoration: underline;">2</span>240</span></span></code></pre></div>
+<span><span class="co">#&gt;   fishing_year catch_t</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 2020/2021       <span style="text-decoration: underline;">4</span>480</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2021/2022       <span style="text-decoration: underline;">6</span>720</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2022/2023       <span style="text-decoration: underline;">6</span>720</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 2023/2024       <span style="text-decoration: underline;">6</span>720</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 2024/2025       <span style="text-decoration: underline;">2</span>240</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="depth-classes-of-logbook-records">Depth classes of logbook records<a class="anchor" aria-label="anchor" href="#depth-classes-of-logbook-records"></a>
