@@ -29,16 +29,13 @@ Data can be imported into a Pax DB using
 ``` r
 
 library(pax)
-# NB: pax_landings_fishingyear_summary() (pax_add_fishing_year()) calls sql()
-#     without dplyr::, so it fails unless dplyr is attached
-library(dplyr, warn.conflicts = FALSE)
 
 # NB: In real-life this will probably be generated using pax::pax_from_mar()
 pcon <- pax::pax_connect()
 ```
 
     ## duckdb keeps downloaded extensions and secrets in a temporary directory:
-    ## ℹ /tmp/RtmpILWg62/duckdb
+    ## ℹ /tmp/RtmpMkAUa9/duckdb
     ## This is removed when the R session ends.
     ## • Extensions are re-downloaded each session.
     ## • Secrets are lost.
@@ -52,7 +49,7 @@ pax_import(pcon, pax_marmap_ocean_depth())
 ```
 
     ## duckdb keeps downloaded extensions and secrets in a temporary directory:
-    ## ℹ /tmp/RtmpILWg62/duckdb
+    ## ℹ /tmp/RtmpMkAUa9/duckdb
     ## This is removed when the R session ends.
     ## • Extensions are re-downloaded each session.
     ## • Secrets are lost.
@@ -303,24 +300,24 @@ tar_dir(local({ # tar_dir() runs code from a temp dir
     ## ✔ logbook_fo completed [1ms, 7.36 kB]
     ## + pax_db dispatched
     ## duckdb keeps downloaded extensions and secrets in a temporary directory:
-    ## ℹ /tmp/RtmpKeRKH7/duckdb
+    ## ℹ /tmp/Rtmp6LO9Ne/duckdb
     ## This is removed when the R session ends.
     ## • Extensions are re-downloaded each session.
     ## • Secrets are lost.
     ## ℹ Run duckdb(shared_home = TRUE) (or create ~/.duckdb) to keep them (suitable for most users).
     ## ℹ Run duckdb(shared_home = FALSE) to accept the temporary directory (and silence this message).
     ## ℹ See ?duckdb_storage for details and alternatives.
-    ## ✔ pax_db completed [1.6s, 1.06 MB]
+    ## ✔ pax_db completed [1.5s, 1.06 MB]
     ## + db_contents dispatched
     ## duckdb keeps downloaded extensions and secrets in a temporary directory:
-    ## ℹ /tmp/RtmpKeRKH7/duckdb
+    ## ℹ /tmp/Rtmp6LO9Ne/duckdb
     ## This is removed when the R session ends.
     ## • Extensions are re-downloaded each session.
     ## • Secrets are lost.
     ## ℹ Run duckdb(shared_home = TRUE) (or create ~/.duckdb) to keep them (suitable for most users).
     ## ℹ Run duckdb(shared_home = FALSE) to accept the temporary directory (and silence this message).
     ## ℹ See ?duckdb_storage for details and alternatives.
-    ## ✔ db_contents completed [10ms, 566 B]
-    ## ✔ ended pipeline [2.1s, 3 completed, 0 skipped]
+    ## ✔ db_contents completed [9ms, 566 B]
+    ## ✔ ended pipeline [2s, 3 completed, 0 skipped]
     ##     tbl_name       citation
     ## 1 logbook_fo logbook_fo.csv

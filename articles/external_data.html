@@ -93,14 +93,11 @@
 <code><a href="../reference/pax_import.html">pax_import()</a></code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hafro.github.io/pax/">pax</a></span><span class="op">)</span></span>
-<span><span class="co"># NB: pax_landings_fishingyear_summary() (pax_add_fishing_year()) calls sql()</span></span>
-<span><span class="co">#     without dplyr::, so it fails unless dplyr is attached</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># NB: In real-life this will probably be generated using pax::pax_from_mar()</span></span>
 <span><span class="va">pcon</span> <span class="op">&lt;-</span> <span class="fu">pax</span><span class="fu">::</span><span class="fu"><a href="../reference/pax_connect.html">pax_connect</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## duckdb keeps downloaded extensions and secrets in a temporary directory:</span></span>
-<span><span class="co">## <span style="color: #0000BB;">ℹ</span> /tmp/RtmpILWg62/duckdb</span></span>
+<span><span class="co">## <span style="color: #0000BB;">ℹ</span> /tmp/RtmpMkAUa9/duckdb</span></span>
 <span><span class="co">## This is removed when the R session ends.</span></span>
 <span><span class="co">## <span style="color: #00BBBB;">•</span> Extensions are re-downloaded each session.</span></span>
 <span><span class="co">## <span style="color: #00BBBB;">•</span> Secrets are lost.</span></span>
@@ -110,7 +107,7 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/pax_import.html">pax_import</a></span><span class="op">(</span><span class="va">pcon</span>, <span class="fu"><a href="../reference/pax_marmap_ocean_depth.html">pax_marmap_ocean_depth</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## duckdb keeps downloaded extensions and secrets in a temporary directory:</span></span>
-<span><span class="co">## <span style="color: #0000BB;">ℹ</span> /tmp/RtmpILWg62/duckdb</span></span>
+<span><span class="co">## <span style="color: #0000BB;">ℹ</span> /tmp/RtmpMkAUa9/duckdb</span></span>
 <span><span class="co">## This is removed when the R session ends.</span></span>
 <span><span class="co">## <span style="color: #00BBBB;">•</span> Extensions are re-downloaded each session.</span></span>
 <span><span class="co">## <span style="color: #00BBBB;">•</span> Secrets are lost.</span></span>
@@ -312,25 +309,25 @@ steps automatically whenever the file changes. Note that the
 <span><span class="co">## <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">logbook_fo</span> completed [1ms, 7.36 kB]</span></span>
 <span><span class="co">## <span style="color: #555555;">+</span> <span style="color: #0000BB;">pax_db</span> dispatched</span></span>
 <span><span class="co">## duckdb keeps downloaded extensions and secrets in a temporary directory:</span></span>
-<span><span class="co">## <span style="color: #0000BB;">ℹ</span> /tmp/RtmpKeRKH7/duckdb</span></span>
+<span><span class="co">## <span style="color: #0000BB;">ℹ</span> /tmp/Rtmp6LO9Ne/duckdb</span></span>
 <span><span class="co">## This is removed when the R session ends.</span></span>
 <span><span class="co">## <span style="color: #00BBBB;">•</span> Extensions are re-downloaded each session.</span></span>
 <span><span class="co">## <span style="color: #00BBBB;">•</span> Secrets are lost.</span></span>
 <span><span class="co">## <span style="color: #0000BB;">ℹ</span> Run duckdb(shared_home = TRUE) (or create ~/.duckdb) to keep them (suitable for most users).</span></span>
 <span><span class="co">## <span style="color: #0000BB;">ℹ</span> Run duckdb(shared_home = FALSE) to accept the temporary directory (and silence this message).</span></span>
 <span><span class="co">## <span style="color: #0000BB;">ℹ</span> See ?duckdb_storage for details and alternatives.</span></span>
-<span><span class="co">## <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">pax_db</span> completed [1.6s, 1.06 MB]</span></span>
+<span><span class="co">## <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">pax_db</span> completed [1.5s, 1.06 MB]</span></span>
 <span><span class="co">## <span style="color: #555555;">+</span> <span style="color: #0000BB;">db_contents</span> dispatched</span></span>
 <span><span class="co">## duckdb keeps downloaded extensions and secrets in a temporary directory:</span></span>
-<span><span class="co">## <span style="color: #0000BB;">ℹ</span> /tmp/RtmpKeRKH7/duckdb</span></span>
+<span><span class="co">## <span style="color: #0000BB;">ℹ</span> /tmp/Rtmp6LO9Ne/duckdb</span></span>
 <span><span class="co">## This is removed when the R session ends.</span></span>
 <span><span class="co">## <span style="color: #00BBBB;">•</span> Extensions are re-downloaded each session.</span></span>
 <span><span class="co">## <span style="color: #00BBBB;">•</span> Secrets are lost.</span></span>
 <span><span class="co">## <span style="color: #0000BB;">ℹ</span> Run duckdb(shared_home = TRUE) (or create ~/.duckdb) to keep them (suitable for most users).</span></span>
 <span><span class="co">## <span style="color: #0000BB;">ℹ</span> Run duckdb(shared_home = FALSE) to accept the temporary directory (and silence this message).</span></span>
 <span><span class="co">## <span style="color: #0000BB;">ℹ</span> See ?duckdb_storage for details and alternatives.</span></span>
-<span><span class="co">## <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">db_contents</span> completed [10ms, 566 B]</span></span>
-<span><span class="co">## <span style="color: #00BB00;">✔</span> ended pipeline [2.1s, 3 completed, 0 skipped]</span></span>
+<span><span class="co">## <span style="color: #00BB00;">✔</span> <span style="color: #0000BB;">db_contents</span> completed [9ms, 566 B]</span></span>
+<span><span class="co">## <span style="color: #00BB00;">✔</span> ended pipeline [2s, 3 completed, 0 skipped]</span></span>
 <span><span class="co">##     tbl_name       citation</span></span>
 <span><span class="co">## 1 logbook_fo logbook_fo.csv</span></span></code></pre>
   </main>

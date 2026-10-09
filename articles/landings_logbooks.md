@@ -80,9 +80,9 @@ tbl(pcon, "landings") |>
 #> # A tibble: 4 × 3
 #>   gear_id mfdb_gear_code     n
 #>     <dbl> <chr>          <dbl>
-#> 1      91 GIL               48
-#> 2       9 NPT               48
-#> 3       1 LLN               48
+#> 1       1 LLN               48
+#> 2      91 GIL               48
+#> 3       9 NPT               48
 #> 4       6 BMT               48
 ```
 
