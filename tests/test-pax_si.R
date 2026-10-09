@@ -249,3 +249,44 @@ ok_group("pax_si_scale_by_landings: landings with gears outside the groups", {
   ok(!any(grepl("outside the gear groups", msg)), "No message with a default group")
   ok(ut_cmp_equal(out$si_biomass, c(1000, 7000)), "Other gears in the default group")
 })
+
+
+ok_group("pax_si_scale_winsorize", {
+  # Two years, one species; stations with two length rows each, plus one
+  # empty station (biomass 0), which takes no part in the quantile
+  st <- data.frame(
+    year = rep(c(2000, 2001), each = 10),
+    sample_id = 1:20,
+    species = 1,
+    b = c(1:9, 100, 11:19, 1000)
+  )
+  rows <- rbind(
+    transform(st, length = 10, si_biomass = b / 4, si_abund = b / 2),
+    transform(st, length = 20, si_biomass = 3 * b / 4, si_abund = b / 2)
+  )
+  rows <- rbind(rows, data.frame(
+    year = 2000, sample_id = 21, species = 1, b = 0,
+    length = 0, si_biomass = 0, si_abund = 0
+  ))
+  out <- pax:::ut_tbl(pcon, rows[, names(rows) != "b"]) |>
+    pax_si_scale_winsorize(q = 0.9) |>
+    dplyr::group_by(year, sample_id) |>
+    dplyr::summarise(
+      si_biomass = sum(si_biomass, na.rm = TRUE),
+      si_abund = sum(si_abund, na.rm = TRUE), .groups = "drop"
+    ) |>
+    dplyr::arrange(sample_id) |>
+    as.data.frame()
+
+  q <- tapply(st$b, st$year, stats::quantile, probs = 0.9)
+  sc <- pmin(1, q[as.character(st$year)] / st$b)
+  ok(ut_cmp_equal(out$si_biomass[1:20], unname(st$b * sc)),
+     "Stations above the 0.9 quantile of their year are scaled down to it")
+  ok(ut_cmp_equal(out$si_abund[1:20], unname(st$b * sc)),
+     "si_abund is scaled by the same factor as si_biomass")
+  ok(ut_cmp_equal(out$si_biomass[c(10, 20)], as.vector(q)),
+     "The largest station of each year now has the quantile as biomass")
+  ok(ut_cmp_equal(out$si_biomass[-c(10, 20, 21)], st$b[-c(10, 20)]),
+     "Stations below the quantile are unchanged")
+  ok(ut_cmp_equal(out$si_biomass[21], 0), "Empty station is kept, unchanged")
+})

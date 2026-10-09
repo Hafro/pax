@@ -277,7 +277,12 @@ pax_si_by_length <- function(
 #'   winsorized (default 0.95)
 #' @return \subsection{pax_si_scale_winsorize}{A dplyr query with extreme
 #'   ``si_abund`` and ``si_biomass`` values scaled down to the ``q``
-#'   quantile within each year and species}
+#'   quantile within each year and species. The station biomass (the sum of
+#'   ``si_biomass`` over the rows of a ``sample_id``, stations with biomass
+#'   above zero only) is compared with the ``q`` quantile of the station
+#'   biomass of its year and species; every row of a station above it has
+#'   ``si_biomass`` and ``si_abund`` multiplied by quantile / station biomass,
+#'   so the station's biomass becomes the quantile}
 #' @rdname pax_si
 pax_si_scale_winsorize <- function(tbl, q = 0.95) {
   # NSE variables
@@ -286,7 +291,6 @@ pax_si_scale_winsorize <- function(tbl, q = 0.95) {
   year <- NULL
   sample_id <- NULL
   species <- NULL
-  B <- NULL
   B_quantile <- NULL
   B_scalar <- NULL
 
@@ -296,17 +300,19 @@ pax_si_scale_winsorize <- function(tbl, q = 0.95) {
     dplyr::group_by(year, sample_id, species) |>
     dplyr::summarise(
       si_biomass = sum(si_biomass, na.rm = TRUE),
-      si_abund = sum(si_abund, na.rm = TRUE)
+      .groups = "drop"
     ) |>
     dplyr::group_by(year, species) |>
-    dplyr::mutate(B_quantile = quantile(B, q)) |>
+    # NB: Was quantile(B, q), a column that doesn't exist (B <- NULL), so
+    # B_quantile was NULL and no station was ever scaled
+    dplyr::mutate(B_quantile = quantile(si_biomass, local(q))) |>
     dplyr::filter(si_biomass > B_quantile) |>
-    dplyr::mutate(B_scalar = min(si_biomass) / si_biomass) |>
+    dplyr::mutate(B_scalar = B_quantile / si_biomass) |>
     dplyr::ungroup() |>
     dplyr::select(sample_id, species, B_scalar)
 
   tbl |>
-    dplyr::left_join(winsor_table_b) |>
+    dplyr::left_join(winsor_table_b, by = c("sample_id", "species")) |>
     dplyr::mutate(
       si_biomass = coalesce(B_scalar, 1) * si_biomass,
       si_abund = coalesce(B_scalar, 1) * si_abund

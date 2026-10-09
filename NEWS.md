@@ -1,5 +1,15 @@
 # pax (development version)
 
+## Bug fixes (review, October 2026)
+
+* `pax_si_scale_winsorize()` took the quantile of a column `B` that doesn't
+  exist (a leftover from tidypax's `si_winsorize()`), so no station was ever
+  above it and nothing changed. It now takes the `q` quantile of the station
+  biomass (`si_biomass` summed by `sample_id`) within each year and species,
+  and scales every station above it down to the quantile (quantile / station
+  biomass, as the old 22-ghl and 07-bli scripts; tidypax scaled to the
+  smallest station above the quantile instead).
+
 ## Survey indices by length range (October 2026)
 
 * New `pax_si_strata_stations()`, `pax_si_scale_by_strata_stations()`,
