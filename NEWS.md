@@ -9,6 +9,9 @@
   and scales every station above it down to the quantile (quantile / station
   biomass, as the old 22-ghl and 07-bli scripts; tidypax scaled to the
   smallest station above the quantile instead).
+* `pax_landings_fishingyear_summary()`: the column `catch_kt` is renamed
+  `catch_t`. The value, `round(sum(catch) / 1000)`, is in tonnes when
+  `catch` is in kg (as in the `landings` table), not in thousand tonnes.
 
 ## Survey indices by length range (October 2026)
 

@@ -48,7 +48,7 @@ catch), and \code{catch} (in kt). Input should be from
 Adds a \code{fishing_year} column to the incoming landings table}
 
 \subsection{pax_landings_fishingyear_summary}{A dplyr query with
-columns \code{fishing_year} and \code{catch_kt}, ordered by fishing year}
+columns \code{fishing_year} and \code{catch_t}, ordered by fishing year}
 }
 \description{
 Functions to aggregate, plot and tabulate commercial landings data.

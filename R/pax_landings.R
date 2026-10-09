@@ -166,7 +166,7 @@ pax_add_fishing_year <- function(tbl) {
 
 #' @param ignore_final_year Boolean, exclude the final (likely incomplete) year?
 #' @return \subsection{pax_landings_fishingyear_summary}{A dplyr query with
-#'   columns ``fishing_year`` and ``catch_kt``, ordered by fishing year}
+#'   columns ``fishing_year`` and ``catch_t``, ordered by fishing year}
 #' @rdname pax_landings
 # Was: landings_by_fishing_year.csv
 pax_landings_fishingyear_summary <- function(
@@ -191,7 +191,7 @@ pax_landings_fishingyear_summary <- function(
     pax_add_fishing_year() |>
     dplyr::group_by(fishing_year) |>
     dplyr::summarize(
-      catch_kt = round(sum(catch, na.rm = TRUE) / 1000)
+      catch_t = round(sum(catch, na.rm = TRUE) / 1000)
     )
   if (isTRUE(ignore_final_year)) {
     max_year <- tbl |>
