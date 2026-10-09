@@ -14,7 +14,7 @@ pax_ger_station_fix(
   tbl,
   tow_length_default = 2.5,
   tow_length_max = 5,
-  lon_end_fix = c(`1991721` = 8, `1991770` = 2)
+  lon_end_fix = c(`199100721` = 8, `199100770` = 2)
 )
 
 pax_ger_ldist_impute(ldist, station, catch, sample_ids = NULL)
@@ -74,7 +74,7 @@ degrees)}
 with \code{\link[=pax_decorate]{pax_decorate()}} for \code{\link[=pax_import]{pax_import()}}:
 \describe{
 \item{\code{ger_station}}{One row per StatFi station (or NetzFi haul when
-there is no StatFi file): \code{sample_id} (\code{JAHR * 1000 + STATION}),
+there is no StatFi file): \code{sample_id} (\code{JAHR * 100000 + STATION}, e.g. 201001064 for station 1064 of 2010),
 \code{haul_id} (\code{NETZID}), \code{year}, \code{month}, \code{station}
 (\code{STATION}), \code{trip} (\code{REISENR}), \code{sampling_type} (101, see
 below), \code{gridcell} (\code{NA}), \code{begin_lat}, \code{begin_lon},
@@ -114,7 +114,8 @@ letter, and the 2025 export marks the East Greenland positions
 \code{E}
 \item latitudes under 50 times 10 (positions with a digit missing,
 two West Greenland tows in 1988)
-\item \code{end_lon} + 8 for 1991721 and + 2 for 1991770
+\item \code{end_lon} + 8 for 199100721 and + 2 for 199100770 (1991
+stations 721 and 770)
 \item \code{tow_length} over 5 nm, 0 or missing set to 2.5 nm (not used
 by the old index, which takes a fixed swept area)
 }
@@ -130,12 +131,13 @@ stations with a catch but no length measurements (the rule of
 same species, year and German stratum (\code{ger_stratum}), raised to the
 station's \code{catch_count}. The added rows have \code{sex} \code{NA}. Stations
 without a stratum, or whose stratum has no lengths that year, get no
-rows. \code{Greenland_Cochran.R} imputed 1986725, 1986750, 1986751 and
-2011064 only, with the lengths of 1986 stratum 6.2, 1986 stratum 7.2
-(twice) and 2011 stratum 6.2. 2011064 is station 1064 of 2010
-(\code{JAHR * 1000 + STATION}), so its lengths came from the year after.
-1985526 (East Greenland, one fish) was left without lengths and counted
-as a zero station}
+rows. \code{Greenland_Cochran.R} imputed 1986 stations 725, 750 and 751
+and 2010 station 1064 only (\code{sample_id} 198600725, 198600750,
+198600751 and 201001064), with the lengths of 1986 stratum 6.2, 1986
+stratum 7.2 (twice) and 2011 stratum 6.2. The old script's id of
+station 1064 of 2010 was \code{JAHR * 1000 + STATION} = 2011064, so its
+lengths came from the year after. 1985 station 526 (East Greenland, one
+fish) was left without lengths and counted as a zero station}
 
 \subsection{pax_ger_strata}{An sf data.frame with one stratum,
 \code{stratum} 1, \code{name} \code{"East Greenland"} and \code{rall_area} =
@@ -213,7 +215,7 @@ ger_ldist <- dplyr::tbl(pcon, "ger_ldist") |>
     catch = dplyr::tbl(pcon, "ger_catch"),
     # The stations and lengths imputed by Greenland_Cochran.R
     sample_ids = data.frame(
-      sample_id = c(1986725, 1986750, 1986751, 2011064),
+      sample_id = c(198600725, 198600750, 198600751, 201001064),
       year = c(1986, 1986, 1986, 2011),
       ger_stratum = c(6.2, 7.2, 7.2, 6.2)
     )

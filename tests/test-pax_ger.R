@@ -68,7 +68,7 @@ ok_group("pax_ger_survey", {
   ))
 
   st <- ger$ger_station
-  ok(ut_cmp_equal(st$sample_id, c(2001001, 2001002, 2001003, 2001004, 2002001)))
+  ok(ut_cmp_equal(st$sample_id, c(200100001, 200100002, 200100003, 200100004, 200200001)))
   ok(ut_cmp_equal(st$year, c(2001L, 2001L, 2001L, 2001L, 2002L)))
   ok(ut_cmp_equal(st$station, c(1L, 2L, 3L, 4L, 1L)))
   ok(ut_cmp_equal(st$haul_id, c(11, 12, 13, 14, 15)))
@@ -90,7 +90,7 @@ ok_group("pax_ger_survey", {
   ok(ut_cmp_equal(
     as.data.frame(ger$ger_catch),
     data.frame(
-      sample_id = c(2001001, 2001003, 2001004, 2002001),
+      sample_id = c(200100001, 200100003, 200100004, 200200001),
       species = 5,
       catch_count = c(40, 8, NA, 6),
       catch_weight = c(10, 5, NA, 2)
@@ -98,11 +98,11 @@ ok_group("pax_ger_survey", {
     check.attributes = FALSE
   ), "Catch of the species only, -9 is NA")
 
-  # Station 2001001: 8 measured, 40 caught, so raised by 5
+  # Station 200100001: 8 measured, 40 caught, so raised by 5
   ok(ut_cmp_equal(
     as.data.frame(ger$ger_ldist),
     data.frame(
-      sample_id = c(2001001, 2001001, 2001001, 2002001),
+      sample_id = c(200100001, 200100001, 200100001, 200200001),
       species = 5,
       length = c(21, 21, 31, 76),
       sex = c("F", "M", "M", "U"),
@@ -128,6 +128,70 @@ ok_group("pax_ger_survey", {
   ), "Same table twice")
 })
 
+ok_group("pax_ger_survey: station numbers of 1000 and over", {
+  # 2001 station 1001 and 2002 station 1 shared the id 2002001 when the id
+  # was JAHR * 1000 + STATION. 2001 station 1002 is in StatFi only
+  big_dir <- tempfile("ger_big_")
+  dir.create(big_dir)
+  writeLines(
+    c(
+      "STATID,REISENR,JAHR,MONAT,STATION,AREA,STRATUMNR",
+      "1,1A,2001,10,1001,27,6.2",
+      "2,1A,2001,10,1002,27,6.2",
+      "3,2B,2002,11,1,27,6.2"
+    ),
+    file.path(big_dir, "StatFi.csv")
+  )
+  writeLines(
+    c(
+      "NETZID,JAHR,MONAT,STATION,GBFANGB,GLFANGB,GBHIEV,GLHIEV,DISTANZ,NETZTYP",
+      "11,2001,10,1001,650000N,0350000W,650000N,0360000W,2,OTB",
+      "12,2002,11,1,640000N,0350000W,640000N,0360000W,2,OTB"
+    ),
+    file.path(big_dir, "NetzFi.csv")
+  )
+  writeLines(
+    c(
+      "FISHID,JAHR,STATION,ARTCODE,FARTNAME,GESAMTKG,GESAMTSTCK",
+      "1,2001,1001,8826010139,SEBASTES MARINUS,1,4",
+      "2,2002,1,8826010139,SEBASTES MARINUS,2,6"
+    ),
+    file.path(big_dir, "FishFi.csv")
+  )
+  writeLines(
+    c(
+      "LENGID,JAHR,STATION,ARTCODE,SEX,LAENGE,LANZAHL",
+      "1,2001,1001,8826010139,U,20.5,4",
+      "2,2002,1,8826010139,U,30.5,6"
+    ),
+    file.path(big_dir, "LengFi.csv")
+  )
+  big <- pax_ger_survey(big_dir, species_code = 5)
+  st <- big$ger_station
+  ok(ut_cmp_equal(st$sample_id, c(200101001, 200101002, 200200001)), "Unique ids")
+  ok(ut_cmp_equal(st$year, c(2001L, 2001L, 2002L)), "Year of the station")
+  ok(ut_cmp_equal(st$station, c(1001L, 1002L, 1L)))
+  ok(ut_cmp_equal(
+    st$haul_id,
+    c(11, NA, 12)
+  ), "StatFi station without a haul keeps its year and station")
+  ok(ut_cmp_equal(big$ger_catch$sample_id, c(200101001, 200200001)))
+  ok(ut_cmp_equal(big$ger_ldist$sample_id, c(200101001, 200200001)))
+  ok(ut_cmp_equal(big$ger_ldist$length, c(21, 31)), "Lengths of the own station")
+
+  writeLines(
+    c(
+      "NETZID,JAHR,MONAT,STATION,DISTANZ",
+      "11,2001,10,100000,2"
+    ),
+    file.path(big_dir, "NetzFi.csv")
+  )
+  ok(ut_cmp_error(
+    pax_ger_survey(big_dir),
+    "STATION outside"
+  ), "Station numbers that do not fit the id")
+})
+
 ok_group("pax_ger_station_fix", {
   st <- pax_ger_station_fix(ger$ger_station)
   ok(ut_cmp_equal(st$begin_lat[4], 60 + 200 / 60), "Latitude under 50 times 10")
@@ -137,7 +201,7 @@ ok_group("pax_ger_station_fix", {
 
   st2 <- pax_ger_station_fix(
     ger$ger_station,
-    lon_end_fix = c("2001002" = 1)
+    lon_end_fix = c("200100002" = 1)
   )
   ok(ut_cmp_equal(st2$end_lon[2], -35), "lon_end_fix")
 
@@ -272,7 +336,7 @@ ok_group("East Greenland index with pax_si_*", {
   ok(ut_cmp_equal(
     by_sample,
     data.frame(
-      sample_id = c(2001001, 2001001, 2001002, 2001003, 2001003, 2002001),
+      sample_id = c(200100001, 200100001, 200100002, 200100003, 200100003, 200200001),
       year = c(2001L, 2001L, 2001L, 2001L, 2001L, 2002L),
       length = c(21, 31, 0, 21, 31, 0),
       si_abund = c(n_2001, 0),

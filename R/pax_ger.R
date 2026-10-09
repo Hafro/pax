@@ -52,7 +52,8 @@
 #'   with [pax_decorate()] for [pax_import()]:
 #'   \describe{
 #'     \item{``ger_station``}{One row per StatFi station (or NetzFi haul when
-#'       there is no StatFi file): ``sample_id`` (``JAHR * 1000 + STATION``),
+#'       there is no StatFi file): ``sample_id`` (``JAHR * 100000 +
+#'       STATION``, e.g. 201001064 for station 1064 of 2010),
 #'       ``haul_id`` (``NETZID``), ``year``, ``month``, ``station``
 #'       (``STATION``), ``trip`` (``REISENR``), ``sampling_type`` (101, see
 #'       below), ``gridcell`` (``NA``), ``begin_lat``, ``begin_lon``,
@@ -164,8 +165,8 @@ pax_ger_survey <- function(
     #     the files seen
     station <- merge(stat, netz, by = "sample_id", all.x = TRUE, sort = FALSE)
     missing_netz <- is.na(station$year)
-    station$year[missing_netz] <- station$sample_id[missing_netz] %/% 1000
-    station$station[missing_netz] <- station$sample_id[missing_netz] %% 1000
+    station$year[missing_netz] <- station$sample_id[missing_netz] %/% ger_id_mult
+    station$station[missing_netz] <- station$sample_id[missing_netz] %% ger_id_mult
   }
   station$tow_depth <- ifelse(
     is.na(station$depth_max),
@@ -303,7 +304,8 @@ pax_ger_survey <- function(
 #'       ``E``
 #'     \item latitudes under 50 times 10 (positions with a digit missing,
 #'       two West Greenland tows in 1988)
-#'     \item ``end_lon`` + 8 for 1991721 and + 2 for 1991770
+#'     \item ``end_lon`` + 8 for 199100721 and + 2 for 199100770 (1991
+#'       stations 721 and 770)
 #'     \item ``tow_length`` over 5 nm, 0 or missing set to 2.5 nm (not used
 #'       by the old index, which takes a fixed swept area)
 #'   }
@@ -316,7 +318,7 @@ pax_ger_station_fix <- function(
   tbl,
   tow_length_default = 2.5,
   tow_length_max = 5,
-  lon_end_fix = c("1991721" = 8, "1991770" = 2)
+  lon_end_fix = c("199100721" = 8, "199100770" = 2)
 ) {
   # NSE variables
   begin_lat <- end_lat <- begin_lon <- end_lon <- tow_length <- NULL
@@ -368,12 +370,13 @@ pax_ger_station_fix <- function(
 #'   same species, year and German stratum (``ger_stratum``), raised to the
 #'   station's ``catch_count``. The added rows have ``sex`` ``NA``. Stations
 #'   without a stratum, or whose stratum has no lengths that year, get no
-#'   rows. ``Greenland_Cochran.R`` imputed 1986725, 1986750, 1986751 and
-#'   2011064 only, with the lengths of 1986 stratum 6.2, 1986 stratum 7.2
-#'   (twice) and 2011 stratum 6.2. 2011064 is station 1064 of 2010
-#'   (``JAHR * 1000 + STATION``), so its lengths came from the year after.
-#'   1985526 (East Greenland, one fish) was left without lengths and counted
-#'   as a zero station}
+#'   rows. ``Greenland_Cochran.R`` imputed 1986 stations 725, 750 and 751
+#'   and 2010 station 1064 only (``sample_id`` 198600725, 198600750,
+#'   198600751 and 201001064), with the lengths of 1986 stratum 6.2, 1986
+#'   stratum 7.2 (twice) and 2011 stratum 6.2. The old script's id of
+#'   station 1064 of 2010 was ``JAHR * 1000 + STATION`` = 2011064, so its
+#'   lengths came from the year after. 1985 station 526 (East Greenland, one
+#'   fish) was left without lengths and counted as a zero station}
 #' @rdname pax_ger
 pax_ger_ldist_impute <- function(ldist, station, catch, sample_ids = NULL) {
   # NSE variables
@@ -472,7 +475,7 @@ pax_ger_ldist_impute <- function(ldist, station, catch, sample_ids = NULL) {
 #'     catch = dplyr::tbl(pcon, "ger_catch"),
 #'     # The stations and lengths imputed by Greenland_Cochran.R
 #'     sample_ids = data.frame(
-#'       sample_id = c(1986725, 1986750, 1986751, 2011064),
+#'       sample_id = c(198600725, 198600750, 198600751, 201001064),
 #'       year = c(1986, 1986, 1986, 2011),
 #'       ger_stratum = c(6.2, 7.2, 7.2, 6.2)
 #'     )
@@ -620,8 +623,24 @@ ger_num <- function(x) {
   x
 }
 
+# sample_id of a German station: JAHR * 1e5 + STATION. Station numbers go
+# over 1000 (up to 1386 by 2025), so the earlier JAHR * 1000 + STATION ran
+# into the next year's ids. The ids (about 2e8) are far above the MFRI
+# synis_id range (under 1e6), so they can be combined with MFRI stations
+ger_id_mult <- 1e5
+
 ger_sample_id <- function(df) {
-  ger_num(df$JAHR) * 1000 + ger_num(df$STATION)
+  station <- ger_num(df$STATION)
+  if (any(station < 0 | station >= ger_id_mult, na.rm = TRUE)) {
+    stop(
+      "STATION outside 0-",
+      ger_id_mult - 1,
+      ", sample_id (JAHR * ",
+      ger_id_mult,
+      " + STATION) would not be unique"
+    )
+  }
+  ger_num(df$JAHR) * ger_id_mult + station
 }
 
 # Thünen position "DDMMmmH" / "DDDMMmmH" (degrees, minutes and hundredths of
@@ -643,7 +662,7 @@ ger_check_unique <- function(sample_id, what) {
   if (length(dup) > 0) {
     stop(
       what,
-      " has more than one row per station (JAHR * 1000 + STATION), ",
+      " has more than one row per station (JAHR and STATION), ",
       "is the same table in more than one file? ",
       toString(utils::head(dup, 10))
     )
