@@ -18,7 +18,16 @@ mar, extracted 8 October 2026 by
 \description{
 Multipliers of the catch of golden redfish by time of the tow and length
 group in the spring (\code{fleet == "smb"}) and autumn (\code{"smh"}) surveys,
-fitted for the 2005 benchmark (\code{Surveys/Data/DielVariation_05.rdata}).
+refitted in 2022 on the surveys up to 2021 (spring survey from 1985,
+autumn survey from 1996), probably by
+\code{DAG/05-redfish/Surveys/R/05_ICE_Surveys_DielVariation.R}, and saved as
+\code{Surveys/Data/DielVariation_05.rdata} ("05" is the species code). The
+model is the one of the 2012 analysis (\code{BWKNORTH2023/DielVariation}):
+for each length group a quasi-Poisson GLM of the numbers per tow on year,
+fixed station and a periodic spline of the tow start time (7 df, period
+0-24 h); the prediction over the day is scaled to mean 1 (\code{scaledmult}).
+A refit on the pax data to 2021 reproduces the table to 0.035 (spring
+survey) and 0.145 (autumn survey) in \code{scaledmult}.
 The survey length distributions are divided by \code{scaledmult}, matched by
 the tow start time (rounded to 0.1 h) and length group.
 }
