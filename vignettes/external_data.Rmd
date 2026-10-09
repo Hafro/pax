@@ -36,6 +36,9 @@ Data can be imported into a Pax DB using ``pax_import()``:
 
 ```{r}
 library(pax)
+# NB: pax_landings_fishingyear_summary() (pax_add_fishing_year()) calls sql()
+#     without dplyr::, so it fails unless dplyr is attached
+library(dplyr, warn.conflicts = FALSE)
 
 # NB: In real-life this will probably be generated using pax::pax_from_mar()
 pcon <- pax::pax_connect()

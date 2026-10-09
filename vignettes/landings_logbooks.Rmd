@@ -126,9 +126,11 @@ with a message. The same `gear_group` lists drive the age–length keys and
 the advice and tech report figures (`hafroreports::hr_advice_plot_landings()`,
 `hr_techreport_plot_landings_gear()`), so use the stock's own groups there.
 
-The landings by fishing year (September to August, from 1991). Note that
-`catch_kt` is `sum(catch) / 1000`, so it is in tonnes when `catch` is in kg,
-as in the `landings` table:
+The landings by fishing year (September to August, from 1991). Two
+caveats in this version of pax: `catch_kt` is `sum(catch) / 1000`, so it is
+in tonnes when `catch` is in kg, as in the `landings` table; and the
+function needs dplyr attached (`library(dplyr)`), as it calls `sql()`
+without `dplyr::`.
 
 ```{r}
 tbl(pcon, "landings") |>
