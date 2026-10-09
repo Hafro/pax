@@ -33,8 +33,17 @@ pax_tar_format_duckdb <- function() {
           con = object
         )
       )
+      # Quote the names: a database attached from a file is named after the
+      # file, e.g. "21-hal-pax_db", which isn't a bare identifier
       for (n in def_dbs) {
-        DBI::dbExecute(object, paste("COPY FROM DATABASE ", n, " TO out_db;"))
+        DBI::dbExecute(
+          object,
+          paste0(
+            "COPY FROM DATABASE ",
+            DBI::dbQuoteIdentifier(object, n),
+            " TO out_db;"
+          )
+        )
       }
       DBI::dbDisconnect(object)
     },
