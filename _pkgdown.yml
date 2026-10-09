@@ -1,0 +1,85 @@
+url: https://hafro.github.io/pax/
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+
+articles:
+  - title: Workflows
+    navbar: ~
+    contents:
+      - pax_db
+      - survey_indices
+      - ldist_alk
+      - landings_logbooks
+      - bootstrap
+      - external_data
+
+reference:
+  - title: The pax database
+    desc: Create, open and fill a pax DuckDB database, and keep it in targets.
+    contents:
+      - pax_connect
+      - pax_import
+      - pax_contents
+      - pax_decorate
+      - pax_temptbl
+      - pax_from_mar
+      - pax_tar_format
+  - title: Import from mar
+    desc: Tables of the MFRI database, ready for `pax_import()` (need the mar package).
+    contents:
+      - pax_mar
+      - pax_mar_extra
+      - pax_quotatransfer
+  - title: Foreign data
+    desc: Greenland, Faroese and German data, read when the database is built.
+    contents:
+      - pax_foreign
+      - pax_ger
+  - title: Survey indices
+    contents:
+      - pax_si
+      - pax_si_index
+      - pax_station_location_summary
+  - title: Length distributions and age-length keys
+    contents:
+      - pax_ldist
+      - pax_measurement
+      - pax_sampling
+  - title: Landings and logbooks
+    contents:
+      - pax_landings
+      - pax_logbook
+      - pax_fill_mfdb_gear_code
+  - title: Groupings and descriptions
+    desc: Bin rows by length, region, gear, season, year and depth, and label codes.
+    contents:
+      - pax_add_groupings
+      - pax_describe
+  - title: Bootstrap
+    contents:
+      - pax_bootstrap
+  - title: Strata, depth and maps
+    contents:
+      - pax_strata
+      - pax_marmap_ocean_depth
+      - pax_map
+  - title: Package data
+    desc: Lookup tables shipped with pax.
+    contents:
+      - gear_mapping
+      - mfdb_gear_code_desc
+      - sampling_type_desc
+      - gridcell
+      - reitmapping
+      - noaa_bathymetry
+      - raw_ocean_depth_defbounds
+      - diel_correction_reg
+      - stationlist_hafro_smb
+      - stationlist_hafro_smh_deep
+      - stationlist_hafro_smh_shelf

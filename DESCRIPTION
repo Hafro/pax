@@ -10,7 +10,8 @@ Authors@R: c(person("Jamie", "Lentin", email="lentinj@shuttlethread.com",role = 
             person("Marine and Freshwater Research Institute (Iceland)", role = c("cph")))
 Maintainer: Bjarki Thor Elvarsson <bjarki.elvarsson@hafogvatn.is>
 Description: Calculate surveyindices and catch at age.
-URL: https://github.com/hafro/pax/
+URL: https://hafro.github.io/pax/, https://github.com/Hafro/pax
+BugReports: https://github.com/Hafro/pax/issues
 Encoding: UTF-8
 Depends: R (>= 4.2.0)
 Imports:

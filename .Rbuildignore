@@ -28,3 +28,5 @@ core
 
 ^[^/]+\.csv$
 ^[^/]+\.pdf$
+^_pkgdown\.yml$
+^pkgdown$
