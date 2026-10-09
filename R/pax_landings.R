@@ -153,13 +153,13 @@ pax_add_fishing_year <- function(tbl) {
     dplyr::mutate(
       fishing_year = dplyr::case_when(
         # Pre-1991 regulations were different, no fishingyear
-        year < 1991 ~ as.character(sql("year::INTEGER")),
-        year == 1991 && month < local(fishingyear_cal_start) ~
-          as.character(sql("year::INTEGER")),
+        year < 1991 ~ as.character(dplyr::sql("year::INTEGER")),
+        year == 1991 & month < local(fishingyear_cal_start) ~
+          as.character(dplyr::sql("year::INTEGER")),
         month >= local(fishingyear_cal_start) ~
-          paste0(sql("year::INTEGER"), '/', sql("year::INTEGER + 1")),
+          paste0(dplyr::sql("year::INTEGER"), '/', dplyr::sql("year::INTEGER + 1")),
         TRUE ~ # NB: Includes NA months (yearly entries are month ~6)
-          paste0(sql("year::INTEGER - 1"), '/', sql("year::INTEGER"))
+          paste0(dplyr::sql("year::INTEGER - 1"), '/', dplyr::sql("year::INTEGER"))
       )
     )
 }
