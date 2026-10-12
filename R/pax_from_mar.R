@@ -76,11 +76,17 @@
 #'     \item{``"landings_stock"``}{landings by stock code (``kfteg``) and
 #'       management stock (``agf.aflagrunnur_v``), aggregated without
 #'       vessels or names, [pax_mar_landings_stock()]}
+#'     \item{``"landings_port"``}{landings by port of landing (landings
+#'       register and ``agf.aflagrunnur_v``), aggregated without vessels or
+#'       names, [pax_mar_landings_port()]}
 #'     \item{``"video_annotation"``}{annotations of the underwater video
 #'       surveys (Hafmynd) of the projects ``annotation_projects``, with a
 #'       pseudonymous annotator id instead of the user name,
 #'       [pax_mar_video_annotation()]}
 #'   }
+#' @param logbook_old_columns Optional columns of the ``logbook_old`` table,
+#'   see [pax_logbook_old_columns()], e.g. ``c("tow_time", "num_traps")``
+#'   for the effort of the old logbooks. None by default
 #' @param annotation_projects Hafmynd projects of the ``video_annotation``
 #'   table (e.g. ``"Humar"``, the Nephrops UWTV survey), ``NULL`` (default)
 #'   for all
@@ -125,6 +131,7 @@ pax_from_mar <- function(
   logbook_year_start = year_start,
   extra_tables = character(0),
   annotation_projects = NULL,
+  logbook_old_columns = character(0),
   medafli_species = NULL,
   foreign_tables = character(0),
   foreign_files = list(),
@@ -308,6 +315,18 @@ pax_from_mar <- function(
       )
     )
   }
+  if ("landings_port" %in% extra_tables) {
+    pax_import(
+      pcon,
+      pax_mar_landings_port(
+        mar,
+        species = species,
+        year_start = landings_year_start,
+        year_end = year_end
+      ),
+      name = "landings_port"
+    )
+  }
   if ("video_annotation" %in% extra_tables) {
     pax_import(
       pcon,
@@ -322,7 +341,8 @@ pax_from_mar <- function(
         mar,
         species = logbook_species,
         year_start = logbook_year_start,
-        year_end = year_end
+        year_end = year_end,
+        columns = logbook_old_columns
       )
     )
   }
@@ -365,6 +385,7 @@ pax_from_mar_extra_tables <- function() {
     "ldist_maturity",
     "sample_weight",
     "landings_stock",
-    "video_annotation"
+    "video_annotation",
+    "landings_port"
   )
 }

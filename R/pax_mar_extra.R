@@ -458,21 +458,37 @@ pax_mar_sample <- function(mar, species) {
 #'   (the month column of ``afli.stofn``), ``vessel_id`` (``skipnr``),
 #'   ``gear_id`` (``veidarf``), ``depth_fathoms`` (``dypi``) and ``catch``
 #'   (``afli``, kg). Used e.g. for the monthly catch shares of the years
-#'   before the compiled logbooks separate the redfish species}
+#'   before the compiled logbooks separate the redfish species. Optional
+#'   ``columns``: ``"tow_time"`` (``afli.toga.togtimi``, minutes),
+#'   ``"num_traps"`` and ``"trap_hours"`` (``afli.gildra.gildrur`` and
+#'   ``klst``), ``"lat"`` and ``"lon"`` (the start position, decimal
+#'   degrees, as ``mar::afli_stofn()``), ``"rectangle"`` and
+#'   ``"subrectangle"`` (``reitur``, ``smareitur``) and ``"n_same_catch"``
+#'   (the number of catch rows of the record, any species, with the same
+#'   catch as this one: the old scripts joined ``afli.afli`` back on
+#'   ``visir`` and ``afli``, which repeats a row this many times)}
+#' @param columns Optional extra columns of ``pax_mar_logbook_old()``, none
+#'   by default
 #' @rdname pax_mar_extra
 pax_mar_logbook_old <- function(
   mar,
   species,
   year_start = NULL,
-  year_end = NULL
+  year_end = NULL,
+  columns = character(0)
 ) {
+  unknown <- setdiff(columns, pax_logbook_old_columns())
+  if (length(unknown) > 0) {
+    stop("Unknown logbook_old columns: ", paste(unknown, collapse = ", "))
+  }
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
 
   # NSE variables
   visir <- tegund <- vedags <- veman <- skipnr <- veidarf <- dypi <- NULL
-  afli <- year <- NULL
+  afli <- year <- togtimi <- gildrur <- klst <- breidd <- lengd <- NULL
+  reitur <- smareitur <- NULL
 
   # NB: afli.stofn directly, mar::afli_stofn() also converts the positions,
   #     which is slow and not needed here. year as mar::afli_stofn() (ar)
@@ -493,6 +509,44 @@ pax_mar_logbook_old <- function(
   if (!is.null(year_end)) {
     out <- dplyr::filter(out, year <= local(year_end))
   }
+  if ("tow_time" %in% columns) {
+    out <- dplyr::left_join(
+      out,
+      mar::tbl_mar(mar, "afli.toga") |> dplyr::select(visir, tow_time = togtimi),
+      by = "visir"
+    )
+  }
+  if (any(c("num_traps", "trap_hours") %in% columns)) {
+    out <- dplyr::left_join(
+      out,
+      mar::tbl_mar(mar, "afli.gildra") |>
+        dplyr::select(visir, num_traps = gildrur, trap_hours = klst),
+      by = "visir"
+    )
+  }
+  if (any(c("lat", "lon", "rectangle", "subrectangle") %in% columns)) {
+    out <- dplyr::left_join(
+      out,
+      mar::afli_stofn(mar) |>
+        dplyr::select(
+          visir,
+          lat = breidd,
+          lon = lengd,
+          rectangle = reitur,
+          subrectangle = smareitur
+        ),
+      by = "visir"
+    )
+  }
+  if ("n_same_catch" %in% columns) {
+    out <- dplyr::left_join(
+      out,
+      mar::tbl_mar(mar, "afli.afli") |>
+        dplyr::group_by(visir, afli) |>
+        dplyr::summarise(n_same_catch = dplyr::n(), .groups = "drop"),
+      by = c("visir", "afli")
+    )
+  }
   out |>
     dplyr::select(
       logbook_id = visir,
@@ -503,7 +557,24 @@ pax_mar_logbook_old <- function(
       vessel_id = skipnr,
       gear_id = veidarf,
       depth_fathoms = dypi,
-      catch = afli
+      catch = afli,
+      dplyr::any_of(columns)
     ) |>
     decorate_mar()
+}
+
+#' @return \subsection{pax_logbook_old_columns}{The optional columns of
+#'   [pax_mar_logbook_old()]}
+#' @rdname pax_mar_extra
+pax_logbook_old_columns <- function() {
+  c(
+    "tow_time",
+    "num_traps",
+    "trap_hours",
+    "lat",
+    "lon",
+    "rectangle",
+    "subrectangle",
+    "n_same_catch"
+  )
 }

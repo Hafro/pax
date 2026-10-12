@@ -1,5 +1,25 @@
 # pax (development version)
 
+## Sea urchin and whelk logbooks and landings (October 2026, branch `iag`)
+
+For 191-urx and 45-whe. Defaults unchanged.
+
+* `pax_from_mar(logbook_old_columns =)` / `pax_mar_logbook_old(columns =)`:
+  optional effort and position columns of the old logbooks (`tow_time`
+  from `afli.toga`, `num_traps` and `trap_hours` from `afli.gildra`, `lat`,
+  `lon`, `rectangle`, `subrectangle` as `mar::afli_stofn()`), and
+  `n_same_catch`, the multiplicity of the old scripts' join of `afli.afli`
+  on `visir` and `afli` (`pax_logbook_old_columns()`).
+* `pax_from_mar(extra_tables = "landings_port")`: landings by port of
+  landing from the landings register and `agf.aflagrunnur_v`, aggregated,
+  without vessels, sellers or buyers (`pax_mar_landings_port()`).
+* `pax_pseudonym()`: a stable pseudonym (SHA-256, 10 hex digits), e.g. to
+  select vessels in a repository without listing their numbers;
+  `pax_annotator_id()` uses it.
+
+AI use: Claude (Anthropic) wrote these functions, their tests and this entry
+(12 October 2026); nobody has reviewed the code yet.
+
 ## Nephrops UWTV survey (October 2026, branch `iag`)
 
 For 40-nep (Norway lobster, FU1). Defaults unchanged for existing users.

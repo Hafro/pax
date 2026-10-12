@@ -6,6 +6,7 @@
 \alias{pax_mar_ldist_maturity}
 \alias{pax_mar_sample_weight}
 \alias{pax_mar_landings_stock}
+\alias{pax_mar_landings_port}
 \title{Survey station columns and invertebrate survey tables from MAR}
 \usage{
 pax_station_columns()
@@ -31,6 +32,8 @@ pax_mar_sample_weight(
 )
 
 pax_mar_landings_stock(mar, species, year_start = NULL, year_end = NULL)
+
+pax_mar_landings_port(mar, species, year_start = NULL, year_end = NULL)
 }
 \arguments{
 \item{mar}{A MAR database connection, as returned by \code{mar::connect_mar()}}
@@ -81,6 +84,16 @@ register), \code{gear_id} (landings gear code), \code{fishing_area}
 (\code{veidisvaedi}), \code{period} (quota period, e.g. \code{"20242025"}, NA
 for \code{"agf"}), \code{fishing_year} (as \code{\link[=pax_mar_landings_vessel]{pax_mar_landings_vessel()}}) and
 \code{catch} (ungutted, kg)}
+
+\subsection{pax_mar_landings_port}{Landings by port of landing,
+aggregated (no vessel, seller or buyer): \code{source} (\code{"register"}:
+\code{mar::landadur_afli()}, by \code{hofn}; \code{"agf"}:
+\code{agf.aflagrunnur_v}, by \code{hafnarnumer}), \code{year}, \code{month},
+\code{species}, \code{port} (port number), \code{ices_area} (register only),
+\code{stock_code} and \code{stock_name} (\code{veidistofn},
+\code{veidistofn_heiti}; agf only), \code{fishing_year} (agf: September to
+August, e.g. \code{"2024/2025"}) and \code{catch} (ungutted, kg). For stocks
+whose areas are defined by the ports of landing (sea urchin)}
 }
 \description{
 Optional columns of the \code{station} table and optional tables of

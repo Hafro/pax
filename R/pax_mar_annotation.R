@@ -83,12 +83,27 @@ video_annotation_tidy <- function(df) {
 pax_annotator_id <- function(user) {
   user <- as.character(user)
   key <- toupper(trimws(sub("^OPS\\$", "", user, ignore.case = TRUE)))
-  id <- vapply(
-    key,
+  id <- pax_pseudonym(key)
+  id[is.na(user)] <- NA_character_
+  id
+}
+
+#' @param x Values to replace by pseudonyms (e.g. vessel registration
+#'   numbers), converted to text
+#' @return \subsection{pax_pseudonym}{The first 10 hexadecimal digits of the
+#'   SHA-256 hash of each value as text, \code{NA} for a missing value. Stable
+#'   between sessions and machines, so a repository can select e.g. vessels
+#'   by pseudonym without listing them. Not anonymous: a short code such as
+#'   a registration number can be found by trying all values}
+#' @rdname pax_mar_annotation
+#' @export
+pax_pseudonym <- function(x) {
+  out <- vapply(
+    as.character(x),
     function(k) substr(digest::digest(k, algo = "sha256", serialize = FALSE), 1, 10),
     character(1),
     USE.NAMES = FALSE
   )
-  id[is.na(user)] <- NA_character_
-  id
+  out[is.na(x)] <- NA_character_
+  out
 }

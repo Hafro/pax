@@ -24,6 +24,7 @@ pax_from_mar(
   logbook_year_start = year_start,
   extra_tables = character(0),
   annotation_projects = NULL,
+  logbook_old_columns = character(0),
   medafli_species = NULL,
   foreign_tables = character(0),
   foreign_files = list(),
@@ -123,6 +124,9 @@ measured and counted numbers of the same samples,
 \item{\code{"landings_stock"}}{landings by stock code (\code{kfteg}) and
 management stock (\code{agf.aflagrunnur_v}), aggregated without
 vessels or names, \code{\link[=pax_mar_landings_stock]{pax_mar_landings_stock()}}}
+\item{\code{"landings_port"}}{landings by port of landing (landings
+register and \code{agf.aflagrunnur_v}), aggregated without vessels or
+names, \code{\link[=pax_mar_landings_port]{pax_mar_landings_port()}}}
 \item{\code{"video_annotation"}}{annotations of the underwater video
 surveys (Hafmynd) of the projects \code{annotation_projects}, with a
 pseudonymous annotator id instead of the user name,
@@ -132,6 +136,10 @@ pseudonymous annotator id instead of the user name,
 \item{annotation_projects}{Hafmynd projects of the \code{video_annotation}
 table (e.g. \code{"Humar"}, the Nephrops UWTV survey), \code{NULL} (default)
 for all}
+
+\item{logbook_old_columns}{Optional columns of the \code{logbook_old} table,
+see \code{\link[=pax_logbook_old_columns]{pax_logbook_old_columns()}}, e.g. \code{c("tow_time", "num_traps")}
+for the effort of the old logbooks. None by default}
 
 \item{medafli_species}{Species codes of the old by-catch table
 (\code{afli.medafli}) for the \code{logbook_release} table, e.g. \code{2021}

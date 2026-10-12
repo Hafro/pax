@@ -83,3 +83,17 @@ ok_group("pax_nephrops_grounds", {
       "Jökuldjúp", "Lónsdjúp", "Selvogur", "Skeiðarárdjúp", "Vestmannaeyjasvæði"))
   ), "nine areas")
 })
+
+ok_group("pax_pseudonym", {
+  p <- pax_pseudonym(c(1178, "1178", NA))
+  ok(ut_cmp_identical(p[1], p[2]), "number and text give the same pseudonym")
+  ok(is.na(p[3]), "NA stays NA")
+  ok(ut_cmp_identical(p[1], substr(digest::digest("1178", algo = "sha256", serialize = FALSE), 1, 10)), "SHA-256")
+  ok(ut_cmp_identical(pax_annotator_id("OPS$ABC"), pax_pseudonym("ABC")), "annotator id is the pseudonym of the normalised name")
+})
+
+ok_group("logbook_old and landings_port options", {
+  ok(all(c("tow_time", "num_traps", "trap_hours", "n_same_catch") %in% pax_logbook_old_columns()), "effort columns")
+  ok("landings_port" %in% pax_from_mar_extra_tables(), "landings_port extra table")
+  ok(ut_cmp_error(pax_mar_logbook_old(NULL, 191, columns = "nonsense"), "Unknown logbook_old columns"), "unknown column stops")
+})

@@ -4,11 +4,14 @@
 \alias{pax_mar_annotation}
 \alias{pax_mar_video_annotation}
 \alias{pax_annotator_id}
+\alias{pax_pseudonym}
 \title{Video annotations from MAR (Hafmynd)}
 \usage{
 pax_mar_video_annotation(mar, project = NULL)
 
 pax_annotator_id(user)
+
+pax_pseudonym(x)
 }
 \arguments{
 \item{mar}{A MAR database connection, as returned by \code{mar::connect_mar()}}
@@ -17,6 +20,9 @@ pax_annotator_id(user)
 e.g. \code{"Humar"}), \code{NULL} for all}
 
 \item{user}{Database user names}
+
+\item{x}{Values to replace by pseudonyms (e.g. vessel registration
+numbers), converted to text}
 }
 \value{
 \subsection{pax_mar_video_annotation}{A data frame with columns
@@ -34,6 +40,12 @@ upper case without the Oracle \verb{OPS$} prefix (\code{"OPS$XYZ"} and
 name. The id is stable between imports, so a stock can select an
 annotator by id without storing the name. It is a pseudonym, not
 anonymous: anyone who knows a user name can compute its id}
+
+\subsection{pax_pseudonym}{The first 10 hexadecimal digits of the
+SHA-256 hash of each value as text, \code{NA} for a missing value. Stable
+between sessions and machines, so a repository can select e.g. vessels
+by pseudonym without listing them. Not anonymous: a short code such as
+a registration number can be found by trying all values}
 }
 \description{
 The annotations of the underwater video surveys in
