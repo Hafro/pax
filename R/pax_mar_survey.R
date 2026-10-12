@@ -63,7 +63,7 @@ mar_survey_samples <- function(
   only_trips = NULL
 ) {
   # NSE variables
-  leidangur <- trip <- synis_id <- synaflokkur_nr <- ar <- NULL
+  leidangur <- trip <- synis_id <- synaflokkur_nr <- ar <- year <- NULL
 
   out <- mar::les_stod(mar) |>
     dplyr::inner_join(mar::les_syni(mar), by = "stod_id") |>
@@ -217,7 +217,7 @@ pax_mar_landings_stock <- function(
   fteg <- kfteg <- ar <- man <- veidarfaeri <- veidisvaedi <- timabil <- NULL
   fishing_year <- magn_oslaegt <- year <- month <- source <- NULL
   fisktegund <- veidistofn <- veidistofn_heiti <- londun_hefst <- NULL
-  stock_code <- NULL
+  stock_code <- period <- fishing_area <- NULL
 
   years <- function(tbl) {
     if (!is.null(year_start)) {

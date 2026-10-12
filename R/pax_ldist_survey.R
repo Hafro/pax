@@ -157,5 +157,5 @@ pax_ldist_add_selection <- function(tbl, selection, name = "p_selected") {
       "round the lengths to the grid of the ramp first"
     )
   }
-  dplyr::rename(out, !!name := p_sel)
+  dplyr::rename_with(out, function(x) name, "p_sel")
 }
