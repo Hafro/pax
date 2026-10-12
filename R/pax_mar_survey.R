@@ -32,6 +32,8 @@ pax_station_columns <- function() {
     sample_name = "syni_heiti",
     # Station number of the trip
     station_number = "stod_nr",
+    # Statistical rectangle, the strata of the offshore shrimp survey
+    rectangle = "reitur",
     bottom_temp = "botnhiti",
     surface_temp = "yfirbordshiti",
     bottom_depth_end = "botndypi_hift"

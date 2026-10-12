@@ -44,6 +44,13 @@ every new argument defaults to the old behaviour.
   `"one"` takes a 1 nm tow as `pax_ldist_scale_tow_area()`. Five
   Isafjardardjup stations (gear 30, 1989 and 1993) have no tow length; there
   are none in Arnarfjordur, so 41-pra-arn is unchanged.
+* For the offshore shrimp survey (41-pra-off): station column `rectangle`
+  (`reitur`), for strata by rectangle (`pax_si_station_strata(by =
+  "rectangle")` with `shrimp_offshore_strata`); `pax_shrimp_towdims()` has
+  sampling type 31 (17 m trawl: the old divisor 9.17927 is 17 / 1852 x 1000,
+  areas in nm²); `pax_si_catch_weight_biomass(length_max =)` reproduces the
+  old `filter(lengd < 6)`, which also drops the stations without shrimp
+  from the means. Inshore tow standards and defaults unchanged.
 
 AI use: Claude (Anthropic) wrote these functions, their tests and this entry
 (12 October 2026). The 41-pra-arn pipeline built on them reproduces the old

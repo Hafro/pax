@@ -198,7 +198,23 @@ ok_group("pax_si_catch_weight_biomass: stations without a tow length", {
   ok(ut_cmp_equal(agg(bio0), agg(bio1)), "Other stations unchanged")
 })
 
+ok_group("pax_si_catch_weight_biomass: length_max (old offshore lengd < 6)", {
+  st <- pax_si_station_strata(dplyr::tbl(pcon, "station"), strata)
+  b0 <- pax_si_catch_weight_biomass(st, species = 41, lw_coeffs = lw, selection = ramp) |> dplyr::collect()
+  b6 <- pax_si_catch_weight_biomass(st, species = 41, lw_coeffs = lw, selection = ramp, length_max = 6) |> dplyr::collect()
+  ok(5 %in% b0$sample_id && !(5 %in% b6$sample_id), "Station without shrimp drops out with length_max")
+  ok(all(b6$length < 60), "No lengths of 6 cm or more")
+  ok(ut_cmp_equal(sort(setdiff(unique(b0$sample_id), unique(b6$sample_id))), 5), "...only the station without shrimp drops out here")
+  i0 <- pax_si_stratified_index(b0, "b")
+  i6 <- pax_si_stratified_index(b6, "b")
+  ok(all(i6$n_stations <= i0$n_stations) && any(i6$n_stations < i0$n_stations), "Fewer stations in the means")
+})
+
 ok_group("pax_station_columns, pax_shrimp_strata, pax_shrimp_towdims", {
+  ok(ut_cmp_equal(pax:::station_columns_map("rectangle"), c(rectangle = "reitur")), "Rectangle station column")
+  td <- pax_shrimp_towdims("nm2")
+  ok(ut_cmp_equal(td$std_width[td$sampling_type == 31] * 1000, 9.17927, tolerance = 1e-6), "Offshore: 17 m trawl, the old divisor 9.17927 (nm, x 1000)")
+  ok(ut_cmp_equal(pax_shrimp_towdims()$std_width[1:3], rep(0.0149 * 1.852, 3)), "Inshore tow standards unchanged")
   ok(ut_cmp_equal(
     pax:::station_columns_map(c("survey_area", "sample_name")),
     c(survey_area = "skiki", sample_name = "syni_heiti")

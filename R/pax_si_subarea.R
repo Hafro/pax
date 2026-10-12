@@ -104,18 +104,23 @@ pax_si_station_strata <- function(
 #'   [pax_ldist_scale_tow_area()]: the inshore shrimp surveys (sampling types
 #'   37, 10 and 11), as the old scripts (``mar::skala_med_toglengd(min_towlength =
 #'   0.01, std_towlength = 1)``, maximum 8 nm, and a trawl of 14.9 m, so the
-#'   swept area of a standard tow of 1 nm is 0.0149 × 1.852 km²). The pax
-#'   default for sampling type 37 has the same trawl width (27.595 / 1.852² /
-#'   1000 nm²) but tows of 0.5-4 nm}
+#'   swept area of a standard tow of 1 nm is 0.0149 × 1.852 km²), and the
+#'   offshore shrimp survey (sampling type 31), with a trawl of 17 m (the old
+#'   script divided by 9.17927 = 17 / 1852 × 1000, for areas in nm² and
+#'   numbers in thousands). The pax default for sampling type 37 has the
+#'   same trawl width (27.595 / 1.852² / 1000 nm²) but tows of 0.5-4 nm}
 #' @rdname pax_si_subarea
 pax_shrimp_towdims <- function(area_unit = c("km2", "nm2")) {
   area_unit <- match.arg(area_unit)
-  width <- 0.0149 * 1.852
+  # Trawl width (m) by sampling type: inshore 14.9 m, offshore 17 m
+  width_m <- c(14.9, 14.9, 14.9, 17)
+  # Swept area of a 1 nm tow, km² (width in km x 1.852 km) or nm²
+  width <- width_m / 1000 * 1.852
   if (area_unit == "nm2") {
     width <- width / 1.852^2
   }
   data.frame(
-    sampling_type = c(37, 10, 11),
+    sampling_type = c(37, 10, 11, 31),
     min_towlength = 0.01,
     max_towlength = 8,
     std_towlength = 1,
@@ -136,6 +141,13 @@ pax_shrimp_towdims <- function(area_unit = c("km2", "nm2")) {
 #'   default [pax_shrimp_towdims()]
 #' @param length_scale,length_unit Passed to [pax_ldist_round_length()]
 #' @param female_sex Sex code of females, for the female biomass
+#' @param length_max If not ``NULL``, length rows with a recorded length
+#'   (before ``length_scale``) of ``length_max`` or more are left out after
+#'   the raising to the catch weight, and so are the rows without a length:
+#'   stations without the species then drop out of the stratum means. This
+#'   is the old offshore shrimp script's ``filter(lengd < 6)``, which works
+#'   on the joined station and length rows. Default ``NULL``: all lengths,
+#'   stations without the species count as zeros
 #' @param tow_length_missing What a station without a tow length gets:
 #'   ``"zero"`` (default, as the old shrimp scripts, where
 #'   ``mar::skala_med_toglengd()`` gives ``NA`` and the station's catch then
@@ -166,6 +178,7 @@ pax_si_catch_weight_biomass <- function(
   length_scale = 10,
   length_unit = 0.5,
   female_sex = 2,
+  length_max = NULL,
   tow_length_missing = c("zero", "one")
 ) {
   tow_length_missing <- match.arg(tow_length_missing)
@@ -200,6 +213,13 @@ pax_si_catch_weight_biomass <- function(
     # Stations without the species: one row with count 0
     dplyr::mutate(species = local(sp), count = dplyr::coalesce(count, 0)) |>
     pax_ldist_scale_catch_weight(sample_weight_tbl) |>
+    (function(tbl) {
+      if (!is.null(length_max)) {
+        # SQL semantics: rows with length NULL are dropped too
+        tbl <- dplyr::filter(tbl, length < local(length_max))
+      }
+      tbl
+    })() |>
     pax_ldist_round_length(scale = length_scale, unit = length_unit) |>
     (function(tbl) {
       if (tow_length_missing == "zero") {

@@ -29,6 +29,7 @@ pax_si_catch_weight_biomass(
   length_scale = 10,
   length_unit = 0.5,
   female_sex = 2,
+  length_max = NULL,
   tow_length_missing = c("zero", "one")
 )
 
@@ -72,6 +73,14 @@ default \code{\link[=pax_shrimp_towdims]{pax_shrimp_towdims()}}}
 
 \item{female_sex}{Sex code of females, for the female biomass}
 
+\item{length_max}{If not \code{NULL}, length rows with a recorded length
+(before \code{length_scale}) of \code{length_max} or more are left out after
+the raising to the catch weight, and so are the rows without a length:
+stations without the species then drop out of the stratum means. This
+is the old offshore shrimp script's \code{filter(lengd < 6)}, which works
+on the joined station and length rows. Default \code{NULL}: all lengths,
+stations without the species count as zeros}
+
 \item{tow_length_missing}{What a station without a tow length gets:
 \code{"zero"} (default, as the old shrimp scripts, where
 \code{mar::skala_med_toglengd()} gives \code{NA} and the station's catch then
@@ -103,9 +112,11 @@ strata, which the index leaves out, as the old scripts did)}
 \subsection{pax_shrimp_towdims}{A data frame of tow standards for
 \code{\link[=pax_ldist_scale_tow_area]{pax_ldist_scale_tow_area()}}: the inshore shrimp surveys (sampling types
 37, 10 and 11), as the old scripts (\code{mar::skala_med_toglengd(min_towlength = 0.01, std_towlength = 1)}, maximum 8 nm, and a trawl of 14.9 m, so the
-swept area of a standard tow of 1 nm is 0.0149 × 1.852 km²). The pax
-default for sampling type 37 has the same trawl width (27.595 / 1.852² /
-1000 nm²) but tows of 0.5-4 nm}
+swept area of a standard tow of 1 nm is 0.0149 × 1.852 km²), and the
+offshore shrimp survey (sampling type 31), with a trawl of 17 m (the old
+script divided by 9.17927 = 17 / 1852 × 1000, for areas in nm² and
+numbers in thousands). The pax default for sampling type 37 has the
+same trawl width (27.595 / 1.852² / 1000 nm²) but tows of 0.5-4 nm}
 
 \subsection{pax_si_catch_weight_biomass}{A dplyr query, one row
 per station and length, sex and maturity stage (one row with \code{length}
