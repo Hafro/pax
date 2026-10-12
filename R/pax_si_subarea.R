@@ -112,10 +112,11 @@ pax_si_station_strata <- function(
 #' @rdname pax_si_subarea
 pax_shrimp_towdims <- function(area_unit = c("km2", "nm2")) {
   area_unit <- match.arg(area_unit)
-  # Trawl width (m) by sampling type: inshore 14.9 m, offshore 17 m
-  width_m <- c(14.9, 14.9, 14.9, 17)
-  # Swept area of a 1 nm tow, km² (width in km x 1.852 km) or nm²
-  width <- width_m / 1000 * 1.852
+  # Swept area of a 1 nm tow by sampling type, km² (width in km x 1.852
+  # km) or nm²: inshore a 14.9 m trawl (the old 0.0149 x 1.852); offshore
+  # the old divisor 9.17927 (nm² x 1000, a 17 m trawl, 17 / 1852 x 1000
+  # rounded to 5 decimals), kept as written so the old index is reproduced
+  width <- c(rep(0.0149 * 1.852, 3), 9.17927 / 1000 * 1.852^2)
   if (area_unit == "nm2") {
     width <- width / 1.852^2
   }

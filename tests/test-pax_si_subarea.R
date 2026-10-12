@@ -213,7 +213,7 @@ ok_group("pax_si_catch_weight_biomass: length_max (old offshore lengd < 6)", {
 ok_group("pax_station_columns, pax_shrimp_strata, pax_shrimp_towdims", {
   ok(ut_cmp_equal(pax:::station_columns_map("rectangle"), c(rectangle = "reitur")), "Rectangle station column")
   td <- pax_shrimp_towdims("nm2")
-  ok(ut_cmp_equal(td$std_width[td$sampling_type == 31] * 1000, 9.17927, tolerance = 1e-6), "Offshore: 17 m trawl, the old divisor 9.17927 (nm, x 1000)")
+  ok(identical(td$std_width[td$sampling_type == 31] * 1000, 9.17927), "Offshore: the old divisor 9.17927 exactly (17 m trawl, nm, x 1000)")
   ok(ut_cmp_equal(pax_shrimp_towdims()$std_width[1:3], rep(0.0149 * 1.852, 3)), "Inshore tow standards unchanged")
   ok(ut_cmp_equal(
     pax:::station_columns_map(c("survey_area", "sample_name")),
