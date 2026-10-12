@@ -36,6 +36,7 @@ reference:
       - pax_mar
       - pax_mar_extra
       - pax_mar_survey
+      - pax_mar_annotation
       - pax_quotatransfer
   - title: Foreign data
     desc: Greenland, Faroese and German data, read when the database is built.
@@ -70,6 +71,7 @@ reference:
   - title: Strata, depth and maps
     contents:
       - pax_strata
+      - pax_nephrops_grounds
       - pax_marmap_ocean_depth
       - pax_map
   - title: Package data
@@ -85,6 +87,7 @@ reference:
       - diel_correction_reg
       - shrimp_strata
       - shrimp_offshore_strata
+      - nephrops_grounds
       - stationlist_hafro_smb
       - stationlist_hafro_smh_deep
       - stationlist_hafro_smh_shelf

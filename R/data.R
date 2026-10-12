@@ -184,3 +184,24 @@ NULL
 #' @docType data
 #' @keywords data
 NULL
+
+#' Nephrops grounds off south Iceland
+#'
+#' The 13 Norway lobster (*Nephrops*) grounds (FU1) of the UWTV survey, over
+#' which the burrow density is kriged: polygons drawn around the fishing
+#' tracks of 2007-2018 (Jónas P. Jónasson's
+#' ``pol800tracks5size4000plus2007_2018.rdata``), in ISN93 (EPSG:3057),
+#' with the ground numbers and area names used in the tables of the old
+#' ``IAG/nephrops`` repository. Read it with [pax_nephrops_grounds()].
+#'
+#' @format An sf data frame with 13 rows and columns ``name`` (ground
+#'   number as text), ``area_name``, ``area`` (m², from the source file) and
+#'   ``geometry`` (polygons, EPSG:3057)
+#' @source ``nephrops_grounds_sf`` of Jacob Kasper's package ``spatialJ``
+#'   (now ``hafsvaedi``, MFRI GitLab ``jacobmk/spatialJ``, data unchanged
+#'   since February 2026), which the old ``IAG/nephrops`` code used; its
+#'   ``data-raw/nephrops_grounds.R`` builds it from the source file above
+#' @name nephrops_grounds
+#' @docType data
+#' @keywords data
+NULL

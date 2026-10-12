@@ -36,7 +36,9 @@ pax_station_columns <- function() {
     rectangle = "reitur",
     bottom_temp = "botnhiti",
     surface_temp = "yfirbordshiti",
-    bottom_depth_end = "botndypi_hift"
+    bottom_depth_end = "botndypi_hift",
+    # Date of the station (dags), e.g. stations without a tow start time
+    date = "dags"
   )
 }
 

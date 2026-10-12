@@ -1,5 +1,25 @@
 # pax (development version)
 
+## Nephrops UWTV survey (October 2026, branch `iag`)
+
+For 40-nep (Norway lobster, FU1). Defaults unchanged for existing users.
+
+* `pax_from_mar(extra_tables = "video_annotation", annotation_projects =)`:
+  the annotations of the underwater video surveys
+  (`HAFMYND.VIDEO_TAXON_CONCEPT_V`, e.g. project `"Humar"`), one row per
+  annotation, `pax_mar_video_annotation()`. The annotator is kept only as a
+  pseudonymous id, `pax_annotator_id()` (SHA-256 of the user name without
+  the `OPS$` prefix, first 10 hex digits), because the Nephrops index uses
+  one annotator's final annotations; the user names, comments and video file
+  paths are not imported.
+* Station column `date` (`dags`).
+* Package data `nephrops_grounds` (the 13 grounds of the UWTV survey, ISN93,
+  from `spatialJ`/`hafsvaedi`, as the old code used) and
+  `pax_nephrops_grounds()`.
+
+AI use: Claude (Anthropic) wrote these functions, their tests and this entry
+(12 October 2026); nobody has reviewed the code yet.
+
 ## Inshore shrimp surveys (October 2026, branch `iag`)
 
 For the IAG shrimp assessments (41-pra-arn first; Isafjardardjup,

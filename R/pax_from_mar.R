@@ -76,7 +76,14 @@
 #'     \item{``"landings_stock"``}{landings by stock code (``kfteg``) and
 #'       management stock (``agf.aflagrunnur_v``), aggregated without
 #'       vessels or names, [pax_mar_landings_stock()]}
+#'     \item{``"video_annotation"``}{annotations of the underwater video
+#'       surveys (Hafmynd) of the projects ``annotation_projects``, with a
+#'       pseudonymous annotator id instead of the user name,
+#'       [pax_mar_video_annotation()]}
 #'   }
+#' @param annotation_projects Hafmynd projects of the ``video_annotation``
+#'   table (e.g. ``"Humar"``, the Nephrops UWTV survey), ``NULL`` (default)
+#'   for all
 #' @param medafli_species Species codes of the old by-catch table
 #'   (``afli.medafli``) for the ``logbook_release`` table, e.g. ``2021``
 #'   (released halibut)
@@ -117,6 +124,7 @@ pax_from_mar <- function(
   logbook_species = species,
   logbook_year_start = year_start,
   extra_tables = character(0),
+  annotation_projects = NULL,
   medafli_species = NULL,
   foreign_tables = character(0),
   foreign_files = list(),
@@ -300,6 +308,13 @@ pax_from_mar <- function(
       )
     )
   }
+  if ("video_annotation" %in% extra_tables) {
+    pax_import(
+      pcon,
+      pax_mar_video_annotation(mar, project = annotation_projects),
+      name = "video_annotation"
+    )
+  }
   if ("logbook_old" %in% extra_tables) {
     pax_import(
       pcon,
@@ -349,6 +364,7 @@ pax_from_mar_extra_tables <- function() {
     "logbook_old",
     "ldist_maturity",
     "sample_weight",
-    "landings_stock"
+    "landings_stock",
+    "video_annotation"
   )
 }

@@ -23,6 +23,7 @@ pax_from_mar(
   logbook_species = species,
   logbook_year_start = year_start,
   extra_tables = character(0),
+  annotation_projects = NULL,
   medafli_species = NULL,
   foreign_tables = character(0),
   foreign_files = list(),
@@ -122,7 +123,15 @@ measured and counted numbers of the same samples,
 \item{\code{"landings_stock"}}{landings by stock code (\code{kfteg}) and
 management stock (\code{agf.aflagrunnur_v}), aggregated without
 vessels or names, \code{\link[=pax_mar_landings_stock]{pax_mar_landings_stock()}}}
+\item{\code{"video_annotation"}}{annotations of the underwater video
+surveys (Hafmynd) of the projects \code{annotation_projects}, with a
+pseudonymous annotator id instead of the user name,
+\code{\link[=pax_mar_video_annotation]{pax_mar_video_annotation()}}}
 }}
+
+\item{annotation_projects}{Hafmynd projects of the \code{video_annotation}
+table (e.g. \code{"Humar"}, the Nephrops UWTV survey), \code{NULL} (default)
+for all}
 
 \item{medafli_species}{Species codes of the old by-catch table
 (\code{afli.medafli}) for the \code{logbook_release} table, e.g. \code{2021}
