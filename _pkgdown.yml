@@ -35,6 +35,7 @@ reference:
     contents:
       - pax_mar
       - pax_mar_extra
+      - pax_mar_survey
       - pax_quotatransfer
   - title: Foreign data
     desc: Greenland, Faroese and German data, read when the database is built.
@@ -45,10 +46,12 @@ reference:
     contents:
       - pax_si
       - pax_si_index
+      - pax_si_subarea
       - pax_station_location_summary
   - title: Length distributions and age-length keys
     contents:
       - pax_ldist
+      - pax_ldist_survey
       - pax_measurement
       - pax_sampling
   - title: Landings and logbooks
@@ -80,6 +83,8 @@ reference:
       - noaa_bathymetry
       - raw_ocean_depth_defbounds
       - diel_correction_reg
+      - shrimp_strata
+      - shrimp_offshore_strata
       - stationlist_hafro_smb
       - stationlist_hafro_smh_deep
       - stationlist_hafro_smh_shelf

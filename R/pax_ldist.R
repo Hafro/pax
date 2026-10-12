@@ -94,32 +94,129 @@ pax_ldist_scale_round <- function(tbl) {
 
 #' @param lw_coeffs_tbl A dplyr query or table name for length-weight
 #'   coefficients, with columns ``a``, ``b``, and optionally ``species`` and
-#'   ``sex``
+#'   ``sex`` (or the columns of ``by``)
+#' @param by Columns to match the coefficients on. ``NULL`` (default): the
+#'   columns ``species`` and ``sex`` that ``lw_coeffs_tbl`` has, as before.
+#'   With ``by``, an ``NA`` in a key column of ``lw_coeffs_tbl`` matches any
+#'   value: a row with ``maturity_stage`` ``NA`` holds for all maturity
+#'   stages of its species and sex, unless a row with that stage exists
+#'   (rows are matched from the most specific, all keys given, to the least).
+#'   E.g. ``by = c("species", "sex", "maturity_stage")`` for shrimp, whose
+#'   weight differs by maturity stage
+#' @param missing What to do with rows without coefficients: ``"default"``
+#'   (the default) a = 0.01 and b = 3, a fish in cm and g; ``"stop"`` stop
+#'   with an error naming them; ``"zero"`` give them weight 0 (as the old
+#'   shrimp scripts did for unsexed or unstaged animals, whose weight then
+#'   goes to the others when weights are scaled to the sample weight). With
+#'   ``"stop"`` and ``"zero"`` a species with no coefficients at all is an
+#'   error, since a = 0.01, b = 3 is wrong for e.g. shrimp lengths in mm.
+#'   Rows with ``length`` ``NA`` (stations without the species) are never
+#'   an error
 #' @return \subsection{pax_ldist_add_weight}{A dplyr query with a ``weight``
 #'   column added, calculated as ``a * length^b``}
 #' @rdname pax_ldist
 pax_ldist_add_weight <- function(
   tbl,
-  lw_coeffs_tbl = "lw_coeffs"
+  lw_coeffs_tbl = "lw_coeffs",
+  by = NULL,
+  missing = c("default", "stop", "zero")
 ) {
   pcon <- dbplyr::remote_con(tbl)
+  missing <- match.arg(missing)
 
   a <- NULL # Mask NSE variable
   b <- NULL # Mask NSE variable
   lw_coeffs_tbl <- pax_temptbl(pcon, lw_coeffs_tbl)
   lw_coeffs_tbl_colnames <- colnames(lw_coeffs_tbl)
 
-  tbl |>
-    dplyr::left_join(
-      lw_coeffs_tbl,
-      by = intersect(lw_coeffs_tbl_colnames, c("species", "sex"))
-    ) |>
-    dplyr::mutate(
-      a = ifelse(is.na(a), 0.01, a),
-      b = ifelse(is.na(b), 3.00, b),
-      weight = a * length^b
-    ) |>
-    dplyr::select(-a, -b)
+  if (is.null(by)) {
+    out <- tbl |>
+      dplyr::left_join(
+        lw_coeffs_tbl,
+        by = intersect(lw_coeffs_tbl_colnames, c("species", "sex"))
+      )
+  } else {
+    out <- ldist_join_lw_wildcard(tbl, lw_coeffs_tbl, by)
+  }
+
+  if (missing == "default") {
+    out <- out |>
+      dplyr::mutate(
+        a = ifelse(is.na(a), 0.01, a),
+        b = ifelse(is.na(b), 3.00, b),
+        weight = a * length^b
+      )
+  } else {
+    ldist_check_lw(out, lw_coeffs_tbl, missing)
+    # "zero" (and lengths NA under "stop"): no coefficients, weight 0
+    out <- out |>
+      dplyr::mutate(weight = ifelse(is.na(a) | is.na(b), 0, a * length^b))
+  }
+  dplyr::select(out, -a, -b)
+}
+
+# Join length-weight coefficients on the columns of `by`, NA in a key column
+# of the coefficients matching any value; the most specific match wins
+ldist_join_lw_wildcard <- function(tbl, lw, by) {
+  a <- b <- a_k <- b_k <- NULL # NSE
+  missing_cols <- setdiff(c(by, "a", "b"), colnames(lw))
+  if (length(missing_cols) > 0) {
+    stop("lw_coeffs_tbl has no column(s) ", paste(missing_cols, collapse = ", "))
+  }
+  out <- tbl |>
+    dplyr::mutate(a = NA_real_, b = NA_real_)
+  # From all keys given to the first key only
+  for (k in rev(seq_along(by))) {
+    keys <- by[seq_len(k)]
+    rest <- setdiff(by, keys)
+    lw_k <- lw
+    for (col in keys) {
+      lw_k <- dplyr::filter(lw_k, !is.na(!!rlang::sym(col)))
+    }
+    for (col in rest) {
+      lw_k <- dplyr::filter(lw_k, is.na(!!rlang::sym(col)))
+    }
+    lw_k <- lw_k |>
+      dplyr::select(dplyr::all_of(keys), a_k = "a", b_k = "b")
+    out <- out |>
+      dplyr::left_join(lw_k, by = keys) |>
+      dplyr::mutate(
+        a = dplyr::coalesce(a, a_k),
+        b = dplyr::coalesce(b, b_k)
+      ) |>
+      dplyr::select(-"a_k", -"b_k")
+  }
+  out
+}
+
+# Stop if a species has no coefficients, or (missing = "stop") any row with a
+# length has none
+ldist_check_lw <- function(out, lw, missing) {
+  a <- species <- n <- NULL # NSE
+  if ("species" %in% colnames(out)) {
+    sp_lw <- lw |> dplyr::distinct(species) |> dplyr::pull(species)
+    sp <- out |>
+      dplyr::filter(!is.na(length), !is.na(species)) |>
+      dplyr::distinct(species) |>
+      dplyr::pull(species)
+    no_coef <- setdiff(sp, sp_lw)
+    if (length(no_coef) > 0) {
+      stop(
+        "No length-weight coefficients for species ",
+        paste(no_coef, collapse = ", ")
+      )
+    }
+  }
+  if (missing == "stop") {
+    bad <- out |>
+      dplyr::filter(!is.na(length), is.na(a)) |>
+      dplyr::summarise(n = dplyr::n()) |>
+      dplyr::pull(n)
+    if (bad > 0) {
+      stop(bad, " length rows have no length-weight coefficients")
+    }
+  }
+  invisible(TRUE)
 }
 
 #' @param towdims_tbl A data.frame of per-sampling-type tow dimension standards

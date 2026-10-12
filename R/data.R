@@ -137,3 +137,44 @@ NULL
 #' @docType data
 #' @keywords data
 NULL
+
+#' Strata of the inshore shrimp surveys
+#'
+#' The fjord sub-areas (``fjardarreitur``) of the inshore shrimp surveys
+#' (sampling type 37, and 10 and 11 in Isafjardardjup) and their areas, as
+#' the old assessment scripts: Arnarfjordur (``advice/getData.R``, survey
+#' area 52), Isafjardardjup (``Data/flatarmal_isafj.txt``, survey area 53,
+#' areas by year; the 2026 assessment used sub-areas 1, 2, 3, 4, 6, 8, 11,
+#' 12, 13 and 14) and Snaefellsnes (``advice/getData.r``, survey areas 31,
+#' 32 and 34; the old script matched stations on the sub-area only). Use
+#' with [pax_si_station_strata()].
+#'
+#' @format A data.frame with columns ``stock``, ``survey_area`` (biota
+#'   ``skiki``), ``survey_subarea`` (``fjardarreitur``), ``year_start`` and
+#'   ``year_end`` (years the area holds for, ``NA`` for no limit), ``area``
+#'   (km², as the old scripts, which divided by the swept area of a 1 nm tow
+#'   in km², 0.0149 x 1.852) and ``stratum`` (the sub-area)
+#' @source The old IAG repositories ``41-raekjaarnarfjordur``,
+#'   ``41-raekjaisafjardardjup`` and ``41-raekjasnaefellsnes`` (MFRI GitLab),
+#'   October 2026
+#' @name shrimp_strata
+#' @docType data
+#' @keywords data
+NULL
+
+#' Strata of the offshore shrimp survey
+#'
+#' The 42 statistical rectangles of the offshore shrimp survey (sampling
+#' type 31) with their areas and survey areas (``skiki``), as the old
+#' ``41-offshore-shrimp/advice/getData.R`` (13,604 in total; 11,320 in the
+#' survey areas 10-19 that the index uses). The old script divided by
+#' 9.17927 for the swept area, so check the units before use.
+#'
+#' @format A data.frame with columns ``stock``, ``survey_area``,
+#'   ``rectangle`` (``reitur``) and ``area`` (as the old script)
+#' @source ``41-offshore-shrimp/advice/getData.R`` (MFRI GitLab), October
+#'   2026
+#' @name shrimp_offshore_strata
+#' @docType data
+#' @keywords data
+NULL
