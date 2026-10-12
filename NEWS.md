@@ -38,6 +38,12 @@ every new argument defaults to the old behaviour.
 * `shrimp_strata` stock `"isafjardardjup_february"`: the areas of the old
   Isafjardardjup February survey script (they differ slightly from the
   autumn areas), for the February survey figures of 41-pra-isa.
+* `pax_si_catch_weight_biomass(tow_length_missing = "zero")`: a station
+  without a tow length counts as a zero in the stratum mean, as in the old
+  shrimp scripts (`mar::skala_med_toglengd()` gives `NA`, then `nvl(N, 0)`);
+  `"one"` takes a 1 nm tow as `pax_ldist_scale_tow_area()`. Five
+  Isafjardardjup stations (gear 30, 1989 and 1993) have no tow length; there
+  are none in Arnarfjordur, so 41-pra-arn is unchanged.
 
 AI use: Claude (Anthropic) wrote these functions, their tests and this entry
 (12 October 2026). The 41-pra-arn pipeline built on them reproduces the old

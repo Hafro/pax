@@ -136,6 +136,11 @@ pax_shrimp_towdims <- function(area_unit = c("km2", "nm2")) {
 #'   default [pax_shrimp_towdims()]
 #' @param length_scale,length_unit Passed to [pax_ldist_round_length()]
 #' @param female_sex Sex code of females, for the female biomass
+#' @param tow_length_missing What a station without a tow length gets:
+#'   ``"zero"`` (default, as the old shrimp scripts, where
+#'   ``mar::skala_med_toglengd()`` gives ``NA`` and the station's catch then
+#'   counts as 0 in the stratum mean) or ``"one"`` (a tow of 1 nm, as
+#'   [pax_ldist_scale_tow_area()])
 #' @return \subsection{pax_si_catch_weight_biomass}{A dplyr query, one row
 #'   per station and length, sex and maturity stage (one row with ``length``
 #'   ``NA`` for stations without the species): ``sample_id``, ``year``,
@@ -160,12 +165,14 @@ pax_si_catch_weight_biomass <- function(
   towdims_tbl = pax_shrimp_towdims(),
   length_scale = 10,
   length_unit = 0.5,
-  female_sex = 2
+  female_sex = 2,
+  tow_length_missing = c("zero", "one")
 ) {
+  tow_length_missing <- match.arg(tow_length_missing)
   # NSE variables
   sample_id <- count <- area <- n <- mean_weight <- b_sample <- b <- NULL
   weight <- p_fishable <- b_fishable <- sex <- stratum <- year <- NULL
-  maturity_stage <- s_sample <- s_lw <- NULL
+  maturity_stage <- s_sample <- s_lw <- tow_length <- NULL
 
   if (length(species) != 1) {
     stop("pax_si_catch_weight_biomass() takes one species")
@@ -194,6 +201,13 @@ pax_si_catch_weight_biomass <- function(
     dplyr::mutate(species = local(sp), count = dplyr::coalesce(count, 0)) |>
     pax_ldist_scale_catch_weight(sample_weight_tbl) |>
     pax_ldist_round_length(scale = length_scale, unit = length_unit) |>
+    (function(tbl) {
+      if (tow_length_missing == "zero") {
+        # The old scripts: no tow length, no catch (the station stays, as 0)
+        tbl <- dplyr::mutate(tbl, count = ifelse(is.na(tow_length), NA, count))
+      }
+      tbl
+    })() |>
     pax_ldist_scale_tow_area(towdims_tbl = towdims_tbl) |>
     dplyr::mutate(
       n = dplyr::coalesce(count, 0) * area,

@@ -28,7 +28,8 @@ pax_si_catch_weight_biomass(
   towdims_tbl = pax_shrimp_towdims(),
   length_scale = 10,
   length_unit = 0.5,
-  female_sex = 2
+  female_sex = 2,
+  tow_length_missing = c("zero", "one")
 )
 
 pax_si_stratified_index(tbl, values, z = 1.96)
@@ -70,6 +71,12 @@ default \code{\link[=pax_shrimp_towdims]{pax_shrimp_towdims()}}}
 \item{length_scale, length_unit}{Passed to \code{\link[=pax_ldist_round_length]{pax_ldist_round_length()}}}
 
 \item{female_sex}{Sex code of females, for the female biomass}
+
+\item{tow_length_missing}{What a station without a tow length gets:
+\code{"zero"} (default, as the old shrimp scripts, where
+\code{mar::skala_med_toglengd()} gives \code{NA} and the station's catch then
+counts as 0 in the stratum mean) or \code{"one"} (a tow of 1 nm, as
+\code{\link[=pax_ldist_scale_tow_area]{pax_ldist_scale_tow_area()}})}
 
 \item{tbl}{Station values by stratum: a data frame or dplyr query with
 \code{year}, \code{stratum}, \code{sample_id} and the columns of \code{values},

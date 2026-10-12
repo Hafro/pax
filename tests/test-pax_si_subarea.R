@@ -185,6 +185,19 @@ ok_group("pax_si_catch_weight_biomass and pax_si_stratified_index reproduce the 
   ok(ut_cmp_equal(sum(s3$b), sum(s3$b_sample)), "Station biomass from the sample weight, split by length-weight")
 })
 
+ok_group("pax_si_catch_weight_biomass: stations without a tow length", {
+  st <- dplyr::tbl(pcon, "station") |>
+    dplyr::mutate(tow_length = ifelse(sample_id == 3, NA, tow_length)) |>
+    pax_si_station_strata(strata)
+  bio0 <- pax_si_catch_weight_biomass(st, species = 41, lw_coeffs = lw, selection = ramp) |> dplyr::collect()
+  bio1 <- pax_si_catch_weight_biomass(st, species = 41, lw_coeffs = lw, selection = ramp, tow_length_missing = "one") |> dplyr::collect()
+  ok(all(bio0$b[bio0$sample_id == 3] == 0), "Default (old scripts): no tow length, biomass 0")
+  ok(3 %in% bio0$sample_id, "...and the station stays (a zero in the stratum mean)")
+  ok(sum(bio1$b[bio1$sample_id == 3]) > 0, "tow_length_missing = 'one': a tow of 1 nm")
+  agg <- function(b) { b <- b[b$sample_id != 3, ]; x <- tapply(b$b, b$sample_id, sum); x[order(names(x))] }
+  ok(ut_cmp_equal(agg(bio0), agg(bio1)), "Other stations unchanged")
+})
+
 ok_group("pax_station_columns, pax_shrimp_strata, pax_shrimp_towdims", {
   ok(ut_cmp_equal(
     pax:::station_columns_map(c("survey_area", "sample_name")),
