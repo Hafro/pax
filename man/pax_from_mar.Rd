@@ -124,6 +124,9 @@ measured and counted numbers of the same samples,
 \item{\code{"landings_stock"}}{landings by stock code (\code{kfteg}) and
 management stock (\code{agf.aflagrunnur_v}), aggregated without
 vessels or names, \code{\link[=pax_mar_landings_stock]{pax_mar_landings_stock()}}}
+\item{\code{"logbook_adb"}}{the electronic logbooks (ADB) of
+\code{logbook_species} from \code{logbook_year_start}, station by station
+with the number of traps, \code{\link[=pax_mar_logbook_adb]{pax_mar_logbook_adb()}}}
 \item{\code{"landings_port"}}{landings by port of landing (landings
 register and \code{agf.aflagrunnur_v}), aggregated without vessels or
 names, \code{\link[=pax_mar_landings_port]{pax_mar_landings_port()}}}

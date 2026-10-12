@@ -460,6 +460,8 @@ pax_mar_sample <- function(mar, species) {
 #'   (``afli``, kg). Used e.g. for the monthly catch shares of the years
 #'   before the compiled logbooks separate the redfish species. Optional
 #'   ``columns``: ``"tow_time"`` (``afli.toga.togtimi``, minutes),
+#'   ``"tow_length"`` (``afli.toga.togle``; for traps the length of the
+#'   line),
 #'   ``"num_traps"`` and ``"trap_hours"`` (``afli.gildra.gildrur`` and
 #'   ``klst``), ``"lat"`` and ``"lon"`` (the start position, decimal
 #'   degrees, as ``mar::afli_stofn()``), ``"rectangle"`` and
@@ -488,7 +490,7 @@ pax_mar_logbook_old <- function(
   # NSE variables
   visir <- tegund <- vedags <- veman <- skipnr <- veidarf <- dypi <- NULL
   afli <- year <- togtimi <- gildrur <- klst <- breidd <- lengd <- NULL
-  reitur <- smareitur <- NULL
+  reitur <- smareitur <- togle <- NULL
 
   # NB: afli.stofn directly, mar::afli_stofn() also converts the positions,
   #     which is slow and not needed here. year as mar::afli_stofn() (ar)
@@ -509,10 +511,11 @@ pax_mar_logbook_old <- function(
   if (!is.null(year_end)) {
     out <- dplyr::filter(out, year <= local(year_end))
   }
-  if ("tow_time" %in% columns) {
+  if (any(c("tow_time", "tow_length") %in% columns)) {
     out <- dplyr::left_join(
       out,
-      mar::tbl_mar(mar, "afli.toga") |> dplyr::select(visir, tow_time = togtimi),
+      mar::tbl_mar(mar, "afli.toga") |>
+        dplyr::select(visir, tow_time = togtimi, tow_length = togle),
       by = "visir"
     )
   }
@@ -569,6 +572,7 @@ pax_mar_logbook_old <- function(
 pax_logbook_old_columns <- function() {
   c(
     "tow_time",
+    "tow_length",
     "num_traps",
     "trap_hours",
     "lat",
@@ -577,4 +581,49 @@ pax_logbook_old_columns <- function() {
     "subrectangle",
     "n_same_catch"
   )
+}
+
+#' @return \subsection{pax_mar_logbook_adb}{The electronic logbooks (ADB,
+#'   ``adb_trip``, ``adb_station``, ``adb_catch``, ``adb_trap`` joined as the
+#'   old IAG scripts did), one row per station, species and trap record:
+#'   ``station_id``, ``trip_id``, ``vessel_id`` (registration number),
+#'   ``fishing_start``, ``year``, ``month``, ``lat``, ``lon`` (start
+#'   position, as recorded), ``gear_id``, ``species``, ``quantity`` (kg) and
+#'   ``number_of_traps``. Without vessel names, call signs or companies. The
+#'   compiled logbooks round the catch of some records (whelk, up to 0.36 kg)}
+#' @rdname pax_mar_extra
+pax_mar_logbook_adb <- function(mar, species, year_start = NULL, year_end = NULL) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+  # NSE variables
+  trip_id <- station_id <- species_no <- fishing_start <- NULL
+  out <- mar::adb_trip(mar) |>
+    dplyr::left_join(mar::adb_station(mar), by = "trip_id") |>
+    dplyr::left_join(mar::adb_catch(mar), by = "station_id") |>
+    dplyr::left_join(mar::adb_trap(mar), by = "station_id") |>
+    dplyr::filter(species_no %in% local(species)) |>
+    dplyr::select(
+      "station_id", "trip_id", "vessel_no", "fishing_start", "latitude",
+      "longitude", "gear_no", "species_no", "quantity", "number_of_traps"
+    ) |>
+    dplyr::collect()
+  num <- function(x) suppressWarnings(as.numeric(x))
+  out <- tibble::tibble(
+    station_id = num(out$station_id),
+    trip_id = num(out$trip_id),
+    vessel_id = num(out$vessel_no),
+    fishing_start = out$fishing_start,
+    year = as.numeric(format(out$fishing_start, "%Y")),
+    month = as.numeric(format(out$fishing_start, "%m")),
+    lat = num(out$latitude),
+    lon = num(out$longitude),
+    gear_id = num(out$gear_no),
+    species = num(out$species_no),
+    quantity = num(out$quantity),
+    number_of_traps = num(out$number_of_traps)
+  )
+  if (!is.null(year_start)) out <- out[out$year >= year_start, ]
+  if (!is.null(year_end)) out <- out[out$year <= year_end, ]
+  decorate_mar(out)
 }

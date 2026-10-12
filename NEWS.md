@@ -13,6 +13,11 @@ For 191-urx and 45-whe. Defaults unchanged.
 * `pax_from_mar(extra_tables = "landings_port")`: landings by port of
   landing from the landings register and `agf.aflagrunnur_v`, aggregated,
   without vessels, sellers or buyers (`pax_mar_landings_port()`).
+* `pax_from_mar(extra_tables = "logbook_adb")`: the electronic logbooks
+  (ADB) station by station with the number of traps
+  (`pax_mar_logbook_adb()`), without vessel names, call signs or companies;
+  `logbook_old_columns` also has `tow_length` (`afli.toga.togle`).
+* `pax_d2sr()`: statistical subrectangle of positions, as `geo::d2sr()`.
 * `pax_pseudonym()`: a stable pseudonym (SHA-256, 10 hex digits), e.g. to
   select vessels in a repository without listing their numbers;
   `pax_annotator_id()` uses it.

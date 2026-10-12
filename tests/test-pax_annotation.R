@@ -93,7 +93,21 @@ ok_group("pax_pseudonym", {
 })
 
 ok_group("logbook_old and landings_port options", {
-  ok(all(c("tow_time", "num_traps", "trap_hours", "n_same_catch") %in% pax_logbook_old_columns()), "effort columns")
+  ok(all(c("tow_time", "tow_length", "num_traps", "trap_hours", "n_same_catch") %in% pax_logbook_old_columns()), "effort columns")
+  ok("logbook_adb" %in% pax_from_mar_extra_tables(), "logbook_adb extra table")
   ok("landings_port" %in% pax_from_mar_extra_tables(), "landings_port extra table")
   ok(ut_cmp_error(pax_mar_logbook_old(NULL, 191, columns = "nonsense"), "Unknown logbook_old columns"), "unknown column stops")
+})
+
+ok_group("pax_d2sr as geo::d2sr", {
+  set.seed(2)
+  lat <- c(65.10233, 65.0925, 65.25, 65.5, 64.99, runif(200, 63, 67))
+  lon <- c(-21.206, -22.704, -22.5, -23, -24, runif(200, -27, -12))
+  ref <- floor(geo_like <- if (requireNamespace("geo", quietly = TRUE)) geo::d2sr(lat, lon) else rep(NA, length(lat)))
+  if (all(is.na(ref))) {
+    ok(TRUE, "geo not installed, skipped")
+  } else {
+    ok(ut_cmp_identical(pax_d2sr(lat, lon), ref), "same as geo::d2sr()")
+  }
+  ok(ut_cmp_identical(pax_d2sr(65.1, -22.6), 5223), "a position in Breidafjordur (geo::d2sr gives 5223)")
 })

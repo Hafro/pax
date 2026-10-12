@@ -76,6 +76,9 @@
 #'     \item{``"landings_stock"``}{landings by stock code (``kfteg``) and
 #'       management stock (``agf.aflagrunnur_v``), aggregated without
 #'       vessels or names, [pax_mar_landings_stock()]}
+#'     \item{``"logbook_adb"``}{the electronic logbooks (ADB) of
+#'       ``logbook_species`` from ``logbook_year_start``, station by station
+#'       with the number of traps, [pax_mar_logbook_adb()]}
 #'     \item{``"landings_port"``}{landings by port of landing (landings
 #'       register and ``agf.aflagrunnur_v``), aggregated without vessels or
 #'       names, [pax_mar_landings_port()]}
@@ -315,6 +318,18 @@ pax_from_mar <- function(
       )
     )
   }
+  if ("logbook_adb" %in% extra_tables) {
+    pax_import(
+      pcon,
+      pax_mar_logbook_adb(
+        mar,
+        species = logbook_species,
+        year_start = logbook_year_start,
+        year_end = year_end
+      ),
+      name = "logbook_adb"
+    )
+  }
   if ("landings_port" %in% extra_tables) {
     pax_import(
       pcon,
@@ -386,6 +401,7 @@ pax_from_mar_extra_tables <- function() {
     "sample_weight",
     "landings_stock",
     "video_annotation",
-    "landings_port"
+    "landings_port",
+    "logbook_adb"
   )
 }
