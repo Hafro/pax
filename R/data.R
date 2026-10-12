@@ -149,6 +149,12 @@ NULL
 #' 32 and 34; the old script matched stations on the sub-area only). Use
 #' with [pax_si_station_strata()].
 #'
+#' ``"isafjardardjup_february"`` holds the areas of the old February survey
+#' script of Isafjardardjup (``Data/leidangur_februar.r``), which differ
+#' slightly from the autumn ones: sub-areas 1-6 and 8 to 2004, and 2-6, 8
+#' and 10-14 from 2005 (the old table listed only the years with a February
+#' survey, 1988-2004, 2013, 2014, 2016, 2018 and 2022).
+#'
 #' @format A data.frame with columns ``stock``, ``survey_area`` (biota
 #'   ``skiki``), ``survey_subarea`` (``fjardarreitur``), ``year_start`` and
 #'   ``year_end`` (years the area holds for, ``NA`` for no limit), ``area``

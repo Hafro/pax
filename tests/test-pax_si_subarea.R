@@ -194,6 +194,16 @@ ok_group("pax_station_columns, pax_shrimp_strata, pax_shrimp_towdims", {
   ok(ut_cmp_equal(sum(pax_shrimp_strata("arnarfjordur")$area), 176.7), "Arnarfjordur sub-areas")
   ok(ut_cmp_equal(nrow(pax_shrimp_strata(offshore = TRUE)), 42L), "42 offshore rectangles")
   ok(ut_cmp_error(pax_shrimp_strata("nope"), "Unknown shrimp stock"), "Unknown stock is an error")
+  feb <- pax_shrimp_strata("isafjardardjup_february")
+  ok(ut_cmp_equal(nrow(feb), 18L), "Isafjardardjup February: 7 sub-areas to 2004, 11 from 2005")
+  ok(ut_cmp_equal(feb$area[feb$survey_subarea == 1], 81.77), "February area of sub-area 1 (autumn 81.8)")
+  ok(ut_cmp_equal(sum(feb$area[feb$year_start == 2005]), 407.67), "February areas from 2005")
+  # Station strata by year: sub-area 11 has an area only from 2005, sub-area 1 only to 2004
+  fst <- pax_temptbl(pcon, data.frame(sample_id = 1:4, year = c(2000, 2000, 2013, 2013),
+    survey_area = 53, survey_subarea = c(1, 11, 1, 11)))
+  fs <- dplyr::collect(pax_si_station_strata(fst, feb)) |> dplyr::arrange(sample_id)
+  ok(ut_cmp_equal(fs$area, c(81.77, NA, NA, 4.09)), "February areas by year")
+  ok(ut_cmp_equal(nrow(pax_shrimp_strata("isafjardardjup")), 16L), "Autumn Isafjardardjup strata unchanged")
   td <- pax_shrimp_towdims("nm2")
   ok(ut_cmp_equal(td$std_width[td$sampling_type == 37], 27.595 / 1.852^2 / 1000, tolerance = 1e-4), "Shrimp trawl width as the pax type-37 default (27.595 = 14.9 x 1.852, rounded)")
   ok(ut_cmp_equal(pax_from_mar_extra_tables()[10:12], c("ldist_maturity", "sample_weight", "landings_stock")), "New extra tables")

@@ -81,7 +81,8 @@ station first. Rows with stratum or area \code{NA} are left out}
 \item{z}{Quantile of the 95\% intervals}
 
 \item{stock}{Names of stocks to keep (\code{"arnarfjordur"},
-\code{"isafjardardjup"}, \code{"snaefellsnes"}; \code{"offshore"} with
+\code{"isafjardardjup"}, \code{"isafjardardjup_february"} (the February
+survey), \code{"snaefellsnes"}; \code{"offshore"} with
 \code{offshore = TRUE}), \code{NULL} for all}
 
 \item{offshore}{If \code{TRUE}, the rectangles of the offshore survey

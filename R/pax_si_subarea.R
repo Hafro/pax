@@ -289,7 +289,8 @@ pax_si_stratified_index <- function(tbl, values, z = 1.96) {
 }
 
 #' @param stock Names of stocks to keep (``"arnarfjordur"``,
-#'   ``"isafjardardjup"``, ``"snaefellsnes"``; ``"offshore"`` with
+#'   ``"isafjardardjup"``, ``"isafjardardjup_february"`` (the February
+#'   survey), ``"snaefellsnes"``; ``"offshore"`` with
 #'   ``offshore = TRUE``), ``NULL`` for all
 #' @param offshore If ``TRUE``, the rectangles of the offshore survey
 #'   ([shrimp_offshore_strata]) instead of the inshore sub-areas

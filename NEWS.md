@@ -35,6 +35,9 @@ every new argument defaults to the old behaviour.
 * Package data `shrimp_strata` (sub-areas and areas of Arnarfjordur,
   Isafjardardjup by year, and Snaefellsnes) and `shrimp_offshore_strata` (42
   rectangles), with `pax_shrimp_strata()`.
+* `shrimp_strata` stock `"isafjardardjup_february"`: the areas of the old
+  Isafjardardjup February survey script (they differ slightly from the
+  autumn areas), for the February survey figures of 41-pra-isa.
 
 AI use: Claude (Anthropic) wrote these functions, their tests and this entry
 (12 October 2026). The 41-pra-arn pipeline built on them reproduces the old
