@@ -16,6 +16,9 @@ pax_from_mar(
   quota_species = species,
   sampling_gear = c("BMT", "LLN", "DSE"),
   skip_trips = c("MAG\%", "MO\%"),
+  only_trips = NULL,
+  station_columns = character(0),
+  survey_species = species,
   gridcell_from_position = FALSE,
   logbook_species = species,
   logbook_year_start = year_start,
@@ -62,6 +65,20 @@ samples in the \code{sampling} table, \code{NULL} for all, see
 and sampling tables, see \code{\link[=pax_mar_station]{pax_mar_station()}}. By default the
 stomach-sampling trips \verb{MAG*} and \verb{MO*}; \code{NULL} keeps all}
 
+\item{only_trips}{SQL LIKE patterns of trips to keep in the station
+table (and the survey tables of \code{extra_tables}), \code{NULL} (default)
+for all, see \code{\link[=pax_mar_station]{pax_mar_station()}}. E.g. the cruises of a survey that
+isn't defined by its sampling type alone}
+
+\item{station_columns}{Extra columns of the station table, see
+\code{\link[=pax_station_columns]{pax_station_columns()}}, e.g. \code{c("survey_area", "survey_subarea", "sample_name")} for the inshore shrimp survey. None by default}
+
+\item{survey_species}{Species of the \code{ldist_maturity} and
+\code{sample_weight} tables of \code{extra_tables}, default \code{species}. Add
+e.g. by-catch species of a survey (cod and haddock in the shrimp
+survey); only the samples of the station table's sampling types and
+years are imported}
+
 \item{gridcell_from_position}{If \code{TRUE}, stations without a
 rectangle get the gridcell of their position, see \code{\link[=pax_mar_station]{pax_mar_station()}}}
 
@@ -96,6 +113,15 @@ during research trips, \code{\link[=pax_mar_research_landings]{pax_mar_research_
 all years and trips, \code{\link[=pax_mar_sample]{pax_mar_sample()}}}
 \item{\code{"logbook_old"}}{the old logbook tables (\code{afli.afli}) of
 \code{logbook_species}, \code{\link[=pax_mar_logbook_old]{pax_mar_logbook_old()}}}
+\item{\code{"ldist_maturity"}}{length counts by sex and maturity stage,
+not raised, of \code{survey_species} in the samples of the station
+table's sampling types and years, \code{\link[=pax_mar_ldist_maturity]{pax_mar_ldist_maturity()}}}
+\item{\code{"sample_weight"}}{sample and catch weights and the
+measured and counted numbers of the same samples,
+\code{\link[=pax_mar_sample_weight]{pax_mar_sample_weight()}}}
+\item{\code{"landings_stock"}}{landings by stock code (\code{kfteg}) and
+management stock (\code{agf.aflagrunnur_v}), aggregated without
+vessels or names, \code{\link[=pax_mar_landings_stock]{pax_mar_landings_stock()}}}
 }}
 
 \item{medafli_species}{Species codes of the old by-catch table
