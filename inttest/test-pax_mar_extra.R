@@ -92,3 +92,9 @@ ok_group("pax_mar_survey tables", {
   tx <- pax_mar_taxonomy(mar)
   ok(!anyDuplicated(tx$species) && 1 %in% tx$species, "taxonomy: one row per species")
 })
+
+ok_group("pax_mar_fingerprint", {
+  f <- pax_mar_fingerprint(mar, sampling_type = c(30, 35), year_start = 2020, year_end = 2022)
+  ok(ut_cmp_equal(nrow(f), 6L), "One row per survey and year")
+  ok(all(f$n_stations > 100) && all(f$n_aged > 0), "Stations and aged fish counted")
+})

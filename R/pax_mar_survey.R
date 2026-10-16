@@ -334,3 +334,56 @@ pax_mar_taxonomy <- function(mar) {
     dplyr::arrange(species) |>
     decorate_mar()
 }
+
+#' @return \subsection{pax_mar_fingerprint}{A small table that changes when
+#'   the survey data in mar change: by sampling type and year, the number of
+#'   stations, the largest sample id, and the number of measured, aged and
+#'   maturity-staged fish. Cheap to compute, so a pipeline can rebuild its
+#'   pax database when (and only when) it changes, e.g. as an upstream
+#'   target of [pax_from_mar()] that always runs. Opens its own connection
+#'   when ``mar`` is ``NULL``}
+#' @rdname pax_mar_survey
+pax_mar_fingerprint <- function(
+  mar = NULL,
+  sampling_type = NULL,
+  year_start = NULL,
+  year_end = NULL
+) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+  if (is.null(mar)) {
+    mar <- mar::connect_mar()
+    on.exit(DBI::dbDisconnect(mar), add = TRUE)
+  }
+
+  # NSE variables
+  synis_id <- synaflokkur_nr <- ar <- aldur <- kynthroski_nr <- NULL
+
+  samples <- mar_survey_samples(mar, sampling_type, year_start, year_end) |>
+    dplyr::select(synis_id, synaflokkur_nr, ar)
+  stations <- samples |>
+    dplyr::group_by(synaflokkur_nr, ar) |>
+    dplyr::summarise(
+      n_stations = dplyr::n(),
+      max_sample_id = max(as.numeric(synis_id), na.rm = TRUE)
+    ) |>
+    dplyr::collect()
+  fish <- mar::les_maelingu(mar) |>
+    dplyr::inner_join(samples, by = "synis_id") |>
+    dplyr::group_by(synaflokkur_nr, ar) |>
+    dplyr::summarise(
+      n_measured = dplyr::n(),
+      n_aged = sum(ifelse(is.na(aldur), 0, 1), na.rm = TRUE),
+      n_maturity = sum(ifelse(is.na(kynthroski_nr), 0, 1), na.rm = TRUE)
+    ) |>
+    dplyr::collect()
+  dplyr::full_join(dplyr::ungroup(stations), dplyr::ungroup(fish), by = c("synaflokkur_nr", "ar")) |>
+    dplyr::transmute(
+      sampling_type = as.numeric(synaflokkur_nr),
+      year = as.numeric(ar),
+      dplyr::across(c("n_stations", "max_sample_id", "n_measured", "n_aged", "n_maturity"), as.numeric)
+    ) |>
+    dplyr::arrange(sampling_type, year) |>
+    as.data.frame()
+}

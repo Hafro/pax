@@ -9,6 +9,7 @@
 \alias{pax_mar_stomach_prey_length}
 \alias{pax_mar_survey_catch}
 \alias{pax_mar_taxonomy}
+\alias{pax_mar_fingerprint}
 \title{Import survey tables from the MAR database}
 \usage{
 pax_mar_station_env(
@@ -57,6 +58,13 @@ pax_mar_survey_catch(
 )
 
 pax_mar_taxonomy(mar)
+
+pax_mar_fingerprint(
+  mar = NULL,
+  sampling_type = NULL,
+  year_start = NULL,
+  year_end = NULL
+)
 }
 \arguments{
 \item{mar}{A MAR database connection, as returned by \code{mar::connect_mar()}}
@@ -121,6 +129,14 @@ each survey station; \code{ldist} holds only the species of
 (food group code of stomach prey), \code{worms_id}, \code{fao_3alpha},
 \code{genus}, \code{family}, \code{order}, \code{class}, \code{phylum} and
 \code{kingdom}}
+
+\subsection{pax_mar_fingerprint}{A small table that changes when
+the survey data in mar change: by sampling type and year, the number of
+stations, the largest sample id, and the number of measured, aged and
+maturity-staged fish. Cheap to compute, so a pipeline can rebuild its
+pax database when (and only when) it changes, e.g. as an upstream
+target of \code{\link[=pax_from_mar]{pax_from_mar()}} that always runs. Opens its own connection
+when \code{mar} is \code{NULL}}
 }
 \description{
 Optional tables of \code{\link[=pax_from_mar]{pax_from_mar()}} (argument \code{extra_tables}) for the
