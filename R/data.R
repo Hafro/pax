@@ -137,3 +137,71 @@ NULL
 #' @docType data
 #' @keywords data
 NULL
+
+#' Strata of the inshore shrimp surveys
+#'
+#' The fjord sub-areas (``fjardarreitur``) of the inshore shrimp surveys
+#' (sampling type 37, and 10 and 11 in Isafjardardjup) and their areas, as
+#' the old assessment scripts: Arnarfjordur (``advice/getData.R``, survey
+#' area 52), Isafjardardjup (``Data/flatarmal_isafj.txt``, survey area 53,
+#' areas by year; the 2026 assessment used sub-areas 1, 2, 3, 4, 6, 8, 11,
+#' 12, 13 and 14) and Snaefellsnes (``advice/getData.r``, survey areas 31,
+#' 32 and 34; the old script matched stations on the sub-area only). Use
+#' with [pax_si_station_strata()].
+#'
+#' ``"isafjardardjup_february"`` holds the areas of the old February survey
+#' script of Isafjardardjup (``Data/leidangur_februar.r``), which differ
+#' slightly from the autumn ones: sub-areas 1-6 and 8 to 2004, and 2-6, 8
+#' and 10-14 from 2005 (the old table listed only the years with a February
+#' survey, 1988-2004, 2013, 2014, 2016, 2018 and 2022).
+#'
+#' @format A data.frame with columns ``stock``, ``survey_area`` (biota
+#'   ``skiki``), ``survey_subarea`` (``fjardarreitur``), ``year_start`` and
+#'   ``year_end`` (years the area holds for, ``NA`` for no limit), ``area``
+#'   (km², as the old scripts, which divided by the swept area of a 1 nm tow
+#'   in km², 0.0149 x 1.852) and ``stratum`` (the sub-area)
+#' @source The old IAG repositories ``41-raekjaarnarfjordur``,
+#'   ``41-raekjaisafjardardjup`` and ``41-raekjasnaefellsnes`` (MFRI GitLab),
+#'   October 2026
+#' @name shrimp_strata
+#' @docType data
+#' @keywords data
+NULL
+
+#' Strata of the offshore shrimp survey
+#'
+#' The 42 statistical rectangles of the offshore shrimp survey (sampling
+#' type 31) with their areas and survey areas (``skiki``), as the old
+#' ``41-offshore-shrimp/advice/getData.R`` (13,604 in total; 11,320 in the
+#' survey areas 10-19 that the index uses). The old script divided by
+#' 9.17927 for the swept area, so check the units before use.
+#'
+#' @format A data.frame with columns ``stock``, ``survey_area``,
+#'   ``rectangle`` (``reitur``) and ``area`` (as the old script)
+#' @source ``41-offshore-shrimp/advice/getData.R`` (MFRI GitLab), October
+#'   2026
+#' @name shrimp_offshore_strata
+#' @docType data
+#' @keywords data
+NULL
+
+#' Nephrops grounds off south Iceland
+#'
+#' The 13 Norway lobster (*Nephrops*) grounds (FU1) of the UWTV survey, over
+#' which the burrow density is kriged: polygons drawn around the fishing
+#' tracks of 2007-2018 (Jónas P. Jónasson's
+#' ``pol800tracks5size4000plus2007_2018.rdata``), in ISN93 (EPSG:3057),
+#' with the ground numbers and area names used in the tables of the old
+#' ``IAG/nephrops`` repository. Read it with [pax_nephrops_grounds()].
+#'
+#' @format An sf data frame with 13 rows and columns ``name`` (ground
+#'   number as text), ``area_name``, ``area`` (m², from the source file) and
+#'   ``geometry`` (polygons, EPSG:3057)
+#' @source ``nephrops_grounds_sf`` of Jacob Kasper's package ``spatialJ``
+#'   (now ``hafsvaedi``, MFRI GitLab ``jacobmk/spatialJ``, data unchanged
+#'   since February 2026), which the old ``IAG/nephrops`` code used; its
+#'   ``data-raw/nephrops_grounds.R`` builds it from the source file above
+#' @name nephrops_grounds
+#' @docType data
+#' @keywords data
+NULL

@@ -24,6 +24,18 @@
 #' @param skip_trips SQL LIKE patterns of trips to leave out of the station
 #'   and sampling tables, see [pax_mar_station()]. By default the
 #'   stomach-sampling trips ``MAG*`` and ``MO*``; ``NULL`` keeps all
+#' @param only_trips SQL LIKE patterns of trips to keep in the station
+#'   table (and the survey tables of ``extra_tables``), ``NULL`` (default)
+#'   for all, see [pax_mar_station()]. E.g. the cruises of a survey that
+#'   isn't defined by its sampling type alone
+#' @param station_columns Extra columns of the station table, see
+#'   [pax_station_columns()], e.g. ``c("survey_area", "survey_subarea",
+#'   "sample_name")`` for the inshore shrimp survey. None by default
+#' @param survey_species Species of the ``ldist_maturity`` and
+#'   ``sample_weight`` tables of ``extra_tables``, default ``species``. Add
+#'   e.g. by-catch species of a survey (cod and haddock in the shrimp
+#'   survey); only the samples of the station table's sampling types and
+#'   years are imported
 #' @param gridcell_from_position If ``TRUE``, stations without a
 #'   rectangle get the gridcell of their position, see [pax_mar_station()]
 #' @param logbook_species Species codes of the ``logbook`` table (and of
@@ -55,7 +67,32 @@
 #'       all years and trips, [pax_mar_sample()]}
 #'     \item{``"logbook_old"``}{the old logbook tables (``afli.afli``) of
 #'       ``logbook_species``, [pax_mar_logbook_old()]}
+#'     \item{``"ldist_maturity"``}{length counts by sex and maturity stage,
+#'       not raised, of ``survey_species`` in the samples of the station
+#'       table's sampling types and years, [pax_mar_ldist_maturity()]}
+#'     \item{``"sample_weight"``}{sample and catch weights and the
+#'       measured and counted numbers of the same samples,
+#'       [pax_mar_sample_weight()]}
+#'     \item{``"landings_stock"``}{landings by stock code (``kfteg``) and
+#'       management stock (``agf.aflagrunnur_v``), aggregated without
+#'       vessels or names, [pax_mar_landings_stock()]}
+#'     \item{``"logbook_adb"``}{the electronic logbooks (ADB) of
+#'       ``logbook_species`` from ``logbook_year_start``, station by station
+#'       with the number of traps, [pax_mar_logbook_adb()]}
+#'     \item{``"landings_port"``}{landings by port of landing (landings
+#'       register and ``agf.aflagrunnur_v``), aggregated without vessels or
+#'       names, [pax_mar_landings_port()]}
+#'     \item{``"video_annotation"``}{annotations of the underwater video
+#'       surveys (Hafmynd) of the projects ``annotation_projects``, with a
+#'       pseudonymous annotator id instead of the user name,
+#'       [pax_mar_video_annotation()]}
 #'   }
+#' @param logbook_old_columns Optional columns of the ``logbook_old`` table,
+#'   see [pax_logbook_old_columns()], e.g. ``c("tow_time", "num_traps")``
+#'   for the effort of the old logbooks. None by default
+#' @param annotation_projects Hafmynd projects of the ``video_annotation``
+#'   table (e.g. ``"Humar"``, the Nephrops UWTV survey), ``NULL`` (default)
+#'   for all
 #' @param medafli_species Species codes of the old by-catch table
 #'   (``afli.medafli``) for the ``logbook_release`` table, e.g. ``2021``
 #'   (released halibut)
@@ -89,10 +126,15 @@ pax_from_mar <- function(
   quota_species = species,
   sampling_gear = c("BMT", "LLN", "DSE"),
   skip_trips = c("MAG%", "MO%"),
+  only_trips = NULL,
+  station_columns = character(0),
+  survey_species = species,
   gridcell_from_position = FALSE,
   logbook_species = species,
   logbook_year_start = year_start,
   extra_tables = character(0),
+  annotation_projects = NULL,
+  logbook_old_columns = character(0),
   medafli_species = NULL,
   foreign_tables = character(0),
   foreign_files = list(),
@@ -151,7 +193,9 @@ pax_from_mar <- function(
       year_end = year_end,
       sampling_type = sampling_type,
       skip_trips = skip_trips,
-      gridcell_from_position = gridcell_from_position
+      gridcell_from_position = gridcell_from_position,
+      only_trips = only_trips,
+      columns = station_columns
     )
   )
   pax_import(pcon, do.call(pax_mar_measurement, import_defs))
@@ -248,6 +292,63 @@ pax_from_mar <- function(
   if ("sample" %in% extra_tables) {
     pax_import(pcon, pax_mar_sample(mar, species = species))
   }
+  survey_args <- list(
+    mar,
+    species = survey_species,
+    sampling_type = sampling_type,
+    year_start = year_start,
+    year_end = year_end,
+    skip_trips = skip_trips,
+    only_trips = only_trips
+  )
+  if ("ldist_maturity" %in% extra_tables) {
+    pax_import(pcon, do.call(pax_mar_ldist_maturity, survey_args))
+  }
+  if ("sample_weight" %in% extra_tables) {
+    pax_import(pcon, do.call(pax_mar_sample_weight, survey_args))
+  }
+  if ("landings_stock" %in% extra_tables) {
+    pax_import(
+      pcon,
+      pax_mar_landings_stock(
+        mar,
+        species = species,
+        year_start = landings_year_start,
+        year_end = year_end
+      )
+    )
+  }
+  if ("logbook_adb" %in% extra_tables) {
+    pax_import(
+      pcon,
+      pax_mar_logbook_adb(
+        mar,
+        species = logbook_species,
+        year_start = logbook_year_start,
+        year_end = year_end
+      ),
+      name = "logbook_adb"
+    )
+  }
+  if ("landings_port" %in% extra_tables) {
+    pax_import(
+      pcon,
+      pax_mar_landings_port(
+        mar,
+        species = species,
+        year_start = landings_year_start,
+        year_end = year_end
+      ),
+      name = "landings_port"
+    )
+  }
+  if ("video_annotation" %in% extra_tables) {
+    pax_import(
+      pcon,
+      pax_mar_video_annotation(mar, project = annotation_projects),
+      name = "video_annotation"
+    )
+  }
   if ("logbook_old" %in% extra_tables) {
     pax_import(
       pcon,
@@ -255,7 +356,8 @@ pax_from_mar <- function(
         mar,
         species = logbook_species,
         year_start = logbook_year_start,
-        year_end = year_end
+        year_end = year_end,
+        columns = logbook_old_columns
       )
     )
   }
@@ -294,6 +396,12 @@ pax_from_mar_extra_tables <- function() {
     "landings_old",
     "station_skipped",
     "sample",
-    "logbook_old"
+    "logbook_old",
+    "ldist_maturity",
+    "sample_weight",
+    "landings_stock",
+    "video_annotation",
+    "landings_port",
+    "logbook_adb"
   )
 }

@@ -10,6 +10,8 @@
 \alias{pax_mar_landings_old}
 \alias{pax_mar_sample}
 \alias{pax_mar_logbook_old}
+\alias{pax_logbook_old_columns}
+\alias{pax_mar_logbook_adb}
 \title{Import optional tables from the MAR database}
 \usage{
 pax_mar_landings_vessel(mar, species, year_start = NULL, year_end = NULL)
@@ -30,7 +32,17 @@ pax_mar_landings_old(mar)
 
 pax_mar_sample(mar, species)
 
-pax_mar_logbook_old(mar, species, year_start = NULL, year_end = NULL)
+pax_mar_logbook_old(
+  mar,
+  species,
+  year_start = NULL,
+  year_end = NULL,
+  columns = character(0)
+)
+
+pax_logbook_old_columns()
+
+pax_mar_logbook_adb(mar, species, year_start = NULL, year_end = NULL)
 }
 \arguments{
 \item{mar}{A MAR database connection, as returned by \code{mar::connect_mar()}}
@@ -47,6 +59,9 @@ for none}
 
 \item{sampling_type}{Sampling types (\code{synaflokkur_nr}) of the research
 trips}
+
+\item{columns}{Optional extra columns of \code{pax_mar_logbook_old()}, none
+by default}
 }
 \value{
 \subsection{pax_mar_landings_vessel}{Landings register by vessel
@@ -123,7 +138,29 @@ species: \code{logbook_id} (\code{visir}), \code{species} (\code{tegund}),
 (the month column of \code{afli.stofn}), \code{vessel_id} (\code{skipnr}),
 \code{gear_id} (\code{veidarf}), \code{depth_fathoms} (\code{dypi}) and \code{catch}
 (\code{afli}, kg). Used e.g. for the monthly catch shares of the years
-before the compiled logbooks separate the redfish species}
+before the compiled logbooks separate the redfish species. Optional
+\code{columns}: \code{"tow_time"} (\code{afli.toga.togtimi}, minutes),
+\code{"tow_length"} (\code{afli.toga.togle}; for traps the length of the
+line),
+\code{"num_traps"} and \code{"trap_hours"} (\code{afli.gildra.gildrur} and
+\code{klst}), \code{"lat"} and \code{"lon"} (the start position, decimal
+degrees, as \code{mar::afli_stofn()}), \code{"rectangle"} and
+\code{"subrectangle"} (\code{reitur}, \code{smareitur}) and \code{"n_same_catch"}
+(the number of catch rows of the record, any species, with the same
+catch as this one: the old scripts joined \code{afli.afli} back on
+\code{visir} and \code{afli}, which repeats a row this many times)}
+
+\subsection{pax_logbook_old_columns}{The optional columns of
+\code{\link[=pax_mar_logbook_old]{pax_mar_logbook_old()}}}
+
+\subsection{pax_mar_logbook_adb}{The electronic logbooks (ADB,
+\code{adb_trip}, \code{adb_station}, \code{adb_catch}, \code{adb_trap} joined as the
+old IAG scripts did), one row per station, species and trap record:
+\code{station_id}, \code{trip_id}, \code{vessel_id} (registration number),
+\code{fishing_start}, \code{year}, \code{month}, \code{lat}, \code{lon} (start
+position, as recorded), \code{gear_id}, \code{species}, \code{quantity} (kg) and
+\code{number_of_traps}. Without vessel names, call signs or companies. The
+compiled logbooks round the catch of some records (whelk, up to 0.36 kg)}
 }
 \description{
 Functions for the optional tables of \code{\link[=pax_from_mar]{pax_from_mar()}} (argument

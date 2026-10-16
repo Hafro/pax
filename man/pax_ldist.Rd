@@ -27,7 +27,12 @@ pax_ldist_alk(
 
 pax_ldist_scale_round(tbl)
 
-pax_ldist_add_weight(tbl, lw_coeffs_tbl = "lw_coeffs")
+pax_ldist_add_weight(
+  tbl,
+  lw_coeffs_tbl = "lw_coeffs",
+  by = NULL,
+  missing = c("default", "stop", "zero")
+)
 
 pax_ldist_scale_tow_area(
   tbl,
@@ -73,7 +78,26 @@ integers, or \code{NULL} for one group per year}
 
 \item{lw_coeffs_tbl}{A dplyr query or table name for length-weight
 coefficients, with columns \code{a}, \code{b}, and optionally \code{species} and
-\code{sex}}
+\code{sex} (or the columns of \code{by})}
+
+\item{by}{Columns to match the coefficients on. \code{NULL} (default): the
+columns \code{species} and \code{sex} that \code{lw_coeffs_tbl} has, as before.
+With \code{by}, an \code{NA} in a key column of \code{lw_coeffs_tbl} matches any
+value: a row with \code{maturity_stage} \code{NA} holds for all maturity
+stages of its species and sex, unless a row with that stage exists
+(rows are matched from the most specific, all keys given, to the least).
+E.g. \code{by = c("species", "sex", "maturity_stage")} for shrimp, whose
+weight differs by maturity stage}
+
+\item{missing}{What to do with rows without coefficients: \code{"default"}
+(the default) a = 0.01 and b = 3, a fish in cm and g; \code{"stop"} stop
+with an error naming them; \code{"zero"} give them weight 0 (as the old
+shrimp scripts did for unsexed or unstaged animals, whose weight then
+goes to the others when weights are scaled to the sample weight). With
+\code{"stop"} and \code{"zero"} a species with no coefficients at all is an
+error, since a = 0.01, b = 3 is wrong for e.g. shrimp lengths in mm.
+Rows with \code{length} \code{NA} (stations without the species) are never
+an error}
 
 \item{towdims_tbl}{A data.frame of per-sampling-type tow dimension standards
 with columns \code{sampling_type}, \code{min_towlength}, \code{max_towlength},

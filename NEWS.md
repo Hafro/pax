@@ -1,5 +1,107 @@
 # pax (development version)
 
+## Sea urchin and whelk logbooks and landings (October 2026, branch `iag`)
+
+For 191-urx and 45-whe. Defaults unchanged.
+
+* `pax_from_mar(logbook_old_columns =)` / `pax_mar_logbook_old(columns =)`:
+  optional effort and position columns of the old logbooks (`tow_time`
+  from `afli.toga`, `num_traps` and `trap_hours` from `afli.gildra`, `lat`,
+  `lon`, `rectangle`, `subrectangle` as `mar::afli_stofn()`), and
+  `n_same_catch`, the multiplicity of the old scripts' join of `afli.afli`
+  on `visir` and `afli` (`pax_logbook_old_columns()`).
+* `pax_from_mar(extra_tables = "landings_port")`: landings by port of
+  landing from the landings register and `agf.aflagrunnur_v`, aggregated,
+  without vessels, sellers or buyers (`pax_mar_landings_port()`).
+* `pax_from_mar(extra_tables = "logbook_adb")`: the electronic logbooks
+  (ADB) station by station with the number of traps
+  (`pax_mar_logbook_adb()`), without vessel names, call signs or companies;
+  `logbook_old_columns` also has `tow_length` (`afli.toga.togle`).
+* `pax_d2sr()`: statistical subrectangle of positions, as `geo::d2sr()`.
+* `pax_pseudonym()`: a stable pseudonym (SHA-256, 10 hex digits), e.g. to
+  select vessels in a repository without listing their numbers;
+  `pax_annotator_id()` uses it.
+
+AI use: Claude (Anthropic) wrote these functions, their tests and this entry
+(12 October 2026); nobody has reviewed the code yet.
+
+## Nephrops UWTV survey (October 2026, branch `iag`)
+
+For 40-nep (Norway lobster, FU1). Defaults unchanged for existing users.
+
+* `pax_from_mar(extra_tables = "video_annotation", annotation_projects =)`:
+  the annotations of the underwater video surveys
+  (`HAFMYND.VIDEO_TAXON_CONCEPT_V`, e.g. project `"Humar"`), one row per
+  annotation, `pax_mar_video_annotation()`. The annotator is kept only as a
+  pseudonymous id, `pax_annotator_id()` (SHA-256 of the user name without
+  the `OPS$` prefix, first 10 hex digits), because the Nephrops index uses
+  one annotator's final annotations; the user names, comments and video file
+  paths are not imported.
+* Station column `date` (`dags`).
+* Package data `nephrops_grounds` (the 13 grounds of the UWTV survey, ISN93,
+  from `spatialJ`/`hafsvaedi`, as the old code used) and
+  `pax_nephrops_grounds()`.
+
+AI use: Claude (Anthropic) wrote these functions, their tests and this entry
+(12 October 2026); nobody has reviewed the code yet.
+
+## Inshore shrimp surveys (October 2026, branch `iag`)
+
+For the IAG shrimp assessments (41-pra-arn first; Isafjardardjup,
+Snaefellsnes and offshore shrimp to follow). Existing stocks are unchanged:
+every new argument defaults to the old behaviour.
+
+* `pax_from_mar()`: `station_columns` adds optional station columns
+  (`pax_station_columns()`: `survey_area` (skiki), `survey_subarea`
+  (fjardarreitur), `sample_name` (syni_heiti), station number,
+  temperatures); `only_trips` keeps the stations of listed cruises;
+  `survey_species` and three new `extra_tables`: `ldist_maturity` (length
+  counts by sex and maturity stage, not raised), `sample_weight` (sample and
+  catch weights from `biota.skalar_v`) and `landings_stock` (landings by
+  stock code `kfteg` and by management stock from `agf.aflagrunnur_v`,
+  aggregated, without vessels, sellers or buyers).
+* `catch_weight` (`vigt_afla`) is usable in the shrimp surveys: for sampling
+  types 31 and 37 it is positive in every sample with a sample weight, in
+  all years (checked 12 October 2026); the zeros of the groundfish surveys
+  since 2010 don't occur there.
+* `pax_ldist_scale_catch_weight()` (as `mar::skala_med_afla()`),
+  `pax_ldist_scale_counted()` (as `mar::skala_med_taldir()`),
+  `pax_ldist_round_length()` (cm to mm classes, halves up as Oracle) and
+  `pax_ldist_add_selection()` (a knife-edge ramp, e.g. the fishable shrimp).
+* `pax_ldist_add_weight()`: `by` (e.g. species, sex and maturity stage, `NA`
+  in the coefficients matching any value) and `missing = "stop"` or
+  `"zero"` instead of the default a = 0.01, b = 3, which is wrong for
+  shrimp lengths in mm. The default is unchanged.
+* `pax_si_station_strata()`, `pax_si_catch_weight_biomass()` and
+  `pax_si_stratified_index()`: the shrimp survey index by fjord sub-area, as
+  the old `leidangur.r` scripts (sum of sub-area means, variance from the
+  sub-areas). `pax_shrimp_towdims()` gives the shrimp tow standards (1 nm,
+  14.9 m trawl, tows 0.01-8 nm).
+* Package data `shrimp_strata` (sub-areas and areas of Arnarfjordur,
+  Isafjardardjup by year, and Snaefellsnes) and `shrimp_offshore_strata` (42
+  rectangles), with `pax_shrimp_strata()`.
+* `shrimp_strata` stock `"isafjardardjup_february"`: the areas of the old
+  Isafjardardjup February survey script (they differ slightly from the
+  autumn areas), for the February survey figures of 41-pra-isa.
+* `pax_si_catch_weight_biomass(tow_length_missing = "zero")`: a station
+  without a tow length counts as a zero in the stratum mean, as in the old
+  shrimp scripts (`mar::skala_med_toglengd()` gives `NA`, then `nvl(N, 0)`);
+  `"one"` takes a 1 nm tow as `pax_ldist_scale_tow_area()`. Five
+  Isafjardardjup stations (gear 30, 1989 and 1993) have no tow length; there
+  are none in Arnarfjordur, so 41-pra-arn is unchanged.
+* For the offshore shrimp survey (41-pra-off): station column `rectangle`
+  (`reitur`), for strata by rectangle (`pax_si_station_strata(by =
+  "rectangle")` with `shrimp_offshore_strata`); `pax_shrimp_towdims()` has
+  sampling type 31 (17 m trawl: the old divisor 9.17927 is 17 / 1852 x 1000,
+  areas in nm²); `pax_si_catch_weight_biomass(length_max =)` reproduces the
+  old `filter(lengd < 6)`, which also drops the stations without shrimp
+  from the means. Inshore tow standards and defaults unchanged.
+
+AI use: Claude (Anthropic) wrote these functions, their tests and this entry
+(12 October 2026). The 41-pra-arn pipeline built on them reproduces the old
+Arnarfjordur code run on the same database; nobody has reviewed the code
+yet.
+
 ## Bug fixes (review, October 2026)
 
 * `pax_si_scale_winsorize()` took the quantile of a column `B` that doesn't
@@ -20,6 +122,7 @@
   with the defaults of `pax_ldist_alk()` and `pax_si_scale_by_landings()`,
   VAR samples and landings now form the "Other" group instead of getting no
   group.
+||||||| parent of 637ca75 (Shrimp survey index by fjord sub-area: catch-weight raising, L-W by maturity, fishable ramp, strata data)
 
 ## Survey indices by length range (October 2026)
 
