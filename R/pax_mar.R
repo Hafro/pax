@@ -195,12 +195,15 @@ pax_mar_landings <- function(
   return(decorate_mar(out))
 }
 
+#' @param samples Optional dplyr query (on ``mar``) with a column
+#'   ``synis_id``: only these samples, e.g. those of the station table
 #' @return \subsection{pax_mar_ldist}{A dplyr query with columns
 #'   ``sample_id``, ``species``, ``length``, ``sex``, and ``count``}
 #' @rdname pax_mar
 pax_mar_ldist <- function(
   mar,
-  species
+  species,
+  samples = NULL
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
@@ -216,7 +219,11 @@ pax_mar_ldist <- function(
   sex <- NULL
   count <- NULL
 
-  out <- mar::les_lengd(mar) |>
+  out <- mar::les_lengd(mar)
+  if (!is.null(samples)) {
+    out <- dplyr::semi_join(out, samples, by = "synis_id")
+  }
+  out <- out |>
     mar::skala_med_taldir() |>
     dplyr::select(
       sample_id = synis_id,
@@ -245,7 +252,8 @@ pax_mar_ldist <- function(
 #' @rdname pax_mar
 pax_mar_aldist <- function(
   mar,
-  species
+  species,
+  samples = NULL
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
@@ -259,7 +267,11 @@ pax_mar_aldist <- function(
   aldur <- NULL
   fjoldi <- NULL
 
-  out <- mar::les_aldur(mar) |>
+  out <- mar::les_aldur(mar)
+  if (!is.null(samples)) {
+    out <- dplyr::semi_join(out, samples, by = "synis_id")
+  }
+  out <- out |>
     dplyr::select(
       sample_id = synis_id,
       species = tegund_nr,
@@ -318,7 +330,8 @@ pax_mar_measurement <- function(
   species,
   year_start = NULL,
   year_end = NULL,
-  measurement_type = NULL
+  measurement_type = NULL,
+  samples = NULL
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
@@ -388,6 +401,13 @@ pax_mar_measurement <- function(
       station_tbl <- dplyr::filter(station_tbl, year <= local(year_end))
     }
     out <- dplyr::semi_join(out, station_tbl, by = "sample_id") # Filter by extant rows
+  }
+  if (!is.null(samples)) {
+    out <- dplyr::semi_join(
+      out,
+      dplyr::select(samples, sample_id = "synis_id"),
+      by = "sample_id"
+    )
   }
   return(out |> decorate_mar())
 }

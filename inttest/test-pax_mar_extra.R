@@ -74,9 +74,11 @@ ok_group("pax_mar_survey tables", {
   env <- dplyr::collect(env)
   ok(nrow(env) > 500 && !anyDuplicated(env$sample_id), "station_env: one row per spring survey sample")
   ok(mean(!is.na(env$bottom_temp)) > 0.9, "station_env: bottom temperature recorded")
+  ok(all(!is.na(env$rectangle)), "station_env: rectangle")
 
   tl <- pax_mar_temperature_logger(mar, sampling_type = 30, year_start = 2024, year_end = 2024) |> dplyr::collect()
   ok(nrow(tl) > 0 && has_cols(tl, c("sample_id", "time", "temperature", "depth")), "temperature_logger: readings")
+  ok(is.character(tl$sample_id) && all(tl$sample_id %in% env$sample_id), "temperature_logger: sample_id as the station table")
 
   sto <- pax_mar_stomach(mar, species = 1, sampling_type = 30, year_start = 2024, year_end = 2024) |> dplyr::collect()
   ok(nrow(sto) > 0 && all(sto$species == 1), "stomach: cod predators only")

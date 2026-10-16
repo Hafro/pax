@@ -73,6 +73,11 @@
 #' @param commercial If ``FALSE``, the commercial tables (``logbook``,
 #'   ``landings``, ``sampling`` and ``quotatransfer``) are left out, for a
 #'   survey-only database (e.g. all the species of the groundfish surveys)
+#' @param station_samples_only If ``TRUE``, the ``ldist``, ``aldist`` and
+#'   ``measurement`` tables hold only the samples of the sampling types and years of the
+#'   station table (all trips). By default they hold every sample of the
+#'   species, e.g. for [pax_mar_sample()]; for a survey database of many
+#'   species that is mostly commercial samples it doesn't use
 #' @param stomach_species Predator species of the stomach tables, default
 #'   ``species``; ``NULL`` for all
 #' @param medafli_species Species codes of the old by-catch table
@@ -115,6 +120,7 @@ pax_from_mar <- function(
   medafli_species = NULL,
   stomach_species = species,
   commercial = TRUE,
+  station_samples_only = FALSE,
   foreign_tables = character(0),
   foreign_files = list(),
   ger_survey_path = NULL,
@@ -175,7 +181,14 @@ pax_from_mar <- function(
       gridcell_from_position = gridcell_from_position
     )
   )
-  pax_import(pcon, do.call(pax_mar_measurement, import_defs))
+  samples <- if (isTRUE(station_samples_only)) {
+    mar_survey_samples(mar, sampling_type, year_start, year_end) |>
+      dplyr::select("synis_id")
+  }
+  pax_import(
+    pcon,
+    do.call(pax_mar_measurement, c(import_defs, list(samples = samples)))
+  )
   if (isTRUE(commercial)) {
     pax_import(
       pcon,
@@ -207,8 +220,14 @@ pax_from_mar <- function(
       )
     )
   }
-  pax_import(pcon, pax_mar_aldist(mar, species = import_defs$species))
-  pax_import(pcon, pax_mar_ldist(mar, species = import_defs$species))
+  pax_import(
+    pcon,
+    pax_mar_aldist(mar, species = import_defs$species, samples = samples)
+  )
+  pax_import(
+    pcon,
+    pax_mar_ldist(mar, species = import_defs$species, samples = samples)
+  )
   pax_import(
     pcon,
     pax_mar_lw_coeffs(mar, species = import_defs$species)

@@ -36,6 +36,7 @@ mar_survey_samples <- function(mar, sampling_type, year_start, year_end) {
 #' @return \subsection{pax_mar_station_env}{One row per sample, with the
 #'   station records the ``station`` table leaves out: ``sample_id``,
 #'   ``date``, ``trip_station`` (station number within the trip),
+#'   ``rectangle`` and ``subrectangle`` (``reitur``, ``smareitur``),
 #'   ``end_depth`` (bottom depth at the end of the tow, m), ``bottom_temp``
 #'   and ``surface_temp`` (deg C, recorded at the station). All trips, so
 #'   it also covers the stations of the stomach-sampling trips}
@@ -52,13 +53,15 @@ pax_mar_station_env <- function(
 
   # NSE variables
   synis_id <- dags <- stod_nr <- botndypi_hift <- botnhiti <- NULL
-  yfirbordshiti <- NULL
+  yfirbordshiti <- reitur <- smareitur <- NULL
 
   mar_survey_samples(mar, sampling_type, year_start, year_end) |>
     dplyr::select(
       sample_id = synis_id,
       date = dags,
       trip_station = stod_nr,
+      rectangle = reitur,
+      subrectangle = smareitur,
       end_depth = botndypi_hift,
       bottom_temp = botnhiti,
       surface_temp = yfirbordshiti
@@ -91,12 +94,14 @@ pax_mar_temperature_logger <- function(
   mar::siritar_hitastig(mar) |>
     dplyr::semi_join(samples, by = "synis_id") |>
     dplyr::select(
+      # Text, as sample_id of the station table
       sample_id = synis_id,
       time = timi,
       time_offset_min = timi_hlidrun_min,
       temperature = hitastig,
       depth = dypi
     ) |>
+    dplyr::mutate(sample_id = as.character(sample_id)) |>
     decorate_mar()
 }
 

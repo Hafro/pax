@@ -24,9 +24,9 @@ pax_mar_landings(
   year_end = NULL
 )
 
-pax_mar_ldist(mar, species)
+pax_mar_ldist(mar, species, samples = NULL)
 
-pax_mar_aldist(mar, species)
+pax_mar_aldist(mar, species, samples = NULL)
 
 pax_mar_lw_coeffs(mar, species)
 
@@ -35,7 +35,8 @@ pax_mar_measurement(
   species,
   year_start = NULL,
   year_end = NULL,
-  measurement_type = NULL
+  measurement_type = NULL,
+  samples = NULL
 )
 
 pax_mar_quotatransfer(mar, species, quota_species = species)
@@ -74,6 +75,9 @@ pax_mar_strata_stations(mar)
 
 \item{ices_area_like}{Character vector of SQL LIKE patterns for filtering
 ICES areas, e.g. \code{"5a\%"}}
+
+\item{samples}{Optional dplyr query (on \code{mar}) with a column
+\code{synis_id}: only these samples, e.g. those of the station table}
 
 \item{measurement_type}{Character vector of measurement types to include,
 e.g. \code{c("LEN", "OTOL")}}

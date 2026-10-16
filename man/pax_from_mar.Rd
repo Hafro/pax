@@ -23,6 +23,7 @@ pax_from_mar(
   medafli_species = NULL,
   stomach_species = species,
   commercial = TRUE,
+  station_samples_only = FALSE,
   foreign_tables = character(0),
   foreign_files = list(),
   ger_survey_path = NULL,
@@ -124,6 +125,12 @@ The survey tables (\code{station_env} to \code{survey_catch}) cover the
 \item{commercial}{If \code{FALSE}, the commercial tables (\code{logbook},
 \code{landings}, \code{sampling} and \code{quotatransfer}) are left out, for a
 survey-only database (e.g. all the species of the groundfish surveys)}
+
+\item{station_samples_only}{If \code{TRUE}, the \code{ldist}, \code{aldist} and
+\code{measurement} tables hold only the samples of the sampling types and years of the
+station table (all trips). By default they hold every sample of the
+species, e.g. for \code{\link[=pax_mar_sample]{pax_mar_sample()}}; for a survey database of many
+species that is mostly commercial samples it doesn't use}
 
 \item{foreign_tables}{Names of the foreign data tables in mar to import
 (Greenland and Faroese surveys, catches and samples), see
