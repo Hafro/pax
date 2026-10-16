@@ -75,6 +75,7 @@ all}
 \subsection{pax_mar_station_env}{One row per sample, with the
 station records the \code{station} table leaves out: \code{sample_id},
 \code{date}, \code{trip_station} (station number within the trip),
+\code{rectangle} and \code{subrectangle} (\code{reitur}, \code{smareitur}),
 \code{end_depth} (bottom depth at the end of the tow, m), \code{bottom_temp}
 and \code{surface_temp} (deg C, recorded at the station). All trips, so
 it also covers the stations of the stomach-sampling trips}
