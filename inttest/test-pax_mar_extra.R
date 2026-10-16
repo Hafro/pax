@@ -21,7 +21,8 @@ ok_group("pax_from_mar_extra_tables", {
       sort(c(
         "landings_vessel", "vessel", "logbook_release", "research_landings",
         "catch_disposition", "landings_old", "station_skipped", "sample",
-        "logbook_old"
+        "logbook_old", "station_env", "temperature_logger", "stomach",
+        "stomach_prey", "stomach_prey_length", "survey_catch", "taxonomy"
       ))
     ),
     "All optional tables listed"
@@ -65,4 +66,27 @@ ok_group("pax_mar_logbook_release", {
   r <- pax_mar_logbook_release(mar, 21, medafli_species = 2021)
   ok(ut_cmp_equal(sort(unique(r$source)), c("adb", "medafli")), "Both sources")
   ok(any(r$condition %in% "RELE"), "Released fish")
+})
+
+ok_group("pax_mar_survey tables", {
+  env <- pax_mar_station_env(mar, sampling_type = 30, year_start = 2024, year_end = 2024)
+  ok(ut_cmp_identical(attr(env, "pax_name"), "station_env"), "station_env: name")
+  env <- dplyr::collect(env)
+  ok(nrow(env) > 500 && !anyDuplicated(env$sample_id), "station_env: one row per spring survey sample")
+  ok(mean(!is.na(env$bottom_temp)) > 0.9, "station_env: bottom temperature recorded")
+
+  tl <- pax_mar_temperature_logger(mar, sampling_type = 30, year_start = 2024, year_end = 2024) |> dplyr::collect()
+  ok(nrow(tl) > 0 && has_cols(tl, c("sample_id", "time", "temperature", "depth")), "temperature_logger: readings")
+
+  sto <- pax_mar_stomach(mar, species = 1, sampling_type = 30, year_start = 2024, year_end = 2024) |> dplyr::collect()
+  ok(nrow(sto) > 0 && all(sto$species == 1), "stomach: cod predators only")
+  prey <- pax_mar_stomach_prey(mar, species = 1, sampling_type = 30, year_start = 2024, year_end = 2024) |> dplyr::collect()
+  ok(all(prey$stomach_id %in% sto$stomach_id), "stomach_prey: prey of those stomachs")
+
+  sc <- pax_mar_survey_catch(mar, sampling_type = 30, year_start = 2024, year_end = 2024) |> dplyr::collect()
+  ok(length(unique(sc$species)) > 50, "survey_catch: all species")
+  ok(!anyDuplicated(sc[c("sample_id", "species")]), "survey_catch: one row per sample and species")
+
+  tx <- pax_mar_taxonomy(mar)
+  ok(!anyDuplicated(tx$species) && 1 %in% tx$species, "taxonomy: one row per species")
 })

@@ -309,7 +309,8 @@ pax_mar_lw_coeffs <- function(
 #' @return \subsection{pax_mar_measurement}{A dplyr query with columns
 #'   ``individual_id``, ``sample_id``, ``species``, ``measurement_type``,
 #'   ``length``, ``age``, ``sex``, ``maturity_stage``, ``weight_g``,
-#'   ``gonad_weight``, ``gut_weight``, ``liver_weight``, and ``count``}
+#'   ``gutted_weight``, ``gonad_weight``, ``gut_weight`` (stomach weight),
+#'   ``liver_weight``, and ``count``}
 #' @rdname pax_mar
 # Was: tidypax::sampling_tables, tidypax::age_reading_status
 pax_mar_measurement <- function(
@@ -333,6 +334,7 @@ pax_mar_measurement <- function(
   kyn_nr <- NULL
   kynthroski_nr <- NULL
   thyngd <- NULL
+  slaegt <- NULL
   kynfaeri <- NULL
   magi <- NULL
   lifur <- NULL
@@ -359,6 +361,7 @@ pax_mar_measurement <- function(
       sex = kyn_nr,
       maturity_stage = kynthroski_nr,
       weight_g = thyngd,
+      gutted_weight = slaegt,
       gonad_weight = kynfaeri,
       gut_weight = magi,
       liver_weight = lifur,

@@ -126,7 +126,8 @@ coefficients, filtered to the requested species}
 \subsection{pax_mar_measurement}{A dplyr query with columns
 \code{individual_id}, \code{sample_id}, \code{species}, \code{measurement_type},
 \code{length}, \code{age}, \code{sex}, \code{maturity_stage}, \code{weight_g},
-\code{gonad_weight}, \code{gut_weight}, \code{liver_weight}, and \code{count}}
+\code{gutted_weight}, \code{gonad_weight}, \code{gut_weight} (stomach weight),
+\code{liver_weight}, and \code{count}}
 
 \subsection{pax_mar_quotatransfer}{A data.frame of quota transfer
 records for the requested species, arranged by species and period}

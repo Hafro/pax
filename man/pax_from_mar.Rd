@@ -21,6 +21,8 @@ pax_from_mar(
   logbook_year_start = year_start,
   extra_tables = character(0),
   medafli_species = NULL,
+  stomach_species = species,
+  commercial = TRUE,
   foreign_tables = character(0),
   foreign_files = list(),
   ger_survey_path = NULL,
@@ -96,11 +98,32 @@ during research trips, \code{\link[=pax_mar_research_landings]{pax_mar_research_
 all years and trips, \code{\link[=pax_mar_sample]{pax_mar_sample()}}}
 \item{\code{"logbook_old"}}{the old logbook tables (\code{afli.afli}) of
 \code{logbook_species}, \code{\link[=pax_mar_logbook_old]{pax_mar_logbook_old()}}}
-}}
+\item{\code{"station_env"}}{station records the \code{station} table
+leaves out (date, end depth, bottom and surface temperature),
+\code{\link[=pax_mar_station_env]{pax_mar_station_env()}}}
+\item{\code{"temperature_logger"}}{trawl temperature logger readings,
+\code{\link[=pax_mar_temperature_logger]{pax_mar_temperature_logger()}}}
+\item{\code{"stomach"}, \code{"stomach_prey"},
+\code{"stomach_prey_length"}}{stomach contents of
+\code{stomach_species}: predators, prey weights and prey lengths,
+\code{\link[=pax_mar_stomach]{pax_mar_stomach()}}}
+\item{\code{"survey_catch"}}{the catch of all species in each sample,
+\code{\link[=pax_mar_survey_catch]{pax_mar_survey_catch()}}}
+\item{\code{"taxonomy"}}{the species register, \code{\link[=pax_mar_taxonomy]{pax_mar_taxonomy()}}}
+}
+The survey tables (\code{station_env} to \code{survey_catch}) cover the
+\code{sampling_type} and years of the station table, all trips}
 
 \item{medafli_species}{Species codes of the old by-catch table
 (\code{afli.medafli}) for the \code{logbook_release} table, e.g. \code{2021}
 (released halibut)}
+
+\item{stomach_species}{Predator species of the stomach tables, default
+\code{species}; \code{NULL} for all}
+
+\item{commercial}{If \code{FALSE}, the commercial tables (\code{logbook},
+\code{landings}, \code{sampling} and \code{quotatransfer}) are left out, for a
+survey-only database (e.g. all the species of the groundfish surveys)}
 
 \item{foreign_tables}{Names of the foreign data tables in mar to import
 (Greenland and Faroese surveys, catches and samples), see

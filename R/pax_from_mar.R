@@ -55,7 +55,26 @@
 #'       all years and trips, [pax_mar_sample()]}
 #'     \item{``"logbook_old"``}{the old logbook tables (``afli.afli``) of
 #'       ``logbook_species``, [pax_mar_logbook_old()]}
+#'     \item{``"station_env"``}{station records the ``station`` table
+#'       leaves out (date, end depth, bottom and surface temperature),
+#'       [pax_mar_station_env()]}
+#'     \item{``"temperature_logger"``}{trawl temperature logger readings,
+#'       [pax_mar_temperature_logger()]}
+#'     \item{``"stomach"``, ``"stomach_prey"``,
+#'       ``"stomach_prey_length"``}{stomach contents of
+#'       ``stomach_species``: predators, prey weights and prey lengths,
+#'       [pax_mar_stomach()]}
+#'     \item{``"survey_catch"``}{the catch of all species in each sample,
+#'       [pax_mar_survey_catch()]}
+#'     \item{``"taxonomy"``}{the species register, [pax_mar_taxonomy()]}
 #'   }
+#'   The survey tables (``station_env`` to ``survey_catch``) cover the
+#'   ``sampling_type`` and years of the station table, all trips
+#' @param commercial If ``FALSE``, the commercial tables (``logbook``,
+#'   ``landings``, ``sampling`` and ``quotatransfer``) are left out, for a
+#'   survey-only database (e.g. all the species of the groundfish surveys)
+#' @param stomach_species Predator species of the stomach tables, default
+#'   ``species``; ``NULL`` for all
 #' @param medafli_species Species codes of the old by-catch table
 #'   (``afli.medafli``) for the ``logbook_release`` table, e.g. ``2021``
 #'   (released halibut)
@@ -94,6 +113,8 @@ pax_from_mar <- function(
   logbook_year_start = year_start,
   extra_tables = character(0),
   medafli_species = NULL,
+  stomach_species = species,
+  commercial = TRUE,
   foreign_tables = character(0),
   foreign_files = list(),
   ger_survey_path = NULL,
@@ -155,45 +176,49 @@ pax_from_mar <- function(
     )
   )
   pax_import(pcon, do.call(pax_mar_measurement, import_defs))
-  pax_import(
-    pcon,
-    pax_mar_logbook(
-      mar,
-      species = logbook_species,
-      year_start = logbook_year_start,
-      year_end = year_end
-    )
-  )
-  pax_import(
-    pcon,
-    pax_mar_landings(
-      mar,
-      species = import_defs$species,
-      ices_area_like = ices_area_like,
-      year_start = landings_year_start,
-      year_end = import_defs$year_end
-    )
-  )
-  pax_import(
-    pcon,
-    do.call(
-      pax_mar_sampling,
-      c(
-        import_defs,
-        list(mfdb_gear_code = sampling_gear, skip_trips = skip_trips)
+  if (isTRUE(commercial)) {
+    pax_import(
+      pcon,
+      pax_mar_logbook(
+        mar,
+        species = logbook_species,
+        year_start = logbook_year_start,
+        year_end = year_end
       )
     )
-  )
+    pax_import(
+      pcon,
+      pax_mar_landings(
+        mar,
+        species = import_defs$species,
+        ices_area_like = ices_area_like,
+        year_start = landings_year_start,
+        year_end = import_defs$year_end
+      )
+    )
+    pax_import(
+      pcon,
+      do.call(
+        pax_mar_sampling,
+        c(
+          import_defs,
+          list(mfdb_gear_code = sampling_gear, skip_trips = skip_trips)
+        )
+      )
+    )
+  }
   pax_import(pcon, pax_mar_aldist(mar, species = import_defs$species))
   pax_import(pcon, pax_mar_ldist(mar, species = import_defs$species))
   pax_import(
     pcon,
     pax_mar_lw_coeffs(mar, species = import_defs$species)
   )
-  pax_import(
-    pcon,
-    pax_mar_quotatransfer(mar, import_defs$species, quota_species)
-  )
+  if (isTRUE(commercial)) {
+    pax_import(
+      pcon,
+      pax_mar_quotatransfer(mar, import_defs$species, quota_species)
+    )
+  }
   pax_import(pcon, pax_mar_strata_stations(mar))
 
   # Optional tables
@@ -260,6 +285,36 @@ pax_from_mar <- function(
     )
   }
 
+  # Survey tables, all trips of the sampling types and years
+  survey_defs <- list(
+    mar,
+    sampling_type = sampling_type,
+    year_start = year_start,
+    year_end = year_end
+  )
+  if ("station_env" %in% extra_tables) {
+    pax_import(pcon, do.call(pax_mar_station_env, survey_defs))
+  }
+  if ("temperature_logger" %in% extra_tables) {
+    pax_import(pcon, do.call(pax_mar_temperature_logger, survey_defs))
+  }
+  stomach_defs <- c(survey_defs, list(species = stomach_species))
+  if ("stomach" %in% extra_tables) {
+    pax_import(pcon, do.call(pax_mar_stomach, stomach_defs))
+  }
+  if ("stomach_prey" %in% extra_tables) {
+    pax_import(pcon, do.call(pax_mar_stomach_prey, stomach_defs))
+  }
+  if ("stomach_prey_length" %in% extra_tables) {
+    pax_import(pcon, do.call(pax_mar_stomach_prey_length, stomach_defs))
+  }
+  if ("survey_catch" %in% extra_tables) {
+    pax_import(pcon, do.call(pax_mar_survey_catch, survey_defs))
+  }
+  if ("taxonomy" %in% extra_tables) {
+    pax_import(pcon, pax_mar_taxonomy(mar))
+  }
+
   # Foreign data
   for (t in foreign_tables) {
     pax_import(pcon, pax_mar_foreign(mar, t))
@@ -294,6 +349,13 @@ pax_from_mar_extra_tables <- function() {
     "landings_old",
     "station_skipped",
     "sample",
-    "logbook_old"
+    "logbook_old",
+    "station_env",
+    "temperature_logger",
+    "stomach",
+    "stomach_prey",
+    "stomach_prey_length",
+    "survey_catch",
+    "taxonomy"
   )
 }
