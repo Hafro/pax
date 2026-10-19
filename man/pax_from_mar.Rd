@@ -83,6 +83,9 @@ default (see \link{pax_mar_extra}):
 \item{\code{"landings_vessel"}}{landings register by vessel, month,
 landings gear code, fishing area and fishing year, from
 \code{landings_year_start}, \code{\link[=pax_mar_landings_vessel]{pax_mar_landings_vessel()}}}
+\item{\code{"landings_ices"}}{ICES official catch statistics, all
+areas and countries, from \code{landings_year_start},
+\code{\link[=pax_mar_landings_ices]{pax_mar_landings_ices()}}}
 \item{\code{"vessel"}}{the vessel register, \code{\link[=pax_mar_vessel]{pax_mar_vessel()}}}
 \item{\code{"logbook_release"}}{logbook catch records with their
 condition (released fish), \code{\link[=pax_mar_logbook_release]{pax_mar_logbook_release()}}}

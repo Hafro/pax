@@ -39,6 +39,9 @@
 #'     \item{``"landings_vessel"``}{landings register by vessel, month,
 #'       landings gear code, fishing area and fishing year, from
 #'       ``landings_year_start``, [pax_mar_landings_vessel()]}
+#'     \item{``"landings_ices"``}{ICES official catch statistics, all
+#'       areas and countries, from ``landings_year_start``,
+#'       [pax_mar_landings_ices()]}
 #'     \item{``"vessel"``}{the vessel register, [pax_mar_vessel()]}
 #'     \item{``"logbook_release"``}{logbook catch records with their
 #'       condition (released fish), [pax_mar_logbook_release()]}
@@ -252,6 +255,17 @@ pax_from_mar <- function(
       )
     )
   }
+  if ("landings_ices" %in% extra_tables) {
+    pax_import(
+      pcon,
+      pax_mar_landings_ices(
+        mar,
+        species = species,
+        year_start = landings_year_start,
+        year_end = year_end
+      )
+    )
+  }
   if ("vessel" %in% extra_tables) {
     pax_import(pcon, pax_mar_vessel(mar))
   }
@@ -361,6 +375,7 @@ pax_from_mar <- function(
 pax_from_mar_extra_tables <- function() {
   c(
     "landings_vessel",
+    "landings_ices",
     "vessel",
     "logbook_release",
     "research_landings",

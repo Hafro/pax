@@ -3,6 +3,7 @@
 \name{pax_mar_extra}
 \alias{pax_mar_extra}
 \alias{pax_mar_landings_vessel}
+\alias{pax_mar_landings_ices}
 \alias{pax_mar_vessel}
 \alias{pax_mar_logbook_release}
 \alias{pax_mar_research_landings}
@@ -13,6 +14,8 @@
 \title{Import optional tables from the MAR database}
 \usage{
 pax_mar_landings_vessel(mar, species, year_start = NULL, year_end = NULL)
+
+pax_mar_landings_ices(mar, species, year_start = NULL, year_end = NULL)
 
 pax_mar_vessel(mar)
 
@@ -58,10 +61,22 @@ Fisheries Association's landings before 1994,
 1993), \code{year}, \code{month}, \code{species} (\code{fteg}), \code{vessel_id}
 (\code{skip_nr}), \code{gear_id} (landings gear code, \code{veidarfaeri}),
 \code{fishing_area} (\code{veidisvaedi}, e.g. \code{"I"} for Icelandic waters),
+\code{quota_species} (the quota species the landing counts against,
+\code{kfteg}, e.g. 30 Icelandic summer-spawning and 38 Norwegian
+spring-spawning herring; 0 for foreign vessels; \code{NA} for
+\code{fiskifelag}),
 \code{period} (quota period, mar's \code{timabil}, e.g. \code{"20242025"}; the
 year for \code{fiskifelag}), \code{fishing_year} (label as the old advice code,
 e.g. \code{"2024/2025"}, the calendar year before September 1991) and
 \code{catch} (ungutted, kg)}
+
+\subsection{pax_mar_landings_ices}{ICES official catch
+statistics (\code{biota.ices_landed_catch} via
+\code{mar::ices_landed_catch()}), all areas and countries: \code{year},
+\code{species}, \code{country}, \code{ices_area} (area and subarea, e.g.
+\code{"2a2"}) and \code{catch} (kg). For the catch of other nations from
+straddling stocks; Icelandic catches are better taken from the landings
+register}
 
 \subsection{pax_mar_vessel}{The vessel register
 (\code{vessel.vessel_v} with \code{usage_category} and \code{construction_year}
