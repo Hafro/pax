@@ -336,13 +336,19 @@ pax_mar_landings_stock <- function(
 #'   ``stock_code`` and ``stock_name`` (``veidistofn``,
 #'   ``veidistofn_heiti``; agf only), ``fishing_year`` (agf: September to
 #'   August, e.g. ``"2024/2025"``) and ``catch`` (ungutted, kg). For stocks
-#'   whose areas are defined by the ports of landing (sea urchin)}
+#'   whose areas are defined by the ports of landing (sea urchin). With
+#'   ``by_gear = TRUE`` the register rows are also by ``gear_id`` (the
+#'   register gear code ``veidarfaeri``, e.g. 25 lumpfish nets)}
+#' @param by_gear If ``TRUE``, the register landings of
+#'   [pax_mar_landings_port()] by gear as well (``gear_id``). Default
+#'   ``FALSE``
 #' @rdname pax_mar_survey
 pax_mar_landings_port <- function(
   mar,
   species,
   year_start = NULL,
-  year_end = NULL
+  year_end = NULL,
+  by_gear = FALSE
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
@@ -350,7 +356,7 @@ pax_mar_landings_port <- function(
   # NSE variables
   tegund_nr <- ar <- man <- hofn <- ices_svaedi <- magn_oslaegt <- NULL
   fisktegund <- londun_hefst <- hafnarnumer <- veidistofn <- NULL
-  veidistofn_heiti <- year <- month <- NULL
+  veidistofn_heiti <- year <- month <- veidarfaeri <- NULL
 
   years <- function(tbl) {
     if (!is.null(year_start)) {
@@ -364,13 +370,21 @@ pax_mar_landings_port <- function(
   register <- mar::landadur_afli(mar) |>
     dplyr::filter(tegund_nr %in% local(species)) |>
     dplyr::rename(year = ar, month = man) |>
-    years() |>
+    years()
+  # Optionally by the register gear (veidarfaeri), e.g. lumpfish nets
+  register <- if (isTRUE(by_gear)) {
+    dplyr::group_by(register, gear_id = veidarfaeri)
+  } else {
+    dplyr::group_by(register)
+  }
+  register <- register |>
     dplyr::group_by(
       year,
       month,
       species = tegund_nr,
       port = hofn,
-      ices_area = ices_svaedi
+      ices_area = ices_svaedi,
+      .add = TRUE
     ) |>
     dplyr::summarise(catch = sum(magn_oslaegt, na.rm = TRUE), .groups = "drop") |>
     dplyr::collect() |>
@@ -396,7 +410,7 @@ pax_mar_landings_port <- function(
   dplyr::bind_rows(
     dplyr::mutate(
       register,
-      dplyr::across(c("year", "month", "species", "port", "catch"), as.numeric),
+      dplyr::across(dplyr::any_of(c("year", "month", "species", "port", "gear_id", "catch")), as.numeric),
       ices_area = as.character(ices_area)
     ),
     dplyr::mutate(
@@ -418,6 +432,7 @@ pax_mar_landings_port <- function(
     ) |>
     dplyr::select(
       "source", "year", "month", "species", "port", "ices_area",
+      dplyr::any_of("gear_id"),
       "stock_code", "stock_name", "fishing_year", "catch"
     ) |>
     dplyr::arrange(source, year, month, port) |>

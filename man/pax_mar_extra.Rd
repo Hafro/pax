@@ -11,7 +11,9 @@
 \alias{pax_mar_sample}
 \alias{pax_mar_logbook_old}
 \alias{pax_logbook_old_columns}
+\alias{pax_logbook_adb_columns}
 \alias{pax_mar_logbook_adb}
+\alias{pax_mar_logbook_lumpfish}
 \title{Import optional tables from the MAR database}
 \usage{
 pax_mar_landings_vessel(mar, species, year_start = NULL, year_end = NULL)
@@ -42,7 +44,17 @@ pax_mar_logbook_old(
 
 pax_logbook_old_columns()
 
-pax_mar_logbook_adb(mar, species, year_start = NULL, year_end = NULL)
+pax_logbook_adb_columns()
+
+pax_mar_logbook_adb(
+  mar,
+  species,
+  year_start = NULL,
+  year_end = NULL,
+  columns = character(0)
+)
+
+pax_mar_logbook_lumpfish(mar, year_start = NULL, year_end = NULL)
 }
 \arguments{
 \item{mar}{A MAR database connection, as returned by \code{mar::connect_mar()}}
@@ -60,8 +72,8 @@ for none}
 \item{sampling_type}{Sampling types (\code{synaflokkur_nr}) of the research
 trips}
 
-\item{columns}{Optional extra columns of \code{pax_mar_logbook_old()}, none
-by default}
+\item{columns}{Optional extra columns of \code{pax_mar_logbook_old()} or
+\code{pax_mar_logbook_adb()}, none by default}
 }
 \value{
 \subsection{pax_mar_landings_vessel}{Landings register by vessel
@@ -148,10 +160,15 @@ degrees, as \code{mar::afli_stofn()}), \code{"rectangle"} and
 \code{"subrectangle"} (\code{reitur}, \code{smareitur}) and \code{"n_same_catch"}
 (the number of catch rows of the record, any species, with the same
 catch as this one: the old scripts joined \code{afli.afli} back on
-\code{visir} and \code{afli}, which repeats a row this many times)}
+\code{visir} and \code{afli}, which repeats a row this many times),
+\code{"num_nets"} and \code{"mesh_size"} (\code{afli.lineha.dregin} and
+\code{moskvi}: nets hauled and mesh size of gillnet records)}
 
 \subsection{pax_logbook_old_columns}{The optional columns of
 \code{\link[=pax_mar_logbook_old]{pax_mar_logbook_old()}}}
+
+\subsection{pax_logbook_adb_columns}{The optional columns of
+\code{\link[=pax_mar_logbook_adb]{pax_mar_logbook_adb()}}}
 
 \subsection{pax_mar_logbook_adb}{The electronic logbooks (ADB,
 \code{adb_trip}, \code{adb_station}, \code{adb_catch}, \code{adb_trap} joined as the
@@ -159,8 +176,23 @@ old IAG scripts did), one row per station, species and trap record:
 \code{station_id}, \code{trip_id}, \code{vessel_id} (registration number),
 \code{fishing_start}, \code{year}, \code{month}, \code{lat}, \code{lon} (start
 position, as recorded), \code{gear_id}, \code{species}, \code{quantity} (kg) and
-\code{number_of_traps}. Without vessel names, call signs or companies. The
-compiled logbooks round the catch of some records (whelk, up to 0.36 kg)}
+\code{number_of_traps}, plus the optional \code{columns}
+(\code{\link[=pax_logbook_adb_columns]{pax_logbook_adb_columns()}}): \code{"sex"} (\code{adb_catch.sex_no}, e.g.
+lumpfish females and males), \code{"num_nets"} and \code{"mesh_size"}
+(\code{adb_line_net}: nets and mesh size of gillnet stations). Without
+vessel names, call signs or companies. The compiled logbooks round the
+catch of some records (whelk, up to 0.36 kg)}
+
+\subsection{pax_mar_logbook_lumpfish}{The lumpfish logbooks
+(\code{afli.grasl_sokn}, one row per haul of nets, joined to the season
+table \code{afli.grasl_stofn} on vessel and year): \code{vessel_id},
+\code{date}, \code{year}, \code{month}, \code{rectangle}, \code{grasl_rectangle},
+\code{depth} (fathoms), \code{num_nets} (nets hauled), \code{nights} (soak
+nights), \code{n_female} and \code{n_male} (lumpfish and lumpsucker males
+counted), \code{roe_kg}, and from the season table \code{processing} (roe
+processing type, \code{teg_verkunar}), \code{net_type}, \code{mesh_size},
+\code{barrels} and \code{harbour}. Without the comment and the sender's
+identifier}
 }
 \description{
 Functions for the optional tables of \code{\link[=pax_from_mar]{pax_from_mar()}} (argument

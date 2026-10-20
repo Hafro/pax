@@ -468,9 +468,11 @@ pax_mar_sample <- function(mar, species) {
 #'   ``"subrectangle"`` (``reitur``, ``smareitur``) and ``"n_same_catch"``
 #'   (the number of catch rows of the record, any species, with the same
 #'   catch as this one: the old scripts joined ``afli.afli`` back on
-#'   ``visir`` and ``afli``, which repeats a row this many times)}
-#' @param columns Optional extra columns of ``pax_mar_logbook_old()``, none
-#'   by default
+#'   ``visir`` and ``afli``, which repeats a row this many times),
+#'   ``"num_nets"`` and ``"mesh_size"`` (``afli.lineha.dregin`` and
+#'   ``moskvi``: nets hauled and mesh size of gillnet records)}
+#' @param columns Optional extra columns of ``pax_mar_logbook_old()`` or
+#'   ``pax_mar_logbook_adb()``, none by default
 #' @rdname pax_mar_extra
 pax_mar_logbook_old <- function(
   mar,
@@ -490,7 +492,7 @@ pax_mar_logbook_old <- function(
   # NSE variables
   visir <- tegund <- vedags <- veman <- skipnr <- veidarf <- dypi <- NULL
   afli <- year <- togtimi <- gildrur <- klst <- breidd <- lengd <- NULL
-  reitur <- smareitur <- togle <- NULL
+  reitur <- smareitur <- togle <- dregin <- moskvi <- NULL
 
   # NB: afli.stofn directly, mar::afli_stofn() also converts the positions,
   #     which is slow and not needed here. year as mar::afli_stofn() (ar)
@@ -524,6 +526,15 @@ pax_mar_logbook_old <- function(
       out,
       mar::tbl_mar(mar, "afli.gildra") |>
         dplyr::select(visir, num_traps = gildrur, trap_hours = klst),
+      by = "visir"
+    )
+  }
+  if (any(c("num_nets", "mesh_size") %in% columns)) {
+    # Nets hauled and mesh size of the gillnet records (one row per visir)
+    out <- dplyr::left_join(
+      out,
+      mar::tbl_mar(mar, "afli.lineha") |>
+        dplyr::select(visir, num_nets = dregin, mesh_size = moskvi),
       by = "visir"
     )
   }
@@ -579,8 +590,17 @@ pax_logbook_old_columns <- function() {
     "lon",
     "rectangle",
     "subrectangle",
-    "n_same_catch"
+    "n_same_catch",
+    "num_nets",
+    "mesh_size"
   )
+}
+
+#' @return \subsection{pax_logbook_adb_columns}{The optional columns of
+#'   [pax_mar_logbook_adb()]}
+#' @rdname pax_mar_extra
+pax_logbook_adb_columns <- function() {
+  c("sex", "num_nets", "mesh_size")
 }
 
 #' @return \subsection{pax_mar_logbook_adb}{The electronic logbooks (ADB,
@@ -589,10 +609,24 @@ pax_logbook_old_columns <- function() {
 #'   ``station_id``, ``trip_id``, ``vessel_id`` (registration number),
 #'   ``fishing_start``, ``year``, ``month``, ``lat``, ``lon`` (start
 #'   position, as recorded), ``gear_id``, ``species``, ``quantity`` (kg) and
-#'   ``number_of_traps``. Without vessel names, call signs or companies. The
-#'   compiled logbooks round the catch of some records (whelk, up to 0.36 kg)}
+#'   ``number_of_traps``, plus the optional ``columns``
+#'   ([pax_logbook_adb_columns()]): ``"sex"`` (``adb_catch.sex_no``, e.g.
+#'   lumpfish females and males), ``"num_nets"`` and ``"mesh_size"``
+#'   (``adb_line_net``: nets and mesh size of gillnet stations). Without
+#'   vessel names, call signs or companies. The compiled logbooks round the
+#'   catch of some records (whelk, up to 0.36 kg)}
 #' @rdname pax_mar_extra
-pax_mar_logbook_adb <- function(mar, species, year_start = NULL, year_end = NULL) {
+pax_mar_logbook_adb <- function(
+  mar,
+  species,
+  year_start = NULL,
+  year_end = NULL,
+  columns = character(0)
+) {
+  unknown <- setdiff(columns, pax_logbook_adb_columns())
+  if (length(unknown) > 0) {
+    stop("Unknown logbook_adb columns: ", paste(unknown, collapse = ", "))
+  }
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
@@ -601,13 +635,23 @@ pax_mar_logbook_adb <- function(mar, species, year_start = NULL, year_end = NULL
   out <- mar::adb_trip(mar) |>
     dplyr::left_join(mar::adb_station(mar), by = "trip_id") |>
     dplyr::left_join(mar::adb_catch(mar), by = "station_id") |>
-    dplyr::left_join(mar::adb_trap(mar), by = "station_id") |>
+    dplyr::left_join(mar::adb_trap(mar), by = "station_id")
+  if (any(c("num_nets", "mesh_size") %in% columns)) {
+    out <- dplyr::left_join(out, mar::adb_line_net(mar), by = "station_id")
+  }
+  out <- out |>
     dplyr::filter(species_no %in% local(species)) |>
     dplyr::select(
       "station_id", "trip_id", "vessel_no", "fishing_start", "latitude",
-      "longitude", "gear_no", "species_no", "quantity", "number_of_traps"
+      "longitude", "gear_no", "species_no", "quantity", "number_of_traps",
+      dplyr::any_of(c(
+        sex_no = if ("sex" %in% columns) "sex_no",
+        nets = if ("num_nets" %in% columns) "nets",
+        mesh_size = if ("mesh_size" %in% columns) "mesh_size"
+      ))
     ) |>
     dplyr::collect()
+  raw <- out
   num <- function(x) suppressWarnings(as.numeric(x))
   out <- tibble::tibble(
     station_id = num(out$station_id),
@@ -623,7 +667,71 @@ pax_mar_logbook_adb <- function(mar, species, year_start = NULL, year_end = NULL
     quantity = num(out$quantity),
     number_of_traps = num(out$number_of_traps)
   )
+  if ("sex" %in% columns) out$sex <- num(raw$sex_no)
+  if ("num_nets" %in% columns) out$num_nets <- num(raw$nets)
+  if ("mesh_size" %in% columns) out$mesh_size <- num(raw$mesh_size)
   if (!is.null(year_start)) out <- out[out$year >= year_start, ]
   if (!is.null(year_end)) out <- out[out$year <= year_end, ]
   decorate_mar(out)
+}
+
+#' @return \subsection{pax_mar_logbook_lumpfish}{The lumpfish logbooks
+#'   (``afli.grasl_sokn``, one row per haul of nets, joined to the season
+#'   table ``afli.grasl_stofn`` on vessel and year): ``vessel_id``,
+#'   ``date``, ``year``, ``month``, ``rectangle``, ``grasl_rectangle``,
+#'   ``depth`` (fathoms), ``num_nets`` (nets hauled), ``nights`` (soak
+#'   nights), ``n_female`` and ``n_male`` (lumpfish and lumpsucker males
+#'   counted), ``roe_kg``, and from the season table ``processing`` (roe
+#'   processing type, ``teg_verkunar``), ``net_type``, ``mesh_size``,
+#'   ``barrels`` and ``harbour``. Without the comment and the sender's
+#'   identifier}
+#' @rdname pax_mar_extra
+pax_mar_logbook_lumpfish <- function(mar, year_start = NULL, year_end = NULL) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+  # NSE variables
+  skipnr <- vear <- vedags <- reitur <- grasl_reitur <- dypi <- dregin <- NULL
+  naetur <- fj_grasl <- fj_raudm <- kg_hrogn <- teg_verkunar <- NULL
+  gerd_neta <- moskvi <- tunnur <- ahofn <- year <- NULL
+
+  out <- mar::tbl_mar(mar, "afli.grasl_sokn") |>
+    dplyr::select(
+      skipnr, vedags, vear, reitur, grasl_reitur, dypi, dregin, naetur,
+      fj_grasl, fj_raudm, kg_hrogn
+    ) |>
+    dplyr::left_join(
+      mar::tbl_mar(mar, "afli.grasl_stofn") |>
+        dplyr::select(skipnr, vear, teg_verkunar, gerd_neta, moskvi, tunnur, ahofn),
+      by = c("skipnr", "vear")
+    )
+  if (!is.null(year_start)) {
+    out <- dplyr::filter(out, vear >= local(year_start))
+  }
+  if (!is.null(year_end)) {
+    out <- dplyr::filter(out, vear <= local(year_end))
+  }
+  out <- dplyr::collect(out)
+  num <- function(x) suppressWarnings(as.numeric(x))
+  tibble::tibble(
+    vessel_id = num(out$skipnr),
+    date = as.Date(out$vedags),
+    year = num(out$vear),
+    month = as.numeric(format(out$vedags, "%m")),
+    rectangle = num(out$reitur),
+    grasl_rectangle = num(out$grasl_reitur),
+    depth = num(out$dypi),
+    num_nets = num(out$dregin),
+    nights = num(out$naetur),
+    n_female = num(out$fj_grasl),
+    n_male = num(out$fj_raudm),
+    roe_kg = num(out$kg_hrogn),
+    # Character: the codes are "1" to "4" (salted, frozen, ...)
+    processing = as.character(out$teg_verkunar),
+    net_type = as.character(out$gerd_neta),
+    mesh_size = num(out$moskvi),
+    barrels = num(out$tunnur),
+    harbour = num(out$ahofn)
+  ) |>
+    decorate_mar()
 }

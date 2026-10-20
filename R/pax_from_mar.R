@@ -86,10 +86,19 @@
 #'       surveys (Hafmynd) of the projects ``annotation_projects``, with a
 #'       pseudonymous annotator id instead of the user name,
 #'       [pax_mar_video_annotation()]}
+#'     \item{``"logbook_lumpfish"``}{the lumpfish logbooks
+#'       (``afli.grasl_sokn`` with the season table ``afli.grasl_stofn``)
+#'       from ``logbook_year_start``, without comments,
+#'       [pax_mar_logbook_lumpfish()]}
 #'   }
 #' @param logbook_old_columns Optional columns of the ``logbook_old`` table,
 #'   see [pax_logbook_old_columns()], e.g. ``c("tow_time", "num_traps")``
 #'   for the effort of the old logbooks. None by default
+#' @param landings_port_by_gear If ``TRUE``, the register rows of the
+#'   ``landings_port`` table by gear too, see [pax_mar_landings_port()]
+#' @param logbook_adb_columns Optional columns of the ``logbook_adb`` table,
+#'   see [pax_logbook_adb_columns()], e.g. ``c("sex", "num_nets")`` for
+#'   lumpfish gillnets. None by default
 #' @param annotation_projects Hafmynd projects of the ``video_annotation``
 #'   table (e.g. ``"Humar"``, the Nephrops UWTV survey), ``NULL`` (default)
 #'   for all
@@ -135,6 +144,8 @@ pax_from_mar <- function(
   extra_tables = character(0),
   annotation_projects = NULL,
   logbook_old_columns = character(0),
+  logbook_adb_columns = character(0),
+  landings_port_by_gear = FALSE,
   medafli_species = NULL,
   foreign_tables = character(0),
   foreign_files = list(),
@@ -325,7 +336,8 @@ pax_from_mar <- function(
         mar,
         species = logbook_species,
         year_start = logbook_year_start,
-        year_end = year_end
+        year_end = year_end,
+        columns = logbook_adb_columns
       ),
       name = "logbook_adb"
     )
@@ -337,7 +349,8 @@ pax_from_mar <- function(
         mar,
         species = species,
         year_start = landings_year_start,
-        year_end = year_end
+        year_end = year_end,
+        by_gear = landings_port_by_gear
       ),
       name = "landings_port"
     )
@@ -347,6 +360,17 @@ pax_from_mar <- function(
       pcon,
       pax_mar_video_annotation(mar, project = annotation_projects),
       name = "video_annotation"
+    )
+  }
+  if ("logbook_lumpfish" %in% extra_tables) {
+    pax_import(
+      pcon,
+      pax_mar_logbook_lumpfish(
+        mar,
+        year_start = logbook_year_start,
+        year_end = year_end
+      ),
+      name = "logbook_lumpfish"
     )
   }
   if ("logbook_old" %in% extra_tables) {
@@ -402,6 +426,7 @@ pax_from_mar_extra_tables <- function() {
     "landings_stock",
     "video_annotation",
     "landings_port",
-    "logbook_adb"
+    "logbook_adb",
+    "logbook_lumpfish"
   )
 }

@@ -23,7 +23,8 @@ pax_si_by_strata(
   tow_number = NULL,
   gear_id = NULL,
   skip_years = NULL,
-  fixed_only = FALSE
+  fixed_only = FALSE,
+  ldist = NULL
 )
 
 pax_si_length_index(
@@ -35,7 +36,8 @@ pax_si_length_index(
   gear_id = NULL,
   skip_years = NULL,
   fixed_only = FALSE,
-  complete_years = FALSE
+  complete_years = FALSE,
+  ldist = NULL
 )
 }
 \arguments{
@@ -71,6 +73,10 @@ as tow 0, as tidypax. \code{NULL} keeps all tows.}
 (only part of the area was covered).}
 
 \item{fixed_only}{If \code{TRUE}, only the fixed stations (\code{fixed == 1}).}
+
+\item{ldist}{The length distributions with a \code{weight} column, as the
+\code{ldist} argument of \code{\link[=pax_si_by_length]{pax_si_by_length()}}, e.g. the females only.
+\code{NULL} (default): the \code{ldist} table with \code{\link[=pax_ldist_add_weight]{pax_ldist_add_weight()}}.}
 
 \item{length_ranges}{Named list of length ranges, each \code{c(lower, upper)}; an index counts the fish strictly within the range (\code{c(30, 500)}: 31 cm and over in 1 cm classes).}
 

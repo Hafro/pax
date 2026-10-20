@@ -130,6 +130,9 @@ pax_si_scale_by_strata_stations <- function(tbl, strata_stations) {
 #' @param skip_years Years to leave out, e.g. 2011 for the autumn survey
 #'   (only part of the area was covered).
 #' @param fixed_only If ``TRUE``, only the fixed stations (``fixed == 1``).
+#' @param ldist The length distributions with a ``weight`` column, as the
+#'   ``ldist`` argument of [pax_si_by_length()], e.g. the females only.
+#'   ``NULL`` (default): the ``ldist`` table with [pax_ldist_add_weight()].
 #' @return \subsection{pax_si_by_strata}{A dplyr query of station values by
 #'   length scaled to strata, as [pax_si_scale_by_strata_stations()]}
 #' @rdname pax_si_index
@@ -140,7 +143,8 @@ pax_si_by_strata <- function(
   tow_number = NULL,
   gear_id = NULL,
   skip_years = NULL,
-  fixed_only = FALSE
+  fixed_only = FALSE,
+  ldist = NULL
 ) {
   si_station_select(
     station_tbl,
@@ -150,7 +154,7 @@ pax_si_by_strata <- function(
     skip_years = skip_years,
     fixed_only = fixed_only
   ) |>
-    si_by_strata_stations(strata_stations, sampling_type)
+    si_by_strata_stations(strata_stations, sampling_type, ldist = ldist)
 }
 
 #' @param length_ranges Named list of length ranges, each ``c(lower,
@@ -174,7 +178,8 @@ pax_si_length_index <- function(
   gear_id = NULL,
   skip_years = NULL,
   fixed_only = FALSE,
-  complete_years = FALSE
+  complete_years = FALSE,
+  ldist = NULL
 ) {
   # NSE variables
   year <- length_range <- si_N <- si_abund <- si_abund_cv <- NULL
@@ -191,7 +196,7 @@ pax_si_length_index <- function(
     skip_years = skip_years,
     fixed_only = fixed_only
   )
-  by_strata <- si_by_strata_stations(st, strata_stations, sampling_type)
+  by_strata <- si_by_strata_stations(st, strata_stations, sampling_type, ldist = ldist)
 
   if (isTRUE(complete_years)) {
     # Years with survey stations. pax_si_year_summary() leaves out the strata
@@ -276,7 +281,7 @@ si_station_select <- function(
 
 # Station values by length, scaled to strata with the station list of the
 # sampling type
-si_by_strata_stations <- function(st, strata_stations, sampling_type) {
+si_by_strata_stations <- function(st, strata_stations, sampling_type, ldist = NULL) {
   st_type <- sampling_type
   ss <- strata_stations
   if (!all(c("station", "stratum", "area") %in% colnames(ss))) {
@@ -286,7 +291,10 @@ si_by_strata_stations <- function(st, strata_stations, sampling_type) {
     ss <- ss[ss$sampling_type == st_type, ] |>
       dplyr::select(-dplyr::all_of("sampling_type"))
   }
-  st |>
-    pax_si_by_length() |>
-    pax_si_scale_by_strata_stations(ss)
+  by_length <- if (is.null(ldist)) {
+    pax_si_by_length(st)
+  } else {
+    pax_si_by_length(st, ldist = ldist)
+  }
+  pax_si_scale_by_strata_stations(by_length, ss)
 }

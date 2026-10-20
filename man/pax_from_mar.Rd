@@ -25,6 +25,8 @@ pax_from_mar(
   extra_tables = character(0),
   annotation_projects = NULL,
   logbook_old_columns = character(0),
+  logbook_adb_columns = character(0),
+  landings_port_by_gear = FALSE,
   medafli_species = NULL,
   foreign_tables = character(0),
   foreign_files = list(),
@@ -134,6 +136,10 @@ names, \code{\link[=pax_mar_landings_port]{pax_mar_landings_port()}}}
 surveys (Hafmynd) of the projects \code{annotation_projects}, with a
 pseudonymous annotator id instead of the user name,
 \code{\link[=pax_mar_video_annotation]{pax_mar_video_annotation()}}}
+\item{\code{"logbook_lumpfish"}}{the lumpfish logbooks
+(\code{afli.grasl_sokn} with the season table \code{afli.grasl_stofn})
+from \code{logbook_year_start}, without comments,
+\code{\link[=pax_mar_logbook_lumpfish]{pax_mar_logbook_lumpfish()}}}
 }}
 
 \item{annotation_projects}{Hafmynd projects of the \code{video_annotation}
@@ -143,6 +149,13 @@ for all}
 \item{logbook_old_columns}{Optional columns of the \code{logbook_old} table,
 see \code{\link[=pax_logbook_old_columns]{pax_logbook_old_columns()}}, e.g. \code{c("tow_time", "num_traps")}
 for the effort of the old logbooks. None by default}
+
+\item{logbook_adb_columns}{Optional columns of the \code{logbook_adb} table,
+see \code{\link[=pax_logbook_adb_columns]{pax_logbook_adb_columns()}}, e.g. \code{c("sex", "num_nets")} for
+lumpfish gillnets. None by default}
+
+\item{landings_port_by_gear}{If \code{TRUE}, the register rows of the
+\code{landings_port} table by gear too, see \code{\link[=pax_mar_landings_port]{pax_mar_landings_port()}}}
 
 \item{medafli_species}{Species codes of the old by-catch table
 (\code{afli.medafli}) for the \code{logbook_release} table, e.g. \code{2021}

@@ -33,7 +33,13 @@ pax_mar_sample_weight(
 
 pax_mar_landings_stock(mar, species, year_start = NULL, year_end = NULL)
 
-pax_mar_landings_port(mar, species, year_start = NULL, year_end = NULL)
+pax_mar_landings_port(
+  mar,
+  species,
+  year_start = NULL,
+  year_end = NULL,
+  by_gear = FALSE
+)
 }
 \arguments{
 \item{mar}{A MAR database connection, as returned by \code{mar::connect_mar()}}
@@ -47,6 +53,10 @@ all}
 
 \item{skip_trips, only_trips}{SQL LIKE patterns of trips to leave out or to
 keep, as \code{\link[=pax_mar_station]{pax_mar_station()}}}
+
+\item{by_gear}{If \code{TRUE}, the register landings of
+\code{\link[=pax_mar_landings_port]{pax_mar_landings_port()}} by gear as well (\code{gear_id}). Default
+\code{FALSE}}
 }
 \value{
 \subsection{pax_station_columns}{A named character vector: the
@@ -93,7 +103,9 @@ aggregated (no vessel, seller or buyer): \code{source} (\code{"register"}:
 \code{stock_code} and \code{stock_name} (\code{veidistofn},
 \code{veidistofn_heiti}; agf only), \code{fishing_year} (agf: September to
 August, e.g. \code{"2024/2025"}) and \code{catch} (ungutted, kg). For stocks
-whose areas are defined by the ports of landing (sea urchin)}
+whose areas are defined by the ports of landing (sea urchin). With
+\code{by_gear = TRUE} the register rows are also by \code{gear_id} (the
+register gear code \code{veidarfaeri}, e.g. 25 lumpfish nets)}
 }
 \description{
 Optional columns of the \code{station} table and optional tables of
