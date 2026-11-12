@@ -77,28 +77,35 @@ trips}
 }
 \value{
 \subsection{pax_mar_landings_vessel}{Landings register by vessel
-and month (Directorate of Fisheries, \code{kvoti.lods_oslaegt}, and the
-Fisheries Association's landings before 1994,
-\code{fiskifelagid.landed_catch_pre94}, via \code{mar::lods_oslaegt()} and
-\code{mar::fiskifelag_oslaegt()}), summed over landings. Columns
-\code{source} (\code{"lods"} or \code{"fiskifelag"}; the two overlap in 1992 and
-1993), \code{year}, \code{month}, \code{species} (\code{fteg}), \code{vessel_id}
-(\code{skip_nr}), \code{gear_id} (landings gear code, \code{veidarfaeri}),
-\code{fishing_area} (\code{veidisvaedi}, e.g. \code{"I"} for Icelandic waters),
-\code{period} (quota period, mar's \code{timabil}, e.g. \code{"20242025"}; the
-year for \code{fiskifelag}), \code{fishing_year} (label as the old advice code,
-e.g. \code{"2024/2025"}, the calendar year before September 1991) and
-\code{catch} (ungutted, kg)}
+and month, summed over landings: the landing base of the mar parquet
+datasets (\code{mar::ln_landings()}: the Directorate of Fisheries'
+\code{kvoti.lods_slaegt} from September 1992, \code{agf.aflagrunnur} from
+September 2007) and the Fisheries Association's landings 1982-1993
+(\code{fiskifelagid.landed_catch_pre94}, \code{mar::ln_agg()}), which
+replaced mar's old \code{lods_oslaegt()} and \code{fiskifelag_oslaegt()}.
+Columns \code{source} (\code{"lods"} or \code{"fiskifelag"}; the two overlap in
+1992 and 1993), \code{year}, \code{month}, \code{species} (\code{fteg}),
+\code{vessel_id} (\code{skip_nr}), \code{gear_id} (landings gear code,
+\code{veidarfaeri}), \code{fishing_area} (\code{veidisvaedi}, e.g. \code{"I"} for
+Icelandic waters; the AGF areas mapped to these, see
+\link{agf_fishing_area}), \code{period} (quota period, mar's \code{timabil}, e.g.
+\code{"20242025"}; the year for \code{fiskifelag}), \code{fishing_year} (label as
+the old advice code, e.g. \code{"2024/2025"}, the calendar year before
+September 1991) and \code{catch} (ungutted, kg). From September 2007 the
+AGF landings, where \code{lods_oslaegt()} had the old register's}
 
-\subsection{pax_mar_vessel}{The vessel register
-(\code{vessel.vessel_v} with \code{usage_category} and \code{construction_year}
-from \code{vessel.vessel}), one row per vessel: \code{vessel_id}
+\subsection{pax_mar_vessel}{The vessel register (AWS Postgres
+since October 2026, \code{mar::vessel()} and the current-state tables
+\code{vessel_identification}, \code{vessel_operational} and
+\code{vessel_measurement}; before, Oracle \code{vessel.vessel_v}), one row
+per vessel: \code{vessel_id}
 (registration number, the \code{vessel_id}/\code{boat_id} of the other pax
 tables), \code{name}, \code{status} (e.g. \code{"Erlent"} for foreign vessels),
 \code{usage_category_no}, \code{usage_category}, \code{operational_category_no},
 \code{region_no}, \code{home_port_no}, \code{power_kw}, \code{length},
 \code{brutto_grt}, \code{brutto_weight_tons} and \code{construction_year}. Owner
-names, addresses and identity numbers are left out}
+names, addresses and identity numbers are left out. The \code{mar}
+argument is not used (kept for \code{\link[=pax_from_mar]{pax_from_mar()}})}
 
 \subsection{pax_mar_logbook_release}{Logbook catch records of the
 species with their condition (released fish, \code{condition == "RELE"}):

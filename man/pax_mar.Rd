@@ -114,10 +114,21 @@ the names of \code{\link[=pax_station_columns]{pax_station_columns()}} (e.g. \co
 \code{tow_area}, \code{tow_time}, \code{tow_hooks}, \code{tow_num_nets},
 \code{tow_num_traps}, \code{ocean_depth}, \code{catch}, and \code{catch_total}}
 
-\subsection{pax_mar_landings}{A dplyr query with columns
+\subsection{pax_mar_landings}{A data.frame with columns
 \code{year}, \code{month}, \code{species}, \code{ices_area}, \code{country},
 \code{mfdb_gear_code}, \code{gear_id} (landings register gear code,
-\code{veidarfaeri}), \code{boat_id}, and \code{catch}}
+\code{veidarfaeri}), \code{boat_id}, and \code{catch} (ungutted, kg, summed by
+the other columns): the
+landings register as mar's old \code{landadur_afli()} (Oracle, removed
+from mar in October 2026), now from the mar parquet datasets (landings
+1966-1992 from the aggregated landings \code{mar::ln_agg()}, from 1993 the
+landing base \code{mar::ln_landings()}), with the vessel's country from the
+vessel register (\code{mar::connect_aws()}), and the ICES official
+catches (\code{biota.ices_landed_catch}) for the other years and
+countries. Differences from \code{landadur_afli()}: the 1966-1981 weights
+of \code{vigtarskra66_81} are as in the parquet (without the conversion
+factor \code{reiknistudull}), and the AGF landings from September 2007
+replace those of \code{kvoti.lods_oslaegt}}
 
 \subsection{pax_mar_ldist}{A dplyr query with columns
 \code{sample_id}, \code{species}, \code{length}, \code{sex}, and \code{count}}
@@ -135,7 +146,16 @@ coefficients, filtered to the requested species}
 \code{gonad_weight}, \code{gut_weight}, \code{liver_weight}, and \code{count}}
 
 \subsection{pax_mar_quotatransfer}{A data.frame of quota transfer
-records for the requested species, arranged by species and period}
+records for the requested species, arranged by species and period: the
+quota status summed over vessels by quota species (\code{species}, the
+quota code \code{fteg}) and fishing year, in ungutted tonnes, as mar's old
+\code{kvoti_stada_summarised()} (Oracle \code{kvoti.kv_stada}, removed from mar
+in October 2026), now from the quota parquet dataset
+(\code{mar::q_quota_status()}, with the ungutted factors of
+\code{mar::q_coefficients()}). Columns \code{varanlegt} (permanent quota),
+\code{jofnsj} (equalisation fund), \code{m_ara} (transfer between years),
+\code{kvoti}, \code{afli}, \code{stada}, \code{tilf}, \code{eftir}, \code{upptaka},
+\code{n_ar}, \code{onotad} and \code{m_skipa} (transfer between vessels)}
 
 \subsection{pax_mar_sampling}{A dplyr query with columns
 \code{sample_id}, \code{lat}, \code{lon}, \code{year}, \code{month},

@@ -83,22 +83,26 @@ zero catch weights of the groundfish surveys since 2010 don't occur
 there}
 
 \subsection{pax_mar_landings_stock}{Landings by management stock
-or stock area code, aggregated (no vessel, port, seller or buyer):
-\code{source} (\code{"lods"} and \code{"fiskifelag"}: the landings register,
-\code{mar::lods_oslaegt()} and \code{mar::fiskifelag_oslaegt()}, by the stock
-code \code{kfteg}, e.g. 51 Arnarfjordur and 53 Isafjardardjup shrimp;
-\code{"agf"}: \code{agf.aflagrunnur_v} by \code{veidistofn}), \code{year},
-\code{month}, \code{species}, \code{stock_code} (\code{kfteg}, or \code{veidistofn}
-for \code{"agf"}), \code{stock_name} (\code{veidistofn_heiti}, \code{NA} for the
-register), \code{gear_id} (landings gear code), \code{fishing_area}
-(\code{veidisvaedi}), \code{period} (quota period, e.g. \code{"20242025"}, NA
-for \code{"agf"}), \code{fishing_year} (as \code{\link[=pax_mar_landings_vessel]{pax_mar_landings_vessel()}}) and
-\code{catch} (ungutted, kg)}
+or stock area code, aggregated (no vessel, port, seller or buyer), from
+the mar parquet datasets (see \code{\link[=pax_mar_landings_vessel]{pax_mar_landings_vessel()}}): \code{source}
+(\code{"lods"} and \code{"fiskifelag"}: the landings register by the stock
+code \code{kfteg}, e.g. 51 Arnarfjordur and 53 Isafjardardjup shrimp, as
+mar's old \code{lods_oslaegt()} and \code{fiskifelag_oslaegt()}; from
+September 2007 the AGF stocks mapped to these codes, see \link{agf_stock};
+\code{"agf"}: the AGF landings from September 2007 by the AGF stock,
+\code{veidistofn}), \code{year}, \code{month}, \code{species}, \code{stock_code}
+(\code{kfteg}, or \code{veidistofn} for \code{"agf"}), \code{stock_name}
+(\code{veidistofn_heiti}, \code{NA} for the register), \code{gear_id} (landings
+gear code), \code{fishing_area} (\code{veidisvaedi}; the AGF code for
+\code{"agf"}, e.g. \code{"IS"}), \code{period} (quota period, e.g.
+\code{"20242025"}, NA for \code{"agf"}), \code{fishing_year} (as
+\code{\link[=pax_mar_landings_vessel]{pax_mar_landings_vessel()}}) and \code{catch} (ungutted, kg)}
 
 \subsection{pax_mar_landings_port}{Landings by port of landing,
-aggregated (no vessel, seller or buyer): \code{source} (\code{"register"}:
-\code{mar::landadur_afli()}, by \code{hofn}; \code{"agf"}:
-\code{agf.aflagrunnur_v}, by \code{hafnarnumer}), \code{year}, \code{month},
+aggregated (no vessel, seller or buyer), from the mar parquet datasets:
+\code{source} (\code{"register"}: the landings as \code{\link[=pax_mar_landings]{pax_mar_landings()}},
+without the ICES catches, by port; \code{"agf"}: the AGF landings from
+September 2007, by port and AGF stock), \code{year}, \code{month},
 \code{species}, \code{port} (port number), \code{ices_area} (register only),
 \code{stock_code} and \code{stock_name} (\code{veidistofn},
 \code{veidistofn_heiti}; agf only), \code{fishing_year} (agf: September to

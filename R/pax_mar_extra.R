@@ -64,19 +64,56 @@ mar_period_of <- function(tbl, date_col) {
   )
 }
 
+# The Oracle logbook views of mar's old wrappers adb_*() and afli_stofn(),
+# removed from mar in October 2026: mar reads the logbooks from the logbook
+# parquet now (mar::lb_*()). That dataset has other ids, no sex, other
+# condition codes and no afli.medafli, so the logbook tables here still read
+# the Oracle views directly while they are there.
+mar_afli_stofn <- function(mar) {
+  # NSE variables
+  vedags <- lengd <- breidd <- lengd_lok <- breidd_lok <- reitur <- NULL
+  smareitur <- lat <- lon <- NULL
+
+  mar::tbl_mar(mar, "afli.stofn") |>
+    dplyr::mutate(
+      ar = to_number(to_char(vedags, "YYYY")),
+      man = to_number(to_char(vedags, "MM")),
+      lengd = geoconvert1(-lengd * 100),
+      breidd = geoconvert1(breidd * 100),
+      lengd_lok = geoconvert1(-lengd_lok * 100),
+      breidd_lok = geoconvert1(breidd_lok * 100)
+    ) |>
+    # Fix missing square info
+    dplyr::mutate(
+      reitur = nvl(reitur, d2r(breidd, lengd)),
+      smareitur = nvl(
+        nvl(smareitur, d2sr(breidd, lengd) - d2r(breidd, lengd) * 10),
+        1
+      )
+    ) |>
+    dplyr::left_join(mar::les_reit(mar), by = c("reitur", "smareitur")) |>
+    dplyr::mutate(lengd = nvl(lengd, lon), breidd = nvl(breidd, lat)) |>
+    dplyr::mutate(toglengd = arcdist(breidd, lengd, breidd_lok, lengd_lok)) |>
+    dplyr::select(-c(lat, lon))
+}
+
 #' @return \subsection{pax_mar_landings_vessel}{Landings register by vessel
-#'   and month (Directorate of Fisheries, ``kvoti.lods_oslaegt``, and the
-#'   Fisheries Association's landings before 1994,
-#'   ``fiskifelagid.landed_catch_pre94``, via ``mar::lods_oslaegt()`` and
-#'   ``mar::fiskifelag_oslaegt()``), summed over landings. Columns
-#'   ``source`` (``"lods"`` or ``"fiskifelag"``; the two overlap in 1992 and
-#'   1993), ``year``, ``month``, ``species`` (``fteg``), ``vessel_id``
-#'   (``skip_nr``), ``gear_id`` (landings gear code, ``veidarfaeri``),
-#'   ``fishing_area`` (``veidisvaedi``, e.g. ``"I"`` for Icelandic waters),
-#'   ``period`` (quota period, mar's ``timabil``, e.g. ``"20242025"``; the
-#'   year for ``fiskifelag``), ``fishing_year`` (label as the old advice code,
-#'   e.g. ``"2024/2025"``, the calendar year before September 1991) and
-#'   ``catch`` (ungutted, kg)}
+#'   and month, summed over landings: the landing base of the mar parquet
+#'   datasets (``mar::ln_landings()``: the Directorate of Fisheries'
+#'   ``kvoti.lods_slaegt`` from September 1992, ``agf.aflagrunnur`` from
+#'   September 2007) and the Fisheries Association's landings 1982-1993
+#'   (``fiskifelagid.landed_catch_pre94``, ``mar::ln_agg()``), which
+#'   replaced mar's old ``lods_oslaegt()`` and ``fiskifelag_oslaegt()``.
+#'   Columns ``source`` (``"lods"`` or ``"fiskifelag"``; the two overlap in
+#'   1992 and 1993), ``year``, ``month``, ``species`` (``fteg``),
+#'   ``vessel_id`` (``skip_nr``), ``gear_id`` (landings gear code,
+#'   ``veidarfaeri``), ``fishing_area`` (``veidisvaedi``, e.g. ``"I"`` for
+#'   Icelandic waters; the AGF areas mapped to these, see
+#'   [agf_fishing_area]), ``period`` (quota period, mar's ``timabil``, e.g.
+#'   ``"20242025"``; the year for ``fiskifelag``), ``fishing_year`` (label as
+#'   the old advice code, e.g. ``"2024/2025"``, the calendar year before
+#'   September 1991) and ``catch`` (ungutted, kg). From September 2007 the
+#'   AGF landings, where ``lods_oslaegt()`` had the old register's}
 #' @rdname pax_mar_extra
 pax_mar_landings_vessel <- function(
   mar,
@@ -84,105 +121,65 @@ pax_mar_landings_vessel <- function(
   year_start = NULL,
   year_end = NULL
 ) {
-  if (!requireNamespace("mar", quietly = TRUE)) {
-    stop("mar package not available, cannot import from DB")
-  }
-
   # NSE variables
-  fteg <- ar <- man <- skip_nr <- veidarfaeri <- veidisvaedi <- NULL
-  timabil <- fishing_year <- magn_oslaegt <- source <- year <- NULL
+  source <- year <- month <- vessel_id <- gear_id <- fishing_area <- NULL
+  period <- fishing_year <- catch <- NULL
 
-  one <- function(tbl, source) {
-    tbl <- tbl |>
-      dplyr::filter(fteg %in% local(species)) |>
-      mar_fishing_year_label()
-    if (!is.null(year_start)) {
-      tbl <- dplyr::filter(tbl, ar >= local(year_start))
-    }
-    if (!is.null(year_end)) {
-      tbl <- dplyr::filter(tbl, ar <= local(year_end))
-    }
-    tbl |>
-      dplyr::group_by(
-        year = ar,
-        month = man,
-        species = fteg,
-        vessel_id = skip_nr,
-        gear_id = veidarfaeri,
-        fishing_area = veidisvaedi,
-        period = timabil,
-        fishing_year
-      ) |>
-      dplyr::summarise(
-        catch = sum(magn_oslaegt, na.rm = TRUE),
-        .groups = "drop"
-      ) |>
-      dplyr::collect() |>
-      dplyr::mutate(
-        source = local(source),
-        period = as.character(period),
-        fishing_year = as.character(fishing_year),
-        dplyr::across(
-          c("year", "month", "species", "vessel_id", "gear_id", "catch"),
-          as.numeric
-        ),
-        .before = 1
-      )
-  }
-
-  dplyr::bind_rows(
-    one(mar::lods_oslaegt(mar), "lods"),
-    one(mar::fiskifelag_oslaegt(mar), "fiskifelag")
+  mar_landings_register(
+    species,
+    year_start,
+    year_end,
+    sources = c("fiskifelag", "lods")
   ) |>
-    dplyr::relocate("source") |>
+    dplyr::group_by(
+      source,
+      year,
+      month,
+      species,
+      vessel_id,
+      gear_id,
+      fishing_area,
+      period,
+      fishing_year
+    ) |>
+    dplyr::summarise(catch = sum(catch, na.rm = TRUE), .groups = "drop") |>
     dplyr::arrange(source, year, month, species, vessel_id) |>
+    as.data.frame() |>
     decorate_mar()
 }
 
-#' @return \subsection{pax_mar_vessel}{The vessel register
-#'   (``vessel.vessel_v`` with ``usage_category`` and ``construction_year``
-#'   from ``vessel.vessel``), one row per vessel: ``vessel_id``
+#' @return \subsection{pax_mar_vessel}{The vessel register (AWS Postgres
+#'   since October 2026, ``mar::vessel()`` and the current-state tables
+#'   ``vessel_identification``, ``vessel_operational`` and
+#'   ``vessel_measurement``; before, Oracle ``vessel.vessel_v``), one row
+#'   per vessel: ``vessel_id``
 #'   (registration number, the ``vessel_id``/``boat_id`` of the other pax
 #'   tables), ``name``, ``status`` (e.g. ``"Erlent"`` for foreign vessels),
 #'   ``usage_category_no``, ``usage_category``, ``operational_category_no``,
 #'   ``region_no``, ``home_port_no``, ``power_kw``, ``length``,
 #'   ``brutto_grt``, ``brutto_weight_tons`` and ``construction_year``. Owner
-#'   names, addresses and identity numbers are left out}
+#'   names, addresses and identity numbers are left out. The ``mar``
+#'   argument is not used (kept for [pax_from_mar()])}
 #' @rdname pax_mar_extra
 pax_mar_vessel <- function(mar) {
-  if (!requireNamespace("mar", quietly = TRUE)) {
-    stop("mar package not available, cannot import from DB")
-  }
-
-  # NSE variables
-  registration_no <- name <- status <- usage_category_no <- NULL
-  operational_category_no <- region_no <- home_port_no <- power_kw <- NULL
-  length <- brutto_grt <- brutto_weight_tons <- vessel_id <- NULL
-  usage_category <- construction_year <- NULL
-
-  mar::les_skipaskra(mar) |>
-    dplyr::left_join(
-      mar::vessel(mar) |>
-        dplyr::select(vessel_id, usage_category, construction_year),
-      by = "vessel_id"
-    ) |>
+  mar_vessel_register() |>
     dplyr::select(
-      vessel_id = registration_no,
-      name,
-      status,
-      usage_category_no,
-      usage_category,
-      operational_category_no,
-      region_no,
-      home_port_no,
-      power_kw,
-      length,
-      brutto_grt,
-      brutto_weight_tons,
-      construction_year
+      "vessel_id",
+      "name",
+      "status",
+      "usage_category_no",
+      "usage_category",
+      "operational_category_no",
+      "region_no",
+      "home_port_no",
+      "power_kw",
+      "length",
+      "brutto_grt",
+      "brutto_weight_tons",
+      "construction_year"
     ) |>
-    dplyr::collect() |>
-    dplyr::arrange(vessel_id) |>
+    dplyr::arrange(dplyr::across("vessel_id")) |>
+    as.data.frame() |>
     decorate_mar()
 }
 
@@ -210,11 +207,11 @@ pax_mar_logbook_release <- function(mar, species, medafli_species = NULL) {
   vessel_no <- gear_no <- condition <- quantity <- year <- NULL
   visir <- skipnr <- ar <- veidarf <- tegund <- fjoldi <- NULL
 
-  adb <- mar::adb_catch(mar) |>
+  adb <- mar::tbl_mar(mar, "ADB.CATCH_V") |>
     dplyr::filter(species_no %in% local(species)) |>
     dplyr::mutate(year = year(registered)) |>
-    dplyr::left_join(mar::adb_station(mar), by = 'station_id') |>
-    dplyr::left_join(mar::adb_trip(mar), by = 'trip_id') |>
+    dplyr::left_join(mar::tbl_mar(mar, "ADB.STATION_V"), by = 'station_id') |>
+    dplyr::left_join(mar::tbl_mar(mar, "ADB.TRIP_V"), by = 'trip_id') |>
     dplyr::select(
       catch_id,
       station_id,
@@ -231,7 +228,7 @@ pax_mar_logbook_release <- function(mar, species, medafli_species = NULL) {
   out <- adb
   if (length(medafli_species) > 0) {
     medafli <- mar::tbl_mar(mar, "afli.medafli") |>
-      dplyr::left_join(mar::afli_stofn(mar), by = "visir") |>
+      dplyr::left_join(mar_afli_stofn(mar), by = "visir") |>
       dplyr::filter(tegund %in% local(medafli_species)) |>
       dplyr::select(
         station_id = visir,
@@ -275,6 +272,8 @@ pax_mar_logbook_release <- function(mar, species, medafli_species = NULL) {
 #'   date, e.g. ``"20242025"``), ``sampling_type``, ``species`` (``fteg``)
 #'   and ``catch`` (gutted, kg)}
 #' @rdname pax_mar_extra
+# NB: kvoti.lods_slaegt (Oracle) for the gutted weights, which the landings
+#     parquet of mar does not have
 pax_mar_research_landings <- function(
   mar,
   species,
@@ -332,6 +331,8 @@ pax_mar_research_landings <- function(
 #'   Columns ``catch`` (gutted, ``magn_slaegt``, kg) and ``catch_ungutted``
 #'   (``magn_oslaegt``, kg). Buyers and sellers are left out}
 #' @rdname pax_mar_extra
+# NB: agf.aflagrunnur (Oracle) for the gutted weights, which the landings
+#     parquet of mar does not have
 pax_mar_catch_disposition <- function(mar, species) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
@@ -541,7 +542,7 @@ pax_mar_logbook_old <- function(
   if (any(c("lat", "lon", "rectangle", "subrectangle") %in% columns)) {
     out <- dplyr::left_join(
       out,
-      mar::afli_stofn(mar) |>
+      mar_afli_stofn(mar) |>
         dplyr::select(
           visir,
           lat = breidd,
@@ -632,12 +633,12 @@ pax_mar_logbook_adb <- function(
   }
   # NSE variables
   trip_id <- station_id <- species_no <- fishing_start <- NULL
-  out <- mar::adb_trip(mar) |>
-    dplyr::left_join(mar::adb_station(mar), by = "trip_id") |>
-    dplyr::left_join(mar::adb_catch(mar), by = "station_id") |>
-    dplyr::left_join(mar::adb_trap(mar), by = "station_id")
+  out <- mar::tbl_mar(mar, "ADB.TRIP_V") |>
+    dplyr::left_join(mar::tbl_mar(mar, "ADB.STATION_V"), by = "trip_id") |>
+    dplyr::left_join(mar::tbl_mar(mar, "ADB.CATCH_V"), by = "station_id") |>
+    dplyr::left_join(mar::tbl_mar(mar, "ADB.TRAP_V"), by = "station_id")
   if (any(c("num_nets", "mesh_size") %in% columns)) {
-    out <- dplyr::left_join(out, mar::adb_line_net(mar), by = "station_id")
+    out <- dplyr::left_join(out, mar::tbl_mar(mar, "ADB.LINE_AND_NET_V"), by = "station_id")
   }
   out <- out |>
     dplyr::filter(species_no %in% local(species)) |>

@@ -196,3 +196,21 @@ standard pax tables (station, measurement, logbook, landings, sampling,
 aldist, ldist, lw_coeffs, ocean depth, strata, and strata_stations) into a
 new pax DuckDB database.
 }
+\details{
+Since October 2026 mar reads the landings, logbook and quota data from
+parquet datasets (DuckDB) and the vessel register from the MFRI AWS
+Postgres database, instead of the Oracle schemas \code{kvoti}, \code{agf} and
+\code{vessel}. The landings tables (\code{landings} and the optional
+\code{landings_vessel}, \code{landings_stock} and \code{landings_port}) and the
+\code{quotatransfer} table come from the parquet datasets (see
+\code{\link[=pax_mar_landings]{pax_mar_landings()}}), so the mar version must have them
+(github::mfriops/mar from October 2026, with the duckdb package), and the
+vessel register (the country of the landings, the \code{vessel} table) needs
+a connection to the AWS database (\code{mar::connect_aws()}: the \code{RPostgres}
+package and the credentials of \code{mar::aws_credentials()}). The parquet
+datasets are read from S3, which needs no login on the MFRI network or
+VPN; elsewhere \verb{aws sso login} (see the mar README). The logbook tables
+still read the Oracle logbook views directly, and the optional
+\code{research_landings} and \code{catch_disposition} tables the Oracle landings
+tables, for the gutted weights that the parquet does not have.
+}

@@ -205,3 +205,87 @@ NULL
 #' @docType data
 #' @keywords data
 NULL
+
+#' AGF fishing areas in the codes of the old landings register
+#'
+#' The landings register of the Directorate of Fisheries (AGF,
+#' ``agf.aflagrunnur``) has its own fishing area codes since September 2007
+#' (``"IS"``, ``"NE"``, ...), which the landing base of the mar parquet
+#' datasets keeps, where the old register (``kvoti.lods_oslaegt``) had
+#' ``veidisvaedi`` (``"I"``, ``"U"``, ...). pax maps them back with this table
+#' so that the ``fishing_area`` of the landings tables has one coding over all
+#' years.
+#'
+#' @format A data.frame with columns
+#'   \describe{
+#'     \item{agf_area}{AGF fishing area code}
+#'     \item{fishing_area}{The old register's code (``veidisvaedi``) of the
+#'       most landed weight of the landings found in both}
+#'     \item{share}{Share of that weight}
+#'   }
+#' @source ``agf.aflagrunnur_v`` and ``kvoti.lods_oslaegt`` in mar (Oracle),
+#'   the landings from September 2007 found in both (same vessel, day, port,
+#'   species and weight), extracted 12 November 2026 by
+#'   ``pax:::data_update_agf_codes()``
+#' @name agf_fishing_area
+#' @docType data
+#' @keywords data
+NULL
+
+#' AGF stocks and the stock codes of the old landings register
+#'
+#' The AGF stocks (``veidistofn``, e.g. 4101 Arnarfjordur shrimp), with
+#' their names and the stock code of the old landings register
+#' (``kfteg``, e.g. 51), which the landing base of the mar parquet datasets
+#' does not have after August 2007.
+#'
+#' @format A data.frame with columns
+#'   \describe{
+#'     \item{stock}{AGF stock code (``veidistofn``)}
+#'     \item{stock_name}{AGF stock name (``veidistofn_heiti``)}
+#'     \item{species}{Species code}
+#'     \item{stock_code}{The old register's stock code (``kfteg``) of the
+#'       most landed weight of the landings found in both, leaving out the
+#'       register's "no stock" code 0; ``NA`` where there is none}
+#'     \item{share}{Share of that weight}
+#'   }
+#' @source ``agf.aflagrunnur_v`` and ``kvoti.lods_oslaegt`` in mar (Oracle),
+#'   extracted 12 November 2026 by ``pax:::data_update_agf_codes()``
+#' @name agf_stock
+#' @docType data
+#' @keywords data
+NULL
+
+#' Gear codes of the mar landings parquet and the old landings gear codes
+#'
+#' The landings parquet datasets of mar (``mar::ln_agg()``,
+#' ``mar::ln_gear()``) have harmonised gear codes (``gear_no``, the AGF
+#' codes, e.g. 12 longline), with the original gear in ``gear_name`` before
+#' September 2007. pax maps them back to the old landings gear codes
+#' (``veidarfaeri``, e.g. 1 longline), the ``gear_id`` of the pax landings
+#' tables and the codes of [gear_mapping].
+#'
+#' @format A data.frame with columns
+#'   \describe{
+#'     \item{source}{``"vigtarskra"`` (1966-1981), ``"fiskifelag"``
+#'       (1982-1993), ``"lods"`` (September 1992 - August 2007) or ``"agf"``
+#'       (from September 2007)}
+#'     \item{gear_no}{Gear code of the parquet}
+#'     \item{gear_name}{Gear name of the parquet, ``NA`` for ``"agf"``}
+#'     \item{species}{For ``"agf"`` gears whose old code depends on the
+#'       species (e.g. the dredge 15 is the sea urchin dredge 40 for sea
+#'       urchin), the species, else ``NA``}
+#'     \item{gear_id}{Old landings gear code (``veidarfaeri``) of the most
+#'       landed weight of the landings found in both}
+#'     \item{share}{Share of that weight}
+#'   }
+#' @details Gears not in the table for their source are looked up by name
+#'   in the ``"lods"`` rows, else by code in the ``"agf"`` rows.
+#' @source The mar landings parquet against ``fiskifelagid.vigtarskra66_81``,
+#'   ``fiskifelagid.landed_catch_pre94``, ``kvoti.lods_slaegt`` and
+#'   ``kvoti.lods_oslaegt`` in mar (Oracle), extracted 12 November 2026 by
+#'   ``pax:::data_update_landings_gear()``
+#' @name landings_gear
+#' @docType data
+#' @keywords data
+NULL

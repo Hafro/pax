@@ -5,6 +5,23 @@
 #' aldist, ldist, lw_coeffs, ocean depth, strata, and strata_stations) into a
 #' new pax DuckDB database.
 #'
+#' Since October 2026 mar reads the landings, logbook and quota data from
+#' parquet datasets (DuckDB) and the vessel register from the MFRI AWS
+#' Postgres database, instead of the Oracle schemas ``kvoti``, ``agf`` and
+#' ``vessel``. The landings tables (``landings`` and the optional
+#' ``landings_vessel``, ``landings_stock`` and ``landings_port``) and the
+#' ``quotatransfer`` table come from the parquet datasets (see
+#' [pax_mar_landings()]), so the mar version must have them
+#' (github::mfriops/mar from October 2026, with the duckdb package), and the
+#' vessel register (the country of the landings, the ``vessel`` table) needs
+#' a connection to the AWS database (``mar::connect_aws()``: the ``RPostgres``
+#' package and the credentials of ``mar::aws_credentials()``). The parquet
+#' datasets are read from S3, which needs no login on the MFRI network or
+#' VPN; elsewhere ``aws sso login`` (see the mar README). The logbook tables
+#' still read the Oracle logbook views directly, and the optional
+#' ``research_landings`` and ``catch_disposition`` tables the Oracle landings
+#' tables, for the gutted weights that the parquet does not have.
+#'
 #' @param species Integer vector of species codes to import
 #' @param year_start Optional integer, earliest year to include
 #' @param year_end Optional integer, latest year to include

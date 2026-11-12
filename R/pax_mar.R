@@ -130,10 +130,21 @@ pax_mar_logbook <- function(
 
 #' @param ices_area_like Character vector of SQL LIKE patterns for filtering
 #'   ICES areas, e.g. ``"5a%"``
-#' @return \subsection{pax_mar_landings}{A dplyr query with columns
+#' @return \subsection{pax_mar_landings}{A data.frame with columns
 #'   ``year``, ``month``, ``species``, ``ices_area``, ``country``,
 #'   ``mfdb_gear_code``, ``gear_id`` (landings register gear code,
-#'   ``veidarfaeri``), ``boat_id``, and ``catch``}
+#'   ``veidarfaeri``), ``boat_id``, and ``catch`` (ungutted, kg, summed by
+#'   the other columns): the
+#'   landings register as mar's old ``landadur_afli()`` (Oracle, removed
+#'   from mar in October 2026), now from the mar parquet datasets (landings
+#'   1966-1992 from the aggregated landings ``mar::ln_agg()``, from 1993 the
+#'   landing base ``mar::ln_landings()``), with the vessel's country from the
+#'   vessel register (``mar::connect_aws()``), and the ICES official
+#'   catches (``biota.ices_landed_catch``) for the other years and
+#'   countries. Differences from ``landadur_afli()``: the 1966-1981 weights
+#'   of ``vigtarskra66_81`` are as in the parquet (without the conversion
+#'   factor ``reiknistudull``), and the AGF landings from September 2007
+#'   replace those of ``kvoti.lods_oslaegt``}
 #' @rdname pax_mar
 # Was: tidypax::landings_by_gear
 pax_mar_landings <- function(
@@ -143,56 +154,102 @@ pax_mar_landings <- function(
   year_start = NULL,
   year_end = NULL
 ) {
-  if (!requireNamespace("mar", quietly = TRUE)) {
-    stop("mar package not available, cannot import from DB")
-  }
+  mar_require_parquet()
 
   # NSE variables
-  tegund_nr <- NULL
-  ar <- NULL
-  man <- NULL
-  ices_svaedi <- NULL
-  land <- NULL
-  mfdb_gear_code <- NULL
-  veidarfaeri <- NULL
-  skip_nr <- NULL
-  magn_oslaegt <- NULL
-  year <- NULL
+  source <- year <- month <- skipaflokkur <- utgerdarflokkur <- NULL
+  erlent_skip <- land <- einkst <- ices_svaedi <- fishing_area <- NULL
+  operational_category_no <- operational_category <- region_acronym <- NULL
+  vessel_id <- gear_id <- catch <- mfdb_gear_code <- veidarfaeri <- NULL
+  gear <- country <- species_code <- landings <- area <- subarea <- NULL
+  tegund_nr <- fao_3alpha <- NULL
 
-  # Make an expression or'ing all parts of ices_area_like together
-  ices_area_c <- quote(1 == 0)
-  for (l in ices_area_like) {
-    ices_area_c <- substitute(
-      ices_area_c | str_like(ices_svaedi, l),
-      list(ices_area_c = ices_area_c, l = l)
-    )
-  }
-
-  out <- mar::landadur_afli(mar) |> # i.e. combined reported landings, including historical landings & foreign
+  # The register, as landadur_afli(): lods from 1993, fiskifelag before
+  register <- mar_landings_register(species, year_start, year_end) |>
     dplyr::filter(
-      ices_area_c,
-      tegund_nr %in% local(species)
+      source == "vigtarskra" |
+        (source == "fiskifelag" & year < 1993) |
+        (source == "lods" & year > 1992)
     ) |>
-    dplyr::select(
-      year = ar,
-      month = man,
-      species = tegund_nr,
-      ices_area = ices_svaedi,
-      country = land,
-      mfdb_gear_code = mfdb_gear_code,
-      # Landings register gear code (veidarfaeri), as station's gear_id
-      gear_id = veidarfaeri,
-      boat_id = skip_nr,
-      catch = magn_oslaegt
+    dplyr::left_join(
+      mar_vessel_register() |>
+        dplyr::select(
+          vessel_id,
+          skipaflokkur = operational_category_no,
+          einkst = region_acronym,
+          utgerdarflokkur = operational_category
+        ),
+      by = "vessel_id"
+    ) |>
+    dplyr::mutate(
+      erlent_skip = ifelse(utgerdarflokkur %in% 'Erlend skip', 1, 0),
+      land = ifelse(erlent_skip == 1, einkst, 'IS'),
+      ices_svaedi = mar_ices_area_of(fishing_area)
     )
 
-  if (!is.null(year_start)) {
-    out <- dplyr::filter(out, year >= local(year_start))
-  }
-  if (!is.null(year_end)) {
-    out <- dplyr::filter(out, year <= local(year_end))
-  }
-  return(decorate_mar(out))
+  ices <- mar_ices_landed_catch(mar, species, year_start, year_end)
+
+  gear_map <- mar::tbl_mar(mar, "biota.gear_mapping") |>
+    dplyr::collect() |>
+    dplyr::transmute(gear_id = as.numeric(veidarfaeri), mfdb_gear_code = gear)
+
+  # ices_area_like (SQL LIKE patterns) as regular expressions
+  like <- paste0(
+    "^",
+    gsub("_", ".", gsub("%", ".*", ices_area_like, fixed = TRUE), fixed = TRUE),
+    "$",
+    collapse = "|"
+  )
+
+  dplyr::bind_rows(register, ices) |>
+    dplyr::mutate(
+      country = dplyr::case_when(
+        erlent_skip == 0 ~ 'Iceland',
+        land == 'NO' ~ 'Norway',
+        land == 'FO' ~ 'Faroe Islands',
+        land == 'BE' ~ 'Belgium',
+        land %in% c('GR', 'GL') ~ 'Greenland',
+        land == 'DE' ~ 'Germany',
+        startsWith(land, 'UK') |
+          land %in% c('GB', 'Isle of Man', 'Channel Islands', 'Jersey') ~
+          'United Kingdom',
+        land == 'IS' ~ 'Iceland',
+        land == 'RU' ~ 'Russia',
+        land == 'DK' ~ 'Denmark',
+        land == 'LT' ~ 'Lithuania',
+        land == 'LV' ~ 'Latvia',
+        startsWith(land, 'Germany') ~ 'Germany',
+        land == 'PL' ~ 'Poland',
+        land == 'PT' ~ 'Portugal',
+        land == 'X' ~ 'Iceland',
+        land == 'DO' ~ 'Dominican Republic',
+        land == 'EE' ~ 'Estonia',
+        TRUE ~ land
+      )
+    ) |>
+    dplyr::left_join(gear_map, by = "gear_id") |>
+    # Landings from Greenland at Icelandic ports are left out (counted by
+    # Greenland), as in landadur_afli()
+    dplyr::filter(
+      !(dplyr::coalesce(skipaflokkur, 0) == -4 & !grepl('^5a', ices_svaedi))
+    ) |>
+    dplyr::filter(
+      grepl(like, ices_svaedi),
+      species %in% local(species)
+    ) |>
+    dplyr::group_by(
+      year,
+      month,
+      species,
+      ices_area = ices_svaedi,
+      country,
+      mfdb_gear_code,
+      gear_id,
+      boat_id = vessel_id
+    ) |>
+    dplyr::summarise(catch = sum(catch, na.rm = TRUE), .groups = "drop") |>
+    as.data.frame() |>
+    decorate_mar()
 }
 
 #' @return \subsection{pax_mar_ldist}{A dplyr query with columns
@@ -393,26 +450,104 @@ pax_mar_measurement <- function(
 #'   transfers, when they differ from the species codes (e.g. ``95`` for
 #'   demersal beaked redfish, species 61). Default ``species``
 #' @return \subsection{pax_mar_quotatransfer}{A data.frame of quota transfer
-#'   records for the requested species, arranged by species and period}
+#'   records for the requested species, arranged by species and period: the
+#'   quota status summed over vessels by quota species (``species``, the
+#'   quota code ``fteg``) and fishing year, in ungutted tonnes, as mar's old
+#'   ``kvoti_stada_summarised()`` (Oracle ``kvoti.kv_stada``, removed from mar
+#'   in October 2026), now from the quota parquet dataset
+#'   (``mar::q_quota_status()``, with the ungutted factors of
+#'   ``mar::q_coefficients()``). Columns ``varanlegt`` (permanent quota),
+#'   ``jofnsj`` (equalisation fund), ``m_ara`` (transfer between years),
+#'   ``kvoti``, ``afli``, ``stada``, ``tilf``, ``eftir``, ``upptaka``,
+#'   ``n_ar``, ``onotad`` and ``m_skipa`` (transfer between vessels)}
 #' @rdname pax_mar
 # Was: tidypax::quota_transfer_table & tidypax::quota_transfer_plot (common section at start)
 pax_mar_quotatransfer <- function(mar, species, quota_species = species) {
-  if (!requireNamespace("mar", quietly = TRUE)) {
-    stop("mar package not available, cannot import from DB")
-  }
+  mar_require_parquet()
 
   # NSE variables
-  fteg <- NULL
-  synis_id <- NULL
-  kastad_breidd <- NULL
-  timabil <- NULL
-  fishing_year <- NULL
+  species_no <- period <- to_ungutted <- fteg <- timabil <- i_oslaegt <- NULL
+  varanlegt <- jofnsj <- permanent <- equalization_fund <- NULL
+  transfer_between_years <- quota <- catch <- status <- transferred <- NULL
+  remaining <- seizure <- next_year <- unused <- NULL
+  transfer_between_vessels <- species <- fishing_year <- NULL
 
   # NB: The quota code (fteg) is not always the species code, e.g. 95 for
   #     demersal beaked redfish (species 61)
-  mar::kvoti_stada_summarised(mar) |>
-    dplyr::filter(fteg %in% local(quota_species)) |>
-    dplyr::collect(n = Inf) |>
+  d <- mar_with_parquet(mar::connect_quota, function(con) {
+    list(
+      stada = mar::q_quota_status(con) |>
+        dplyr::filter(species_no %in% local(quota_species)) |>
+        dplyr::collect(),
+      studlar = mar::q_coefficients(con) |>
+        dplyr::filter(species_no < 100) |>
+        dplyr::select(fteg = species_no, timabil = period, i_oslaegt = to_ungutted) |>
+        dplyr::collect()
+    )
+  })
+  # Ungutted factors: the ones of 2019/2020 from 2020/2021 to 2023/2024
+  # (the Directorate of Fisheries set them to 1 then), as
+  # kvoti_stada_summarised()
+  fixed <- c("2021", "2122", "2223", "2324")
+  studlar <- dplyr::bind_rows(
+    dplyr::filter(d$studlar, !timabil %in% fixed),
+    d$studlar |>
+      dplyr::filter(timabil %in% fixed) |>
+      dplyr::select(fteg, timabil) |>
+      dplyr::left_join(
+        d$studlar |>
+          dplyr::filter(timabil == "1920") |>
+          dplyr::select(fteg, i_oslaegt),
+        by = "fteg"
+      )
+  )
+  cols <- c("varanlegt", "jofnsj", "m_ara", "kvoti", "afli", "stada", "tilf",
+    "eftir", "upptaka", "n_ar", "onotad", "m_skipa")
+  # Tonnes as the old SQL: NULL where all are NULL, rounded half away from 0
+  ton <- function(x) {
+    if (all(is.na(x))) {
+      return(NA_real_)
+    }
+    v <- sum(x, na.rm = TRUE) / 1000
+    sign(v) * floor(abs(v) + 0.5)
+  }
+  d <- d$stada |>
+    dplyr::transmute(
+      fteg = species_no,
+      timabil = as.character(period),
+      varanlegt = permanent,
+      jofnsj = equalization_fund,
+      m_ara = transfer_between_years,
+      kvoti = quota,
+      afli = catch,
+      stada = status,
+      tilf = transferred,
+      eftir = remaining,
+      upptaka = seizure,
+      n_ar = next_year,
+      onotad = unused,
+      m_skipa = transfer_between_vessels
+    ) |>
+    dplyr::left_join(studlar, by = c("fteg", "timabil"))
+  d[cols] <- d[cols] * d$i_oslaegt
+  d |>
+    dplyr::group_by(fteg, timabil) |>
+    dplyr::summarise(dplyr::across(dplyr::all_of(cols), ton), .groups = "drop") |>
+    # Corrections of kvoti_stada_summarised() for some species and years
+    dplyr::mutate(
+      varanlegt = ifelse(
+        fteg %in% c(1, 2, 3, 9, 5, 22) & timabil == "1314",
+        varanlegt + jofnsj,
+        varanlegt
+      ),
+      varanlegt = ifelse(
+        fteg %in% c(1, 2, 3, 9) &
+          timabil %in% c(9394:9900, "0001", "0102", "0203", "0304", "0405",
+            "0506", "0607", "0708", "0809", "0910", 1011:1112),
+        varanlegt + jofnsj,
+        varanlegt
+      )
+    ) |>
     dplyr::mutate(
       timabil = ifelse(
         stringr::str_sub(timabil, 1, 1) %in% "9",
@@ -426,14 +561,15 @@ pax_mar_quotatransfer <- function(mar, species, quota_species = species) {
           "/",
           stringr::str_sub(timabil, 3)
         )
-      )
+      ),
+      dplyr::across(-"timabil", as.numeric)
     ) |>
     dplyr::rename(
       species = fteg,
       fishing_year = timabil
     ) |>
     dplyr::arrange(species, fishing_year) |>
-    dplyr::ungroup() |>
+    as.data.frame() |>
     decorate_mar()
 }
 
