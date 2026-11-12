@@ -552,6 +552,10 @@ pax_mar_sampling <- function(
 #'   for all. With ``skip_trips = NULL`` and ``only_trips = c("MAG%",
 #'   "MO%")``, the stations of the stomach-sampling trips, see the
 #'   ``extra_tables`` of [pax_from_mar()]
+#' @param columns Extra station columns to add, by their pax names: any of
+#'   the names of [pax_station_columns()] (e.g. ``"survey_area"`` (biota
+#'   ``skiki``), ``"survey_subarea"`` (``fjardarreitur``), ``"sample_name"``
+#'   (``syni_heiti``), as the inshore shrimp survey needs). None by default
 #' @rdname pax_mar
 # Was: tidypax::si_stations
 pax_mar_station <- function(
@@ -562,7 +566,8 @@ pax_mar_station <- function(
   year_end = NULL,
   skip_trips = c('MAG%', 'MO%'),
   gridcell_from_position = FALSE,
-  only_trips = NULL
+  only_trips = NULL,
+  columns = character(0)
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
@@ -705,7 +710,8 @@ pax_mar_station <- function(
       tow_start = togbyrjun,
       tow_end = togendir,
       fixed,
-      vessel_id = skip_nr
+      vessel_id = skip_nr,
+      !!!rlang::syms(station_columns_map(columns))
     )
 
   if (!is.null(year_start)) {

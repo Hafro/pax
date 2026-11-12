@@ -224,3 +224,33 @@ pax_def_strata <- function(strata_name) {
     name = strata_name
   )
 }
+
+#' Statistical subrectangle of a position
+#'
+#' The statistical rectangle and subrectangle (``reitur * 10 + smareitur``)
+#' of positions, as ``geo::d2sr()`` (the same small offsets, so positions on
+#' a border fall the same way). Rectangles are 1 degree of longitude by 0.5
+#' degree of latitude; subrectangles are the quarters (1 NW, 2 NE, 3 SW,
+#' 4 SE). For positions west of Greenwich in the northern hemisphere.
+#'
+#' @param lat,lon Latitude and longitude (decimal degrees, west negative)
+#' @return Integer-valued numeric vector of subrectangles, e.g. 5221
+#' @export
+pax_d2sr <- function(lat, lon) {
+  lat <- lat + 1e-06
+  lon <- -(lon - 1e-06)
+  r <- (floor(lat) - 60) * 100 + floor(lon)
+  r <- ifelse(lat - floor(lat) > 0.5, r + 50, r)
+  # Centre of the rectangle (geo::r2d())
+  rlat <- floor(r / 100)
+  rlon <- (r - rlat * 100) %% 50
+  halfb <- (r - 100 * rlat - rlon) / 100
+  clon <- -(rlon + 0.5)
+  clat <- rlat + 60 + halfb + 0.25
+  lon <- -lon
+  dlat <- -(lat - clat)
+  dlon <- -(lon - clon)
+  dl <- sign(dlat + 1e-07) + 2 * sign(dlon + 1e-07) + 4
+  sr <- c(2, 0, 4, 0, 1, 0, 3)[dl]
+  floor(r * 10 + sr)
+}

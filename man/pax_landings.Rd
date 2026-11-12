@@ -11,7 +11,7 @@
 \usage{
 pax_landings_by_gear(
   tbl,
-  gear_group = list(Other = "Var", Other = pax_add_other(), BMT = c("BMT", "NPT", "SHT",
+  gear_group = list(Other = "VAR", Other = pax_add_other(), BMT = c("BMT", "NPT", "SHT",
     "PGT"), LLN = "LLN", DSE = c("PSE", "DSE"))
 )
 
@@ -48,7 +48,7 @@ catch), and \code{catch} (in kt). Input should be from
 Adds a \code{fishing_year} column to the incoming landings table}
 
 \subsection{pax_landings_fishingyear_summary}{A dplyr query with
-columns \code{fishing_year} and \code{catch_kt}, ordered by fishing year}
+columns \code{fishing_year} and \code{catch_t}, ordered by fishing year}
 }
 \description{
 Functions to aggregate, plot and tabulate commercial landings data.

@@ -19,10 +19,12 @@ ok_group("pax_from_mar_extra_tables", {
     ut_cmp_equal(
       sort(pax_from_mar_extra_tables()),
       sort(c(
-        "landings_vessel", "vessel", "logbook_release", "research_landings",
-        "catch_disposition", "landings_old", "station_skipped", "sample",
-        "logbook_old", "station_env", "temperature_logger", "stomach",
-        "stomach_prey", "stomach_prey_length", "survey_catch", "taxonomy"
+        "landings_vessel", "landings_ices", "vessel", "logbook_release",
+        "research_landings", "catch_disposition", "landings_old",
+        "station_skipped", "sample", "logbook_old", "station_env",
+        "temperature_logger", "stomach", "stomach_prey", "stomach_prey_length",
+        "survey_catch", "taxonomy", "ldist_maturity", "sample_weight",
+        "landings_stock", "video_annotation", "landings_port", "logbook_adb"
       ))
     ),
     "All optional tables listed"

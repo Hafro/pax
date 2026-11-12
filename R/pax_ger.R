@@ -277,7 +277,7 @@ pax_ger_survey <- function(
   rownames(ldist) <- NULL
 
   cite <- paste0(
-    "German groundfish survey off Greenland (Thünen-Institut, Walther ",
+    "German groundfish survey off Greenland (Th\u00fcnen-Institut, Walther ",
     "Herwig), read from ",
     toString(path)
   )

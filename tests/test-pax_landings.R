@@ -26,7 +26,7 @@ ok_group("pax_landings_fishingyear_summary", {
   )
   ok(
     ut_cmp_equal(
-      out[out$fishing_year == "1999/2000", "catch_kt"],
+      out[out$fishing_year == "1999/2000", "catch_t"],
       round(
         sum(c(
           tbl |> dplyr::filter(year == 2000, month < 9) |> dplyr::pull(catch),
@@ -39,7 +39,7 @@ ok_group("pax_landings_fishingyear_summary", {
   )
   ok(
     ut_cmp_equal(
-      out[out$fishing_year == "2000/2001", "catch_kt"],
+      out[out$fishing_year == "2000/2001", "catch_t"],
       round(
         sum(c(
           tbl |> dplyr::filter(year == 2000, month >= 9) |> dplyr::pull(catch),
@@ -53,7 +53,7 @@ ok_group("pax_landings_fishingyear_summary", {
   )
   ok(
     ut_cmp_equal(
-      out[out$fishing_year == "2001/2002", "catch_kt"],
+      out[out$fishing_year == "2001/2002", "catch_t"],
       round(
         sum(c(
           tbl |> dplyr::filter(year == 2001, month >= 9) |> dplyr::pull(catch),
@@ -82,7 +82,7 @@ ok_group("pax_landings_fishingyear_summary:nomonth", {
   )
   ok(
     ut_cmp_equal(
-      out[out$fishing_year == "1999/2000", "catch_kt"],
+      out[out$fishing_year == "1999/2000", "catch_t"],
       round(
         sum(c(
           tbl |> dplyr::filter(year == 2000) |> dplyr::pull(catch),
@@ -95,7 +95,7 @@ ok_group("pax_landings_fishingyear_summary:nomonth", {
   )
   ok(
     ut_cmp_equal(
-      out[out$fishing_year == "2000/2001", "catch_kt"],
+      out[out$fishing_year == "2000/2001", "catch_t"],
       round(
         sum(c(
           tbl |> dplyr::filter(year == 2001) |> dplyr::pull(catch),
@@ -108,7 +108,7 @@ ok_group("pax_landings_fishingyear_summary:nomonth", {
   )
   ok(
     ut_cmp_equal(
-      out[out$fishing_year == "2001/2002", "catch_kt"],
+      out[out$fishing_year == "2001/2002", "catch_t"],
       round(
         sum(c(
           tbl |> dplyr::filter(year == 2002) |> dplyr::pull(catch),

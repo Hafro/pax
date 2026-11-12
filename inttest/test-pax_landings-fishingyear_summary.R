@@ -61,7 +61,7 @@ tidypax_lnd_by_fishing_year <-
   dplyr::filter(fteg == local(import_defs$species), veidisvaedi == 'I') |>
   dplyr::left_join(mar::vessel(mar), by = c('skip_nr' = 'registration_no')) |>
   dplyr::group_by(fishing_year) |>
-  dplyr::summarise(catch_kt = round(sum(magn_oslaegt) / 1000))
+  dplyr::summarise(catch_t = round(sum(magn_oslaegt) / 1000))
 
 ok_group("pax::pax_landings_fishingyear_summary:ignore-empty-month", {
   # Newpax uses dump of landadur_afli() for species / ICES area
@@ -76,7 +76,7 @@ ok_group("pax::pax_landings_fishingyear_summary:ignore-empty-month", {
       by = "fishing_year",
       suffix = c(".newpax", ".tidypax")
     ) |>
-    dplyr::mutate(diff = catch_kt.newpax - catch_kt.tidypax) |>
+    dplyr::mutate(diff = catch_t.newpax - catch_t.tidypax) |>
     dplyr::arrange(fishing_year)
   ok(
     all(
@@ -102,7 +102,7 @@ ok_group("pax::pax_landings_fishingyear_summary:with-empty-month", {
       by = "fishing_year",
       suffix = c(".newpax", ".tidypax")
     ) |>
-    dplyr::mutate(diff = catch_kt.newpax - catch_kt.tidypax) |>
+    dplyr::mutate(diff = catch_t.newpax - catch_t.tidypax) |>
     dplyr::arrange(fishing_year)
   ok(
     all(

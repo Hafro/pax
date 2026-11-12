@@ -2,146 +2,103 @@
 % Please edit documentation in R/pax_mar_survey.R
 \name{pax_mar_survey}
 \alias{pax_mar_survey}
-\alias{pax_mar_station_env}
-\alias{pax_mar_temperature_logger}
-\alias{pax_mar_stomach}
-\alias{pax_mar_stomach_prey}
-\alias{pax_mar_stomach_prey_length}
-\alias{pax_mar_survey_catch}
-\alias{pax_mar_taxonomy}
-\alias{pax_mar_fingerprint}
-\title{Import survey tables from the MAR database}
+\alias{pax_station_columns}
+\alias{pax_mar_ldist_maturity}
+\alias{pax_mar_sample_weight}
+\alias{pax_mar_landings_stock}
+\alias{pax_mar_landings_port}
+\title{Survey station columns and invertebrate survey tables from MAR}
 \usage{
-pax_mar_station_env(
+pax_station_columns()
+
+pax_mar_ldist_maturity(
   mar,
+  species,
   sampling_type = NULL,
   year_start = NULL,
-  year_end = NULL
+  year_end = NULL,
+  skip_trips = NULL,
+  only_trips = NULL
 )
 
-pax_mar_temperature_logger(
+pax_mar_sample_weight(
   mar,
+  species,
   sampling_type = NULL,
   year_start = NULL,
-  year_end = NULL
+  year_end = NULL,
+  skip_trips = NULL,
+  only_trips = NULL
 )
 
-pax_mar_stomach(
-  mar,
-  species = NULL,
-  sampling_type = NULL,
-  year_start = NULL,
-  year_end = NULL
-)
+pax_mar_landings_stock(mar, species, year_start = NULL, year_end = NULL)
 
-pax_mar_stomach_prey(
-  mar,
-  species = NULL,
-  sampling_type = NULL,
-  year_start = NULL,
-  year_end = NULL
-)
-
-pax_mar_stomach_prey_length(
-  mar,
-  species = NULL,
-  sampling_type = NULL,
-  year_start = NULL,
-  year_end = NULL
-)
-
-pax_mar_survey_catch(
-  mar,
-  sampling_type = NULL,
-  year_start = NULL,
-  year_end = NULL
-)
-
-pax_mar_taxonomy(mar)
-
-pax_mar_fingerprint(
-  mar = NULL,
-  sampling_type = NULL,
-  year_start = NULL,
-  year_end = NULL
-)
+pax_mar_landings_port(mar, species, year_start = NULL, year_end = NULL)
 }
 \arguments{
 \item{mar}{A MAR database connection, as returned by \code{mar::connect_mar()}}
 
-\item{sampling_type}{Integer vector of sampling type codes, \code{NULL} for
+\item{species}{Integer vector of species codes}
+
+\item{sampling_type}{Sampling types of the samples to import, \code{NULL} for
 all}
 
-\item{year_start}{Optional integer, earliest year to include}
+\item{year_start, year_end}{Optional years of the samples to import}
 
-\item{year_end}{Optional integer, latest year to include}
-
-\item{species}{Integer vector of species codes to filter by, \code{NULL} for
-all}
+\item{skip_trips, only_trips}{SQL LIKE patterns of trips to leave out or to
+keep, as \code{\link[=pax_mar_station]{pax_mar_station()}}}
 }
 \value{
-\subsection{pax_mar_station_env}{One row per sample, with the
-station records the \code{station} table leaves out: \code{sample_id},
-\code{date}, \code{trip_station} (station number within the trip),
-\code{rectangle} and \code{subrectangle} (\code{reitur}, \code{smareitur}),
-\code{end_depth} (bottom depth at the end of the tow, m), \code{bottom_temp}
-and \code{surface_temp} (deg C, recorded at the station). All trips, so
-it also covers the stations of the stomach-sampling trips}
+\subsection{pax_station_columns}{A named character vector: the
+optional columns of the \code{station} table (names) and the biota columns
+they come from (\code{channel.stod_v} and \code{channel.syni_v})}
 
-\subsection{pax_mar_temperature_logger}{The readings of the
-temperature loggers on the trawl (\code{siritar.hitastig}), one row per
-reading: \code{sample_id}, \code{time}, \code{time_offset_min} (logger clock
-correction, minutes), \code{temperature} (deg C) and \code{depth} (m)}
+\subsection{pax_mar_ldist_maturity}{Length counts as measured
+(\code{biota.lengd_v}, not raised to the counted or the catch weight), by
+\code{sample_id}, \code{species}, \code{length} (as recorded, e.g. cm with 0.1 mm
+resolution for shrimp carapace length), \code{sex}, \code{maturity_stage}
+(\code{kynthroski_nr}) and \code{count}, for the samples of the given
+sampling types and years. Raise with \code{\link[=pax_ldist_scale_catch_weight]{pax_ldist_scale_catch_weight()}}
+or \code{\link[=pax_ldist_scale_counted]{pax_ldist_scale_counted()}}}
 
-\subsection{pax_mar_stomach}{The predators of the stomach
-samples (\code{ranfiskur}), one row per predator record: \code{stomach_id},
-\code{sample_id}, \code{species}, \code{measurement_type}, \code{length},
-\code{length_class} (length group code), \code{sex}, \code{maturity_stage},
-\code{weight}, \code{age}, \code{n_stomach} (stomachs in the record),
-\code{n_empty}, \code{n_regurgitated}, \code{n_undigested} and \code{n_everted}.
-All trips, the stomach-sampling trips included}
+\subsection{pax_mar_sample_weight}{The sample summary of
+\code{biota.skalar_v} by \code{sample_id} and \code{species}: \code{n_measured}
+(\code{maeldir}), \code{n_counted} (\code{taldir}), \code{n_aged} (\code{kvarnadir}),
+\code{sample_weight} (\code{vigt_synis}, weight of the measured sample, kg)
+and \code{catch_weight} (\code{vigt_afla}, weight of the catch of the species,
+kg), for the samples of the given sampling types and years. In the
+shrimp surveys (sampling types 31 and 37) \code{catch_weight} is positive
+in every sample with a \code{sample_weight} (checked October 2026); the
+zero catch weights of the groundfish surveys since 2010 don't occur
+there}
 
-\subsection{pax_mar_stomach_prey}{The prey weights of the
-stomachs (\code{brad_thyngd}), one row per prey group and stomach record:
-\code{prey_id}, \code{stomach_id}, \code{prey_species}, \code{prey_group} (food
-group code, \code{faeduhopur}), \code{prey_maturity_stage},
-\code{prey_maturity}, \code{measurement_type}, \code{prey_count} and
-\code{prey_weight} (g). The weights are as recorded: a weight missing or 0
-with a count is left to the user}
+\subsection{pax_mar_landings_stock}{Landings by management stock
+or stock area code, aggregated (no vessel, port, seller or buyer):
+\code{source} (\code{"lods"} and \code{"fiskifelag"}: the landings register,
+\code{mar::lods_oslaegt()} and \code{mar::fiskifelag_oslaegt()}, by the stock
+code \code{kfteg}, e.g. 51 Arnarfjordur and 53 Isafjardardjup shrimp;
+\code{"agf"}: \code{agf.aflagrunnur_v} by \code{veidistofn}), \code{year},
+\code{month}, \code{species}, \code{stock_code} (\code{kfteg}, or \code{veidistofn}
+for \code{"agf"}), \code{stock_name} (\code{veidistofn_heiti}, \code{NA} for the
+register), \code{gear_id} (landings gear code), \code{fishing_area}
+(\code{veidisvaedi}), \code{period} (quota period, e.g. \code{"20242025"}, NA
+for \code{"agf"}), \code{fishing_year} (as \code{\link[=pax_mar_landings_vessel]{pax_mar_landings_vessel()}}) and
+\code{catch} (ungutted, kg)}
 
-\subsection{pax_mar_stomach_prey_length}{The prey length
-measurements of the stomachs (\code{brad_lengd}): \code{prey_id},
-\code{stomach_id}, \code{prey_species}, \code{prey_group},
-\code{prey_maturity_stage}, \code{prey_maturity}, \code{measurement_type},
-\code{prey_count}, \code{prey_length}, \code{prey_length_class}, \code{prey_sex}
-and \code{prey_sex_maturity}}
-
-\subsection{pax_mar_survey_catch}{The catch of every species in
-the samples of the sampling types: \code{sample_id}, \code{species} and
-\code{count} (measured fish raised by the counted ones, as the \code{ldist}
-table, summed over lengths and sexes). For e.g. the species caught at
-each survey station; \code{ldist} holds only the species of
-\code{\link[=pax_from_mar]{pax_from_mar()}}}
-
-\subsection{pax_mar_taxonomy}{The species register
-(\code{les_tegund}), one row per species code: \code{species}, \code{name}
-(Icelandic), \code{name_latin}, \code{name_en}, \code{rank}, \code{prey_group}
-(food group code of stomach prey), \code{worms_id}, \code{fao_3alpha},
-\code{genus}, \code{family}, \code{order}, \code{class}, \code{phylum} and
-\code{kingdom}}
-
-\subsection{pax_mar_fingerprint}{A small table that changes when
-the survey data in mar change: by sampling type and year, the number of
-stations, the largest sample id, and the number of measured, aged and
-maturity-staged fish. Cheap to compute, so a pipeline can rebuild its
-pax database when (and only when) it changes, e.g. as an upstream
-target of \code{\link[=pax_from_mar]{pax_from_mar()}} that always runs. Opens its own connection
-when \code{mar} is \code{NULL}}
+\subsection{pax_mar_landings_port}{Landings by port of landing,
+aggregated (no vessel, seller or buyer): \code{source} (\code{"register"}:
+\code{mar::landadur_afli()}, by \code{hofn}; \code{"agf"}:
+\code{agf.aflagrunnur_v}, by \code{hafnarnumer}), \code{year}, \code{month},
+\code{species}, \code{port} (port number), \code{ices_area} (register only),
+\code{stock_code} and \code{stock_name} (\code{veidistofn},
+\code{veidistofn_heiti}; agf only), \code{fishing_year} (agf: September to
+August, e.g. \code{"2024/2025"}) and \code{catch} (ungutted, kg). For stocks
+whose areas are defined by the ports of landing (sea urchin)}
 }
 \description{
-Optional tables of \code{\link[=pax_from_mar]{pax_from_mar()}} (argument \code{extra_tables}) for the
-survey products (the public survey site, stofnmaelingar): station
-environment, temperature loggers, stomach contents, the catch of all
-species and the species taxonomy. Like the \link{pax_mar} functions, they
-return tables decorated for \code{\link[=pax_import]{pax_import()}}.
+Optional columns of the \code{station} table and optional tables of
+\code{\link[=pax_from_mar]{pax_from_mar()}} for the invertebrate surveys (inshore and offshore
+shrimp, sampling types 31 and 37, and similar): fjord sub-areas, the
+sample name, the length counts by maturity stage, the sample and catch
+weights, and landings by stock.
 }

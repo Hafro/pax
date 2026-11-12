@@ -1,389 +1,425 @@
-#' Import survey tables from the MAR database
+#' Survey station columns and invertebrate survey tables from MAR
 #'
-#' Optional tables of [pax_from_mar()] (argument ``extra_tables``) for the
-#' survey products (the public survey site, stofnmaelingar): station
-#' environment, temperature loggers, stomach contents, the catch of all
-#' species and the species taxonomy. Like the [pax_mar] functions, they
-#' return tables decorated for [pax_import()].
+#' Optional columns of the ``station`` table and optional tables of
+#' [pax_from_mar()] for the invertebrate surveys (inshore and offshore
+#' shrimp, sampling types 31 and 37, and similar): fjord sub-areas, the
+#' sample name, the length counts by maturity stage, the sample and catch
+#' weights, and landings by stock.
 #'
 #' @param mar A MAR database connection, as returned by ``mar::connect_mar()``
-#' @param sampling_type Integer vector of sampling type codes, ``NULL`` for
+#' @param species Integer vector of species codes
+#' @param sampling_type Sampling types of the samples to import, ``NULL`` for
 #'   all
-#' @param year_start Optional integer, earliest year to include
-#' @param year_end Optional integer, latest year to include
+#' @param year_start,year_end Optional years of the samples to import
+#' @param skip_trips,only_trips SQL LIKE patterns of trips to leave out or to
+#'   keep, as [pax_mar_station()]
 #' @name pax_mar_survey
 NULL
 
-# biota stations and samples of the sampling types and years, all trips
-mar_survey_samples <- function(mar, sampling_type, year_start, year_end) {
+#' @return \subsection{pax_station_columns}{A named character vector: the
+#'   optional columns of the ``station`` table (names) and the biota columns
+#'   they come from (``channel.stod_v`` and ``channel.syni_v``)}
+#' @rdname pax_mar_survey
+pax_station_columns <- function() {
+  c(
+    # Survey area code (e.g. 52 Arnarfjordur, 53 Isafjardardjup)
+    survey_area = "skiki",
+    # Sub-area of the fjord (or survey area), the strata of the inshore
+    # shrimp surveys
+    survey_subarea = "fjardarreitur",
+    # Name of the sample, e.g. "Varpa" (trawl) or "Skjoda" (bag) in the
+    # shrimp survey
+    sample_name = "syni_heiti",
+    # Station number of the trip
+    station_number = "stod_nr",
+    # Statistical rectangle, the strata of the offshore shrimp survey
+    rectangle = "reitur",
+    bottom_temp = "botnhiti",
+    surface_temp = "yfirbordshiti",
+    bottom_depth_end = "botndypi_hift",
+    # Date of the station (dags), e.g. stations without a tow start time
+    date = "dags"
+  )
+}
+
+# The extra columns of the station table, as a named vector for
+# dplyr::select() (pax name = biota name)
+station_columns_map <- function(columns) {
+  map <- pax_station_columns()
+  unknown <- setdiff(columns, names(map))
+  if (length(unknown) > 0) {
+    stop(
+      "Unknown station columns: ",
+      paste(unknown, collapse = ", "),
+      " (see pax_station_columns())"
+    )
+  }
+  map[columns]
+}
+
+# Sample ids of the stations of the given sampling types, years and trips
+mar_survey_samples <- function(
+  mar,
+  sampling_type = NULL,
+  year_start = NULL,
+  year_end = NULL,
+  skip_trips = NULL,
+  only_trips = NULL
+) {
   # NSE variables
-  synaflokkur_nr <- ar <- NULL
+  leidangur <- trip <- synis_id <- synaflokkur_nr <- ar <- year <- NULL
 
   out <- mar::les_stod(mar) |>
-    dplyr::inner_join(mar::les_syni(mar), by = "stod_id")
+    dplyr::inner_join(mar::les_syni(mar), by = "stod_id") |>
+    dplyr::select(
+      sample_id = synis_id,
+      trip = leidangur,
+      sampling_type = synaflokkur_nr,
+      year = ar
+    ) |>
+    mar_skip_trips(skip_trips)
+  if (length(only_trips) > 0) {
+    out <- mar_only_trips(out, only_trips)
+  }
   if (!is.null(sampling_type)) {
-    out <- dplyr::filter(out, synaflokkur_nr %in% local(sampling_type))
+    out <- dplyr::filter(out, sampling_type %in% local(sampling_type))
   }
   if (!is.null(year_start)) {
-    out <- dplyr::filter(out, ar >= local(year_start))
+    out <- dplyr::filter(out, year >= local(year_start))
   }
   if (!is.null(year_end)) {
-    out <- dplyr::filter(out, ar <= local(year_end))
+    out <- dplyr::filter(out, year <= local(year_end))
   }
-  out
+  dplyr::select(out, "sample_id")
 }
 
-#' @return \subsection{pax_mar_station_env}{One row per sample, with the
-#'   station records the ``station`` table leaves out: ``sample_id``,
-#'   ``date``, ``trip_station`` (station number within the trip),
-#'   ``rectangle`` and ``subrectangle`` (``reitur``, ``smareitur``),
-#'   ``end_depth`` (bottom depth at the end of the tow, m), ``bottom_temp``
-#'   and ``surface_temp`` (deg C, recorded at the station). All trips, so
-#'   it also covers the stations of the stomach-sampling trips}
+#' @return \subsection{pax_mar_ldist_maturity}{Length counts as measured
+#'   (``biota.lengd_v``, not raised to the counted or the catch weight), by
+#'   ``sample_id``, ``species``, ``length`` (as recorded, e.g. cm with 0.1 mm
+#'   resolution for shrimp carapace length), ``sex``, ``maturity_stage``
+#'   (``kynthroski_nr``) and ``count``, for the samples of the given
+#'   sampling types and years. Raise with [pax_ldist_scale_catch_weight()]
+#'   or [pax_ldist_scale_counted()]}
 #' @rdname pax_mar_survey
-pax_mar_station_env <- function(
+pax_mar_ldist_maturity <- function(
   mar,
+  species,
   sampling_type = NULL,
   year_start = NULL,
-  year_end = NULL
+  year_end = NULL,
+  skip_trips = NULL,
+  only_trips = NULL
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
-
   # NSE variables
-  synis_id <- dags <- stod_nr <- botndypi_hift <- botnhiti <- NULL
-  yfirbordshiti <- reitur <- smareitur <- NULL
-
-  mar_survey_samples(mar, sampling_type, year_start, year_end) |>
-    dplyr::select(
-      sample_id = synis_id,
-      date = dags,
-      trip_station = stod_nr,
-      rectangle = reitur,
-      subrectangle = smareitur,
-      end_depth = botndypi_hift,
-      bottom_temp = botnhiti,
-      surface_temp = yfirbordshiti
-    ) |>
-    decorate_mar()
-}
-
-#' @return \subsection{pax_mar_temperature_logger}{The readings of the
-#'   temperature loggers on the trawl (``siritar.hitastig``), one row per
-#'   reading: ``sample_id``, ``time``, ``time_offset_min`` (logger clock
-#'   correction, minutes), ``temperature`` (deg C) and ``depth`` (m)}
-#' @rdname pax_mar_survey
-pax_mar_temperature_logger <- function(
-  mar,
-  sampling_type = NULL,
-  year_start = NULL,
-  year_end = NULL
-) {
-  if (!requireNamespace("mar", quietly = TRUE)) {
-    stop("mar package not available, cannot import from DB")
-  }
-
-  # NSE variables
-  synis_id <- timi <- timi_hlidrun_min <- hitastig <- dypi <- NULL
-
-  samples <- mar_survey_samples(mar, sampling_type, year_start, year_end) |>
-    # NB: synis_id is text in les_syni, a number in siritar.hitastig
-    dplyr::transmute(synis_id = as.numeric(synis_id))
-
-  mar::siritar_hitastig(mar) |>
-    dplyr::semi_join(samples, by = "synis_id") |>
-    dplyr::select(
-      # Text, as sample_id of the station table
-      sample_id = synis_id,
-      time = timi,
-      time_offset_min = timi_hlidrun_min,
-      temperature = hitastig,
-      depth = dypi
-    ) |>
-    dplyr::mutate(sample_id = as.character(sample_id)) |>
-    decorate_mar()
-}
-
-#' @param species Integer vector of species codes to filter by, ``NULL`` for
-#'   all
-#' @return \subsection{pax_mar_stomach}{The predators of the stomach
-#'   samples (``ranfiskur``), one row per predator record: ``stomach_id``,
-#'   ``sample_id``, ``species``, ``measurement_type``, ``length``,
-#'   ``length_class`` (length group code), ``sex``, ``maturity_stage``,
-#'   ``weight``, ``age``, ``n_stomach`` (stomachs in the record),
-#'   ``n_empty``, ``n_regurgitated``, ``n_undigested`` and ``n_everted``.
-#'   All trips, the stomach-sampling trips included}
-#' @rdname pax_mar_survey
-pax_mar_stomach <- function(
-  mar,
-  species = NULL,
-  sampling_type = NULL,
-  year_start = NULL,
-  year_end = NULL
-) {
-  if (!requireNamespace("mar", quietly = TRUE)) {
-    stop("mar package not available, cannot import from DB")
-  }
-
-  # NSE variables
-  synis_id <- ranfiskur_id <- tegund_nr <- maeling_teg <- lengd <- NULL
-  lengd_nr <- kyn_nr <- kynthroski_nr <- thyngd <- aldur <- magar <- NULL
-  tomir <- aeldir <- omeltir <- uthverfir <- NULL
-
-  samples <- mar_survey_samples(mar, sampling_type, year_start, year_end) |>
-    dplyr::select(synis_id)
-
-  out <- mar::les_ranfisk(mar) |>
-    dplyr::semi_join(samples, by = "synis_id")
-  if (!is.null(species)) {
-    out <- dplyr::filter(out, tegund_nr %in% local(species))
-  }
-  out |>
-    dplyr::select(
-      stomach_id = ranfiskur_id,
-      sample_id = synis_id,
-      species = tegund_nr,
-      measurement_type = maeling_teg,
-      length = lengd,
-      length_class = lengd_nr,
-      sex = kyn_nr,
-      maturity_stage = kynthroski_nr,
-      weight = thyngd,
-      age = aldur,
-      n_stomach = magar,
-      n_empty = tomir,
-      n_regurgitated = aeldir,
-      n_undigested = omeltir,
-      n_everted = uthverfir
-    ) |>
-    decorate_mar()
-}
-
-# Prey of the stomachs of pax_mar_stomach()
-mar_stomach_ids <- function(mar, species, sampling_type, year_start, year_end) {
-  # NSE variables
-  synis_id <- tegund_nr <- NULL
-
-  samples <- mar_survey_samples(mar, sampling_type, year_start, year_end) |>
-    dplyr::select(synis_id)
-  out <- mar::les_ranfisk(mar) |>
-    dplyr::semi_join(samples, by = "synis_id")
-  if (!is.null(species)) {
-    out <- dplyr::filter(out, tegund_nr %in% local(species))
-  }
-  dplyr::select(out, "ranfiskur_id")
-}
-
-#' @return \subsection{pax_mar_stomach_prey}{The prey weights of the
-#'   stomachs (``brad_thyngd``), one row per prey group and stomach record:
-#'   ``prey_id``, ``stomach_id``, ``prey_species``, ``prey_group`` (food
-#'   group code, ``faeduhopur``), ``prey_maturity_stage``,
-#'   ``prey_maturity``, ``measurement_type``, ``prey_count`` and
-#'   ``prey_weight`` (g). The weights are as recorded: a weight missing or 0
-#'   with a count is left to the user}
-#' @rdname pax_mar_survey
-pax_mar_stomach_prey <- function(
-  mar,
-  species = NULL,
-  sampling_type = NULL,
-  year_start = NULL,
-  year_end = NULL
-) {
-  if (!requireNamespace("mar", quietly = TRUE)) {
-    stop("mar package not available, cannot import from DB")
-  }
-
-  # NSE variables
-  brad_id <- ranfiskur_id <- brad_tegund_nr <- faeduhopur <- NULL
-  brad_throski_nr <- brad_throski <- brad_maeling_teg <- NULL
-  brad_fjoldi <- brad_thyngd <- NULL
-
-  mar::les_brad_thyngd(mar) |>
-    dplyr::semi_join(
-      mar_stomach_ids(mar, species, sampling_type, year_start, year_end),
-      by = "ranfiskur_id"
-    ) |>
-    dplyr::select(
-      prey_id = brad_id,
-      stomach_id = ranfiskur_id,
-      prey_species = brad_tegund_nr,
-      prey_group = faeduhopur,
-      prey_maturity_stage = brad_throski_nr,
-      prey_maturity = brad_throski,
-      measurement_type = brad_maeling_teg,
-      prey_count = brad_fjoldi,
-      prey_weight = brad_thyngd
-    ) |>
-    decorate_mar()
-}
-
-#' @return \subsection{pax_mar_stomach_prey_length}{The prey length
-#'   measurements of the stomachs (``brad_lengd``): ``prey_id``,
-#'   ``stomach_id``, ``prey_species``, ``prey_group``,
-#'   ``prey_maturity_stage``, ``prey_maturity``, ``measurement_type``,
-#'   ``prey_count``, ``prey_length``, ``prey_length_class``, ``prey_sex``
-#'   and ``prey_sex_maturity``}
-#' @rdname pax_mar_survey
-pax_mar_stomach_prey_length <- function(
-  mar,
-  species = NULL,
-  sampling_type = NULL,
-  year_start = NULL,
-  year_end = NULL
-) {
-  if (!requireNamespace("mar", quietly = TRUE)) {
-    stop("mar package not available, cannot import from DB")
-  }
-
-  # NSE variables
-  brad_id <- ranfiskur_id <- brad_tegund_nr <- faeduhopur <- NULL
-  brad_throski_nr <- brad_throski <- brad_maeling_teg <- brad_fjoldi <- NULL
-  brad_lengd <- brad_lengd_nr <- brad_kyn_nr <- brad_kynthroski_nr <- NULL
-
-  mar::les_brad_lengd(mar) |>
-    dplyr::semi_join(
-      mar_stomach_ids(mar, species, sampling_type, year_start, year_end),
-      by = "ranfiskur_id"
-    ) |>
-    dplyr::select(
-      prey_id = brad_id,
-      stomach_id = ranfiskur_id,
-      prey_species = brad_tegund_nr,
-      prey_group = faeduhopur,
-      prey_maturity_stage = brad_throski_nr,
-      prey_maturity = brad_throski,
-      measurement_type = brad_maeling_teg,
-      prey_count = brad_fjoldi,
-      prey_length = brad_lengd,
-      prey_length_class = brad_lengd_nr,
-      prey_sex = brad_kyn_nr,
-      prey_sex_maturity = brad_kynthroski_nr
-    ) |>
-    decorate_mar()
-}
-
-#' @return \subsection{pax_mar_survey_catch}{The catch of every species in
-#'   the samples of the sampling types: ``sample_id``, ``species`` and
-#'   ``count`` (measured fish raised by the counted ones, as the ``ldist``
-#'   table, summed over lengths and sexes). For e.g. the species caught at
-#'   each survey station; ``ldist`` holds only the species of
-#'   [pax_from_mar()]}
-#' @rdname pax_mar_survey
-pax_mar_survey_catch <- function(
-  mar,
-  sampling_type = NULL,
-  year_start = NULL,
-  year_end = NULL
-) {
-  if (!requireNamespace("mar", quietly = TRUE)) {
-    stop("mar package not available, cannot import from DB")
-  }
-
-  # NSE variables
-  synis_id <- tegund_nr <- fjoldi <- sample_id <- species <- count <- NULL
-
-  samples <- mar_survey_samples(mar, sampling_type, year_start, year_end) |>
-    dplyr::select(synis_id)
+  synis_id <- tegund_nr <- lengd <- kyn_nr <- kynthroski_nr <- fjoldi <- NULL
+  sample_id <- sex <- maturity_stage <- count <- NULL
 
   mar::les_lengd(mar) |>
-    dplyr::semi_join(samples, by = "synis_id") |>
-    mar::skala_med_taldir() |>
-    dplyr::select(sample_id = synis_id, species = tegund_nr, count = fjoldi) |>
-    dplyr::group_by(sample_id, species) |>
-    dplyr::summarize(count = sum(count, na.rm = TRUE)) |>
-    dplyr::ungroup() |>
+    dplyr::filter(tegund_nr %in% local(species)) |>
+    dplyr::select(
+      sample_id = synis_id,
+      species = tegund_nr,
+      length = lengd,
+      sex = kyn_nr,
+      maturity_stage = kynthroski_nr,
+      count = fjoldi
+    ) |>
+    dplyr::semi_join(
+      mar_survey_samples(
+        mar,
+        sampling_type,
+        year_start,
+        year_end,
+        skip_trips,
+        only_trips
+      ),
+      by = "sample_id"
+    ) |>
+    dplyr::group_by(sample_id, species, length, sex, maturity_stage) |>
+    dplyr::summarise(count = sum(count, na.rm = TRUE), .groups = "drop") |>
     decorate_mar()
 }
 
-#' @return \subsection{pax_mar_taxonomy}{The species register
-#'   (``les_tegund``), one row per species code: ``species``, ``name``
-#'   (Icelandic), ``name_latin``, ``name_en``, ``rank``, ``prey_group``
-#'   (food group code of stomach prey), ``worms_id``, ``fao_3alpha``,
-#'   ``genus``, ``family``, ``order``, ``class``, ``phylum`` and
-#'   ``kingdom``}
+#' @return \subsection{pax_mar_sample_weight}{The sample summary of
+#'   ``biota.skalar_v`` by ``sample_id`` and ``species``: ``n_measured``
+#'   (``maeldir``), ``n_counted`` (``taldir``), ``n_aged`` (``kvarnadir``),
+#'   ``sample_weight`` (``vigt_synis``, weight of the measured sample, kg)
+#'   and ``catch_weight`` (``vigt_afla``, weight of the catch of the species,
+#'   kg), for the samples of the given sampling types and years. In the
+#'   shrimp surveys (sampling types 31 and 37) ``catch_weight`` is positive
+#'   in every sample with a ``sample_weight`` (checked October 2026); the
+#'   zero catch weights of the groundfish surveys since 2010 don't occur
+#'   there}
 #' @rdname pax_mar_survey
-pax_mar_taxonomy <- function(mar) {
+pax_mar_sample_weight <- function(
+  mar,
+  species,
+  sampling_type = NULL,
+  year_start = NULL,
+  year_end = NULL,
+  skip_trips = NULL,
+  only_trips = NULL
+) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
-
   # NSE variables
-  tegund_nr <- heiti <- visinda_heiti <- enskt_heiti <- stigveldi <- NULL
-  faeduhopur <- worms_id <- fao_3alpha <- aettkvisl <- aett <- NULL
-  aettbalkur <- flokkur <- fylking <- riki <- species <- NULL
+  synis_id <- tegund_nr <- maeldir <- taldir <- kvarnadir <- NULL
+  vigt_synis <- vigt_afla <- NULL
 
-  mar::les_tegund(mar) |>
+  mar::les_skala(mar) |>
+    dplyr::filter(tegund_nr %in% local(species)) |>
     dplyr::select(
+      sample_id = synis_id,
       species = tegund_nr,
-      name = heiti,
-      name_latin = visinda_heiti,
-      name_en = enskt_heiti,
-      rank = stigveldi,
-      prey_group = faeduhopur,
-      worms_id,
-      fao_3alpha,
-      genus = aettkvisl,
-      family = aett,
-      order = aettbalkur,
-      class = flokkur,
-      phylum = fylking,
-      kingdom = riki
+      n_measured = maeldir,
+      n_counted = taldir,
+      n_aged = kvarnadir,
+      sample_weight = vigt_synis,
+      catch_weight = vigt_afla
     ) |>
-    dplyr::collect() |>
-    dplyr::arrange(species) |>
+    dplyr::semi_join(
+      mar_survey_samples(
+        mar,
+        sampling_type,
+        year_start,
+        year_end,
+        skip_trips,
+        only_trips
+      ),
+      by = "sample_id"
+    ) |>
     decorate_mar()
 }
 
-#' @return \subsection{pax_mar_fingerprint}{A small table that changes when
-#'   the survey data in mar change: by sampling type and year, the number of
-#'   stations, the largest sample id, and the number of measured, aged and
-#'   maturity-staged fish. Cheap to compute, so a pipeline can rebuild its
-#'   pax database when (and only when) it changes, e.g. as an upstream
-#'   target of [pax_from_mar()] that always runs. Opens its own connection
-#'   when ``mar`` is ``NULL``}
+#' @return \subsection{pax_mar_landings_stock}{Landings by management stock
+#'   or stock area code, aggregated (no vessel, port, seller or buyer):
+#'   ``source`` (``"lods"`` and ``"fiskifelag"``: the landings register,
+#'   ``mar::lods_oslaegt()`` and ``mar::fiskifelag_oslaegt()``, by the stock
+#'   code ``kfteg``, e.g. 51 Arnarfjordur and 53 Isafjardardjup shrimp;
+#'   ``"agf"``: ``agf.aflagrunnur_v`` by ``veidistofn``), ``year``,
+#'   ``month``, ``species``, ``stock_code`` (``kfteg``, or ``veidistofn``
+#'   for ``"agf"``), ``stock_name`` (``veidistofn_heiti``, ``NA`` for the
+#'   register), ``gear_id`` (landings gear code), ``fishing_area``
+#'   (``veidisvaedi``), ``period`` (quota period, e.g. ``"20242025"``, NA
+#'   for ``"agf"``), ``fishing_year`` (as [pax_mar_landings_vessel()]) and
+#'   ``catch`` (ungutted, kg)}
 #' @rdname pax_mar_survey
-pax_mar_fingerprint <- function(
-  mar = NULL,
-  sampling_type = NULL,
+pax_mar_landings_stock <- function(
+  mar,
+  species,
   year_start = NULL,
   year_end = NULL
 ) {
   if (!requireNamespace("mar", quietly = TRUE)) {
     stop("mar package not available, cannot import from DB")
   }
-  if (is.null(mar)) {
-    mar <- mar::connect_mar()
-    on.exit(DBI::dbDisconnect(mar), add = TRUE)
-  }
-
   # NSE variables
-  synis_id <- synaflokkur_nr <- ar <- aldur <- kynthroski_nr <- NULL
+  fteg <- kfteg <- ar <- man <- veidarfaeri <- veidisvaedi <- timabil <- NULL
+  fishing_year <- magn_oslaegt <- year <- month <- source <- NULL
+  fisktegund <- veidistofn <- veidistofn_heiti <- londun_hefst <- NULL
+  stock_code <- period <- fishing_area <- NULL
 
-  samples <- mar_survey_samples(mar, sampling_type, year_start, year_end) |>
-    dplyr::select(synis_id, synaflokkur_nr, ar)
-  stations <- samples |>
-    dplyr::group_by(synaflokkur_nr, ar) |>
+  years <- function(tbl) {
+    if (!is.null(year_start)) {
+      tbl <- dplyr::filter(tbl, year >= local(year_start))
+    }
+    if (!is.null(year_end)) {
+      tbl <- dplyr::filter(tbl, year <= local(year_end))
+    }
+    tbl
+  }
+  register <- function(tbl, source) {
+    tbl |>
+      dplyr::filter(fteg %in% local(species)) |>
+      mar_fishing_year_label() |>
+      dplyr::rename(year = ar) |>
+      years() |>
+      dplyr::group_by(
+        year,
+        month = man,
+        species = fteg,
+        stock_code = kfteg,
+        gear_id = veidarfaeri,
+        fishing_area = veidisvaedi,
+        period = timabil,
+        fishing_year
+      ) |>
+      dplyr::summarise(
+        catch = sum(magn_oslaegt, na.rm = TRUE),
+        .groups = "drop"
+      ) |>
+      dplyr::collect() |>
+      dplyr::mutate(
+        source = local(source),
+        stock_name = NA_character_,
+        period = as.character(period),
+        fishing_year = as.character(fishing_year)
+      )
+  }
+  agf <- mar::tbl_mar(mar, "agf.aflagrunnur_v") |>
+    dplyr::filter(fisktegund %in% local(species)) |>
+    dplyr::mutate(
+      year = to_number(to_char(londun_hefst, "YYYY")),
+      month = to_number(to_char(londun_hefst, "MM"))
+    ) |>
+    years() |>
+    dplyr::group_by(
+      year,
+      month,
+      species = fisktegund,
+      stock_code = veidistofn,
+      stock_name = veidistofn_heiti,
+      gear_id = veidarfaeri,
+      fishing_area = veidisvaedi
+    ) |>
     dplyr::summarise(
-      n_stations = dplyr::n(),
-      max_sample_id = max(as.numeric(synis_id), na.rm = TRUE)
+      catch = sum(magn_oslaegt, na.rm = TRUE),
+      .groups = "drop"
     ) |>
-    dplyr::collect()
-  fish <- mar::les_maelingu(mar) |>
-    dplyr::inner_join(samples, by = "synis_id") |>
-    dplyr::group_by(synaflokkur_nr, ar) |>
-    dplyr::summarise(
-      n_measured = dplyr::n(),
-      n_aged = sum(ifelse(is.na(aldur), 0, 1), na.rm = TRUE),
-      n_maturity = sum(ifelse(is.na(kynthroski_nr), 0, 1), na.rm = TRUE)
+    dplyr::collect() |>
+    dplyr::mutate(
+      source = "agf",
+      period = NA_character_,
+      # Fishing year September-August, as the register's label
+      fishing_year = ifelse(
+        month < 9,
+        paste(year - 1, year, sep = "/"),
+        paste(year, year + 1, sep = "/")
+      ),
+      fishing_area = as.character(fishing_area)
+    )
+
+  std <- function(x) {
+    dplyr::mutate(
+      x,
+      dplyr::across(
+        c("year", "month", "species", "stock_code", "gear_id", "catch"),
+        as.numeric
+      ),
+      dplyr::across(
+        c("stock_name", "fishing_area", "period", "fishing_year"),
+        as.character
+      )
+    )
+  }
+  dplyr::bind_rows(
+    std(register(mar::lods_oslaegt(mar), "lods")),
+    std(register(mar::fiskifelag_oslaegt(mar), "fiskifelag")),
+    std(agf)
+  ) |>
+    dplyr::select(
+      source,
+      year,
+      month,
+      species,
+      stock_code,
+      stock_name = "stock_name",
+      gear_id = "gear_id",
+      fishing_area = "fishing_area",
+      period = "period",
+      fishing_year,
+      catch = "catch"
     ) |>
-    dplyr::collect()
-  dplyr::full_join(dplyr::ungroup(stations), dplyr::ungroup(fish), by = c("synaflokkur_nr", "ar")) |>
-    dplyr::transmute(
-      sampling_type = as.numeric(synaflokkur_nr),
-      year = as.numeric(ar),
-      dplyr::across(c("n_stations", "max_sample_id", "n_measured", "n_aged", "n_maturity"), as.numeric)
+    dplyr::arrange(source, year, month, species, stock_code) |>
+    decorate_mar()
+}
+
+#' @return \subsection{pax_mar_landings_port}{Landings by port of landing,
+#'   aggregated (no vessel, seller or buyer): ``source`` (``"register"``:
+#'   ``mar::landadur_afli()``, by ``hofn``; ``"agf"``:
+#'   ``agf.aflagrunnur_v``, by ``hafnarnumer``), ``year``, ``month``,
+#'   ``species``, ``port`` (port number), ``ices_area`` (register only),
+#'   ``stock_code`` and ``stock_name`` (``veidistofn``,
+#'   ``veidistofn_heiti``; agf only), ``fishing_year`` (agf: September to
+#'   August, e.g. ``"2024/2025"``) and ``catch`` (ungutted, kg). For stocks
+#'   whose areas are defined by the ports of landing (sea urchin)}
+#' @rdname pax_mar_survey
+pax_mar_landings_port <- function(
+  mar,
+  species,
+  year_start = NULL,
+  year_end = NULL
+) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+  # NSE variables
+  tegund_nr <- ar <- man <- hofn <- ices_svaedi <- magn_oslaegt <- NULL
+  fisktegund <- londun_hefst <- hafnarnumer <- veidistofn <- NULL
+  veidistofn_heiti <- year <- month <- NULL
+
+  years <- function(tbl) {
+    if (!is.null(year_start)) {
+      tbl <- dplyr::filter(tbl, year >= local(year_start))
+    }
+    if (!is.null(year_end)) {
+      tbl <- dplyr::filter(tbl, year <= local(year_end))
+    }
+    tbl
+  }
+  register <- mar::landadur_afli(mar) |>
+    dplyr::filter(tegund_nr %in% local(species)) |>
+    dplyr::rename(year = ar, month = man) |>
+    years() |>
+    dplyr::group_by(
+      year,
+      month,
+      species = tegund_nr,
+      port = hofn,
+      ices_area = ices_svaedi
     ) |>
-    dplyr::arrange(sampling_type, year) |>
-    as.data.frame()
+    dplyr::summarise(catch = sum(magn_oslaegt, na.rm = TRUE), .groups = "drop") |>
+    dplyr::collect() |>
+    dplyr::mutate(source = "register")
+  agf <- mar::tbl_mar(mar, "agf.aflagrunnur_v") |>
+    dplyr::filter(fisktegund %in% local(species)) |>
+    dplyr::mutate(
+      year = to_number(to_char(londun_hefst, "YYYY")),
+      month = to_number(to_char(londun_hefst, "MM"))
+    ) |>
+    years() |>
+    dplyr::group_by(
+      year,
+      month,
+      species = fisktegund,
+      port = hafnarnumer,
+      stock_code = veidistofn,
+      stock_name = veidistofn_heiti
+    ) |>
+    dplyr::summarise(catch = sum(magn_oslaegt, na.rm = TRUE), .groups = "drop") |>
+    dplyr::collect() |>
+    dplyr::mutate(source = "agf")
+  dplyr::bind_rows(
+    dplyr::mutate(
+      register,
+      dplyr::across(c("year", "month", "species", "port", "catch"), as.numeric),
+      ices_area = as.character(ices_area)
+    ),
+    dplyr::mutate(
+      agf,
+      dplyr::across(c("year", "month", "species", "port", "stock_code", "catch"), as.numeric),
+      stock_name = as.character(stock_name)
+    )
+  ) |>
+    dplyr::mutate(
+      fishing_year = ifelse(
+        source == "agf",
+        ifelse(
+          month < 9,
+          paste(year - 1, year, sep = "/"),
+          paste(year, year + 1, sep = "/")
+        ),
+        NA_character_
+      )
+    ) |>
+    dplyr::select(
+      "source", "year", "month", "species", "port", "ices_area",
+      "stock_code", "stock_name", "fishing_year", "catch"
+    ) |>
+    dplyr::arrange(source, year, month, port) |>
+    decorate_mar()
 }

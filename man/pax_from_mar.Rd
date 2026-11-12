@@ -16,10 +16,15 @@ pax_from_mar(
   quota_species = species,
   sampling_gear = c("BMT", "LLN", "DSE"),
   skip_trips = c("MAG\%", "MO\%"),
+  only_trips = NULL,
+  station_columns = character(0),
+  survey_species = species,
   gridcell_from_position = FALSE,
   logbook_species = species,
   logbook_year_start = year_start,
   extra_tables = character(0),
+  annotation_projects = NULL,
+  logbook_old_columns = character(0),
   medafli_species = NULL,
   stomach_species = species,
   commercial = TRUE,
@@ -64,6 +69,20 @@ samples in the \code{sampling} table, \code{NULL} for all, see
 \item{skip_trips}{SQL LIKE patterns of trips to leave out of the station
 and sampling tables, see \code{\link[=pax_mar_station]{pax_mar_station()}}. By default the
 stomach-sampling trips \verb{MAG*} and \verb{MO*}; \code{NULL} keeps all}
+
+\item{only_trips}{SQL LIKE patterns of trips to keep in the station
+table (and the survey tables of \code{extra_tables}), \code{NULL} (default)
+for all, see \code{\link[=pax_mar_station]{pax_mar_station()}}. E.g. the cruises of a survey that
+isn't defined by its sampling type alone}
+
+\item{station_columns}{Extra columns of the station table, see
+\code{\link[=pax_station_columns]{pax_station_columns()}}, e.g. \code{c("survey_area", "survey_subarea", "sample_name")} for the inshore shrimp survey. None by default}
+
+\item{survey_species}{Species of the \code{ldist_maturity} and
+\code{sample_weight} tables of \code{extra_tables}, default \code{species}. Add
+e.g. by-catch species of a survey (cod and haddock in the shrimp
+survey); only the samples of the station table's sampling types and
+years are imported}
 
 \item{gridcell_from_position}{If \code{TRUE}, stations without a
 rectangle get the gridcell of their position, see \code{\link[=pax_mar_station]{pax_mar_station()}}}
@@ -114,9 +133,36 @@ leaves out (date, end depth, bottom and surface temperature),
 \item{\code{"survey_catch"}}{the catch of all species in each sample,
 \code{\link[=pax_mar_survey_catch]{pax_mar_survey_catch()}}}
 \item{\code{"taxonomy"}}{the species register, \code{\link[=pax_mar_taxonomy]{pax_mar_taxonomy()}}}
+\item{\code{"ldist_maturity"}}{length counts by sex and maturity stage,
+not raised, of \code{survey_species} in the samples of the station
+table's sampling types and years, \code{\link[=pax_mar_ldist_maturity]{pax_mar_ldist_maturity()}}}
+\item{\code{"sample_weight"}}{sample and catch weights and the
+measured and counted numbers of the same samples,
+\code{\link[=pax_mar_sample_weight]{pax_mar_sample_weight()}}}
+\item{\code{"landings_stock"}}{landings by stock code (\code{kfteg}) and
+management stock (\code{agf.aflagrunnur_v}), aggregated without
+vessels or names, \code{\link[=pax_mar_landings_stock]{pax_mar_landings_stock()}}}
+\item{\code{"logbook_adb"}}{the electronic logbooks (ADB) of
+\code{logbook_species} from \code{logbook_year_start}, station by station
+with the number of traps, \code{\link[=pax_mar_logbook_adb]{pax_mar_logbook_adb()}}}
+\item{\code{"landings_port"}}{landings by port of landing (landings
+register and \code{agf.aflagrunnur_v}), aggregated without vessels or
+names, \code{\link[=pax_mar_landings_port]{pax_mar_landings_port()}}}
+\item{\code{"video_annotation"}}{annotations of the underwater video
+surveys (Hafmynd) of the projects \code{annotation_projects}, with a
+pseudonymous annotator id instead of the user name,
+\code{\link[=pax_mar_video_annotation]{pax_mar_video_annotation()}}}
 }
 The survey tables (\code{station_env} to \code{survey_catch}) cover the
 \code{sampling_type} and years of the station table, all trips}
+
+\item{annotation_projects}{Hafmynd projects of the \code{video_annotation}
+table (e.g. \code{"Humar"}, the Nephrops UWTV survey), \code{NULL} (default)
+for all}
+
+\item{logbook_old_columns}{Optional columns of the \code{logbook_old} table,
+see \code{\link[=pax_logbook_old_columns]{pax_logbook_old_columns()}}, e.g. \code{c("tow_time", "num_traps")}
+for the effort of the old logbooks. None by default}
 
 \item{medafli_species}{Species codes of the old by-catch table
 (\code{afli.medafli}) for the \code{logbook_release} table, e.g. \code{2021}

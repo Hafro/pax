@@ -27,7 +27,7 @@ pax_si_scale_by_landings(
   landings_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "landings"),
   logbook_tbl = dplyr::tbl(dbplyr::remote_con(tbl), "logbook"),
   regions = list(all = 101:115),
-  gear_group = list(Other = "Var", BMT = c("BMT", "NPT", "SHT", "PGT"), LLN = "LLN", DSE
+  gear_group = list(Other = "VAR", BMT = c("BMT", "NPT", "SHT", "PGT"), LLN = "LLN", DSE
     = c("PSE", "DSE")),
   tgroup = list(t1 = 1:6, t2 = 7:12),
   month_na = NULL,
@@ -125,7 +125,12 @@ length data, with \code{si_abund} (thousands of fish per stratum) and
 
 \subsection{pax_si_scale_winsorize}{A dplyr query with extreme
 \code{si_abund} and \code{si_biomass} values scaled down to the \code{q}
-quantile within each year and species}
+quantile within each year and species. The station biomass (the sum of
+\code{si_biomass} over the rows of a \code{sample_id}, stations with biomass
+above zero only) is compared with the \code{q} quantile of the station
+biomass of its year and species; every row of a station above it has
+\code{si_biomass} and \code{si_abund} multiplied by quantile / station biomass,
+so the station's biomass becomes the quantile}
 
 \subsection{pax_si_scale_by_strata}{A dplyr query with each station
 assigned to a stratum, and \code{si_abund} and \code{si_biomass} multiplied by

@@ -59,7 +59,8 @@ pax_mar_station(
   year_end = NULL,
   skip_trips = c("MAG\%", "MO\%"),
   gridcell_from_position = FALSE,
-  only_trips = NULL
+  only_trips = NULL,
+  columns = character(0)
 )
 
 pax_mar_strata_stations(mar)
@@ -104,6 +105,11 @@ position (as \code{geo::d2sr()}). Otherwise (default) their gridcell is
 \item{only_trips}{SQL LIKE patterns of trips to keep, \code{NULL} (default)
 for all. With \code{skip_trips = NULL} and \code{only_trips = c("MAG\%", "MO\%")}, the stations of the stomach-sampling trips, see the
 \code{extra_tables} of \code{\link[=pax_from_mar]{pax_from_mar()}}}
+
+\item{columns}{Extra station columns to add, by their pax names: any of
+the names of \code{\link[=pax_station_columns]{pax_station_columns()}} (e.g. \code{"survey_area"} (biota
+\code{skiki}), \code{"survey_subarea"} (\code{fjardarreitur}), \code{"sample_name"}
+(\code{syni_heiti}), as the inshore shrimp survey needs). None by default}
 }
 \value{
 \subsection{pax_mar_logbook}{A dplyr query with columns
