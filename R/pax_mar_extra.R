@@ -565,7 +565,10 @@ pax_mar_sample <- function(mar, species) {
 #'   ``"num_nets"`` and ``"mesh_size"`` (``afli.lineha.dregin`` and
 #'   ``moskvi``: nets hauled and mesh size of gillnet records), ``"date"``
 #'   (the fishing day ``vedags``, e.g. to match tows with landings by vessel
-#'   and day)}
+#'   and day), ``"lat_raw"`` and ``"lon_raw"`` (``afli.stofn.breidd`` and
+#'   ``lengd`` as stored, DDMM with varying decimals and without the
+#'   rectangle fill of ``"lat"``/``"lon"``, for scripts with their own
+#'   conversion and filters)}
 #' @param columns Optional extra columns of ``pax_mar_logbook_old()`` or
 #'   ``pax_mar_logbook_adb()``, none by default
 #' @rdname pax_mar_extra
@@ -647,6 +650,14 @@ pax_mar_logbook_old <- function(
       by = "visir"
     )
   }
+  if (any(c("lat_raw", "lon_raw") %in% columns)) {
+    out <- dplyr::left_join(
+      out,
+      mar::tbl_mar(mar, "afli.stofn") |>
+        dplyr::select(visir, lat_raw = breidd, lon_raw = lengd),
+      by = "visir"
+    )
+  }
   if ("n_same_catch" %in% columns) {
     out <- dplyr::left_join(
       out,
@@ -689,7 +700,9 @@ pax_logbook_old_columns <- function() {
     "n_same_catch",
     "num_nets",
     "mesh_size",
-    "date"
+    "date",
+    "lat_raw",
+    "lon_raw"
   )
 }
 
