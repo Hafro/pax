@@ -38,7 +38,16 @@ pax_station_columns <- function() {
     surface_temp = "yfirbordshiti",
     bottom_depth_end = "botndypi_hift",
     # Date of the station (dags), e.g. stations without a tow start time
-    date = "dags"
+    date = "dags",
+    # Weather and sea at the station, as recorded on the survey (codes of
+    # the biota code tables; wind speed in m/s, temperatures in degrees C),
+    # e.g. the sea cucumber survey
+    wind_speed = "vindhradi",
+    wind_direction = "vindatt_nr",
+    weather = "vedur_nr",
+    cloud_cover = "sky_nr",
+    sea_state = "sjor_nr",
+    air_temp = "lofthiti"
   )
 }
 
