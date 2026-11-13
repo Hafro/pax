@@ -103,6 +103,9 @@
 #'       surveys (Hafmynd) of the projects ``annotation_projects``, with a
 #'       pseudonymous annotator id instead of the user name,
 #'       [pax_mar_video_annotation()]}
+#'     \item{``"landings_landing"``}{the landings register landing by
+#'       landing (vessel, landing date, AGF stock), from
+#'       ``landings_year_start``, [pax_mar_landings_landing()]}
 #'     \item{``"logbook_lumpfish"``}{the lumpfish logbooks
 #'       (``afli.grasl_sokn`` with the season table ``afli.grasl_stofn``)
 #'       from ``logbook_year_start``, without comments,
@@ -346,6 +349,18 @@ pax_from_mar <- function(
       )
     )
   }
+  if ("landings_landing" %in% extra_tables) {
+    pax_import(
+      pcon,
+      pax_mar_landings_landing(
+        mar,
+        species = species,
+        year_start = landings_year_start,
+        year_end = year_end
+      ),
+      name = "landings_landing"
+    )
+  }
   if ("logbook_adb" %in% extra_tables) {
     pax_import(
       pcon,
@@ -444,6 +459,7 @@ pax_from_mar_extra_tables <- function() {
     "video_annotation",
     "landings_port",
     "logbook_adb",
+    "landings_landing",
     "logbook_lumpfish"
   )
 }

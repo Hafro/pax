@@ -148,6 +148,98 @@ pax_mar_landings_vessel <- function(
     decorate_mar()
 }
 
+#' @return \subsection{pax_mar_landings_landing}{The landings register
+#'   landing by landing (``mar::ln_landings()``, ``ln_gear()`` and
+#'   ``ln_catch()`` of the mar parquet datasets, the Directorate of
+#'   Fisheries' ``kvoti.lods_slaegt`` from September 1992 and
+#'   ``agf.aflagrunnur`` from September 2007), one row per landing, landings
+#'   gear and stock: ``landing_id`` (``l_id``), ``landing_date``, ``year``,
+#'   ``month``, ``vessel_id`` (registration number), ``port`` (port of
+#'   landing), ``gear_no``, ``agf`` (``TRUE`` for the AGF landings),
+#'   ``stock`` (the AGF stock, e.g. ``1992`` for sea cucumber in
+#'   Faxaflói), ``stock_name`` (from [agf_stock]) and ``catch`` (ungutted,
+#'   kg). Used to split each landing between the areas fished on the
+#'   vessel's logbook records of that day (sea cucumber). Without vessel
+#'   names, buyers or sellers}
+#' @rdname pax_mar_extra
+pax_mar_landings_landing <- function(
+  mar,
+  species,
+  year_start = NULL,
+  year_end = NULL
+) {
+  # NSE variables
+  g_id <- l_id <- species_no <- stock <- weight <- weight_unit <- NULL
+  gear_no <- landing_date <- registration_no <- landing_port <- NULL
+  l_source <- year <- month <- agf <- NULL
+
+  out <- mar_with_parquet(mar::connect_landings, function(con) {
+    q <- mar::ln_catch(con) |>
+      dplyr::filter(species_no %in% local(species)) |>
+      dplyr::select(g_id, species_no, stock, weight, weight_unit) |>
+      dplyr::inner_join(
+        mar::ln_gear(con) |> dplyr::select(g_id, l_id, gear_no),
+        by = "g_id"
+      ) |>
+      dplyr::inner_join(
+        mar::ln_landings(con) |>
+          dplyr::select(
+            l_id,
+            landing_date,
+            registration_no,
+            landing_port,
+            l_source = source
+          ),
+        by = "l_id"
+      ) |>
+      dplyr::mutate(
+        year = as.integer(year(landing_date)),
+        month = as.integer(month(landing_date)),
+        agf = substr(l_source, 1, 4) == "agf.",
+        weight = weight * ifelse(weight_unit %in% "t", 1000, 1)
+      )
+    if (!is.null(year_start)) {
+      q <- dplyr::filter(q, year >= local(year_start))
+    }
+    if (!is.null(year_end)) {
+      q <- dplyr::filter(q, year <= local(year_end))
+    }
+    q |>
+      dplyr::group_by(
+        landing_id = l_id,
+        landing_date,
+        year,
+        month,
+        vessel_id = registration_no,
+        port = landing_port,
+        gear_no,
+        agf,
+        species = species_no,
+        stock
+      ) |>
+      dplyr::summarise(catch = sum(weight, na.rm = TRUE), .groups = "drop") |>
+      dplyr::collect()
+  })
+  agf_stock <- mar_pax_data("agf_stock")
+  out |>
+    dplyr::mutate(
+      dplyr::across(
+        c("landing_id", "year", "month", "vessel_id", "port", "gear_no",
+          "species", "stock", "catch"),
+        as.numeric
+      ),
+      landing_date = as.Date(landing_date),
+      stock_name = ifelse(
+        agf,
+        agf_stock$stock_name[match(stock, agf_stock$stock)],
+        NA_character_
+      )
+    ) |>
+    dplyr::arrange(landing_date, landing_id) |>
+    as.data.frame() |>
+    decorate_mar()
+}
+
 #' @return \subsection{pax_mar_vessel}{The vessel register (AWS Postgres
 #'   since October 2026, ``mar::vessel()`` and the current-state tables
 #'   ``vessel_identification``, ``vessel_operational`` and
@@ -471,7 +563,9 @@ pax_mar_sample <- function(mar, species) {
 #'   catch as this one: the old scripts joined ``afli.afli`` back on
 #'   ``visir`` and ``afli``, which repeats a row this many times),
 #'   ``"num_nets"`` and ``"mesh_size"`` (``afli.lineha.dregin`` and
-#'   ``moskvi``: nets hauled and mesh size of gillnet records)}
+#'   ``moskvi``: nets hauled and mesh size of gillnet records), ``"date"``
+#'   (the fishing day ``vedags``, e.g. to match tows with landings by vessel
+#'   and day)}
 #' @param columns Optional extra columns of ``pax_mar_logbook_old()`` or
 #'   ``pax_mar_logbook_adb()``, none by default
 #' @rdname pax_mar_extra
@@ -573,7 +667,8 @@ pax_mar_logbook_old <- function(
       gear_id = veidarf,
       depth_fathoms = dypi,
       catch = afli,
-      dplyr::any_of(columns)
+      dplyr::any_of(c(date = if ("date" %in% columns) "vedags")),
+      dplyr::any_of(setdiff(columns, "date"))
     ) |>
     decorate_mar()
 }
@@ -593,7 +688,8 @@ pax_logbook_old_columns <- function() {
     "subrectangle",
     "n_same_catch",
     "num_nets",
-    "mesh_size"
+    "mesh_size",
+    "date"
   )
 }
 
@@ -601,7 +697,7 @@ pax_logbook_old_columns <- function() {
 #'   [pax_mar_logbook_adb()]}
 #' @rdname pax_mar_extra
 pax_logbook_adb_columns <- function() {
-  c("sex", "num_nets", "mesh_size")
+  c("sex", "num_nets", "mesh_size", "fishing_end", "landing", "trip_source")
 }
 
 #' @return \subsection{pax_mar_logbook_adb}{The electronic logbooks (ADB,
@@ -613,7 +709,11 @@ pax_logbook_adb_columns <- function() {
 #'   ``number_of_traps``, plus the optional ``columns``
 #'   ([pax_logbook_adb_columns()]): ``"sex"`` (``adb_catch.sex_no``, e.g.
 #'   lumpfish females and males), ``"num_nets"`` and ``"mesh_size"``
-#'   (``adb_line_net``: nets and mesh size of gillnet stations). Without
+#'   (``adb_line_net``: nets and mesh size of gillnet stations),
+#'   ``"fishing_end"`` (``adb_station.fishing_end``, e.g. the tow time of
+#'   dredges), ``"landing"`` (``adb_trip.landing``, the landing time of the
+#'   trip) and ``"trip_source"`` (``adb_trip.source``, the system the trip
+#'   came from, e.g. ``"Trackwell raun"``). Without
 #'   vessel names, call signs or companies. The compiled logbooks round the
 #'   catch of some records (whelk, up to 0.36 kg)}
 #' @rdname pax_mar_extra
@@ -648,7 +748,10 @@ pax_mar_logbook_adb <- function(
       dplyr::any_of(c(
         sex_no = if ("sex" %in% columns) "sex_no",
         nets = if ("num_nets" %in% columns) "nets",
-        mesh_size = if ("mesh_size" %in% columns) "mesh_size"
+        mesh_size = if ("mesh_size" %in% columns) "mesh_size",
+        fishing_end = if ("fishing_end" %in% columns) "fishing_end",
+        landing = if ("landing" %in% columns) "landing",
+        trip_source = if ("trip_source" %in% columns) "source"
       ))
     ) |>
     dplyr::collect()
@@ -671,6 +774,9 @@ pax_mar_logbook_adb <- function(
   if ("sex" %in% columns) out$sex <- num(raw$sex_no)
   if ("num_nets" %in% columns) out$num_nets <- num(raw$nets)
   if ("mesh_size" %in% columns) out$mesh_size <- num(raw$mesh_size)
+  if ("fishing_end" %in% columns) out$fishing_end <- raw$fishing_end
+  if ("landing" %in% columns) out$landing <- raw$landing
+  if ("trip_source" %in% columns) out$trip_source <- as.character(raw$trip_source)
   if (!is.null(year_start)) out <- out[out$year >= year_start, ]
   if (!is.null(year_end)) out <- out[out$year <= year_end, ]
   decorate_mar(out)
