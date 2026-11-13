@@ -138,6 +138,22 @@ NULL
 #' @keywords data
 NULL
 
+#' Maturity stages by species
+#'
+#' The maturity stage codes (``maturity_stage`` of the ``measurement``
+#' table) of each species, with their names and descriptions (Icelandic).
+#' The codes differ between species.
+#'
+#' @format A data.frame with columns ``species``, ``maturity_stage``,
+#'   ``stage`` (name, e.g. "I. stig"), ``description`` and
+#'   ``description_more``
+#' @source ``biota.kynthroski_v`` in mar (``mar::les_kynthroska()``),
+#'   extracted 16 October 2026 by ``pax:::data_update_maturity_stages()``
+#' @name maturity_stages
+#' @docType data
+#' @keywords data
+NULL
+
 #' Strata of the inshore shrimp surveys
 #'
 #' The fjord sub-areas (``fjardarreitur``) of the inshore shrimp surveys

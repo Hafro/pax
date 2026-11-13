@@ -28,6 +28,9 @@ pax_from_mar(
   logbook_adb_columns = character(0),
   landings_port_by_gear = FALSE,
   medafli_species = NULL,
+  stomach_species = species,
+  commercial = TRUE,
+  station_samples_only = FALSE,
   foreign_tables = character(0),
   foreign_files = list(),
   ger_survey_path = NULL,
@@ -101,6 +104,9 @@ default (see \link{pax_mar_extra}):
 \item{\code{"landings_vessel"}}{landings register by vessel, month,
 landings gear code, fishing area and fishing year, from
 \code{landings_year_start}, \code{\link[=pax_mar_landings_vessel]{pax_mar_landings_vessel()}}}
+\item{\code{"landings_ices"}}{ICES official catch statistics, all
+areas and countries, from \code{landings_year_start},
+\code{\link[=pax_mar_landings_ices]{pax_mar_landings_ices()}}}
 \item{\code{"vessel"}}{the vessel register, \code{\link[=pax_mar_vessel]{pax_mar_vessel()}}}
 \item{\code{"logbook_release"}}{logbook catch records with their
 condition (released fish), \code{\link[=pax_mar_logbook_release]{pax_mar_logbook_release()}}}
@@ -117,6 +123,18 @@ during research trips, \code{\link[=pax_mar_research_landings]{pax_mar_research_
 all years and trips, \code{\link[=pax_mar_sample]{pax_mar_sample()}}}
 \item{\code{"logbook_old"}}{the old logbook tables (\code{afli.afli}) of
 \code{logbook_species}, \code{\link[=pax_mar_logbook_old]{pax_mar_logbook_old()}}}
+\item{\code{"station_env"}}{station records the \code{station} table
+leaves out (date, end depth, bottom and surface temperature),
+\code{\link[=pax_mar_station_env]{pax_mar_station_env()}}}
+\item{\code{"temperature_logger"}}{trawl temperature logger readings,
+\code{\link[=pax_mar_temperature_logger]{pax_mar_temperature_logger()}}}
+\item{\code{"stomach"}, \code{"stomach_prey"},
+\code{"stomach_prey_length"}}{stomach contents of
+\code{stomach_species}: predators, prey weights and prey lengths,
+\code{\link[=pax_mar_stomach]{pax_mar_stomach()}}}
+\item{\code{"survey_catch"}}{the catch of all species in each sample,
+\code{\link[=pax_mar_survey_catch]{pax_mar_survey_catch()}}}
+\item{\code{"taxonomy"}}{the species register, \code{\link[=pax_mar_taxonomy]{pax_mar_taxonomy()}}}
 \item{\code{"ldist_maturity"}}{length counts by sex and maturity stage,
 not raised, of \code{survey_species} in the samples of the station
 table's sampling types and years, \code{\link[=pax_mar_ldist_maturity]{pax_mar_ldist_maturity()}}}
@@ -136,11 +154,16 @@ names, \code{\link[=pax_mar_landings_port]{pax_mar_landings_port()}}}
 surveys (Hafmynd) of the projects \code{annotation_projects}, with a
 pseudonymous annotator id instead of the user name,
 \code{\link[=pax_mar_video_annotation]{pax_mar_video_annotation()}}}
+\item{\code{"landings_landing"}}{the landings register landing by
+landing (vessel, landing date, AGF stock), from
+\code{landings_year_start}, \code{\link[=pax_mar_landings_landing]{pax_mar_landings_landing()}}}
 \item{\code{"logbook_lumpfish"}}{the lumpfish logbooks
 (\code{afli.grasl_sokn} with the season table \code{afli.grasl_stofn})
 from \code{logbook_year_start}, without comments,
 \code{\link[=pax_mar_logbook_lumpfish]{pax_mar_logbook_lumpfish()}}}
-}}
+}
+The survey tables (\code{station_env} to \code{survey_catch}) cover the
+\code{sampling_type} and years of the station table, all trips}
 
 \item{annotation_projects}{Hafmynd projects of the \code{video_annotation}
 table (e.g. \code{"Humar"}, the Nephrops UWTV survey), \code{NULL} (default)
@@ -160,6 +183,19 @@ lumpfish gillnets. None by default}
 \item{medafli_species}{Species codes of the old by-catch table
 (\code{afli.medafli}) for the \code{logbook_release} table, e.g. \code{2021}
 (released halibut)}
+
+\item{stomach_species}{Predator species of the stomach tables, default
+\code{species}; \code{NULL} for all}
+
+\item{commercial}{If \code{FALSE}, the commercial tables (\code{logbook},
+\code{landings}, \code{sampling} and \code{quotatransfer}) are left out, for a
+survey-only database (e.g. all the species of the groundfish surveys)}
+
+\item{station_samples_only}{If \code{TRUE}, the \code{ldist}, \code{aldist} and
+\code{measurement} tables hold only the samples of the sampling types and years of the
+station table (all trips). By default they hold every sample of the
+species, e.g. for \code{\link[=pax_mar_sample]{pax_mar_sample()}}; for a survey database of many
+species that is mostly commercial samples it doesn't use}
 
 \item{foreign_tables}{Names of the foreign data tables in mar to import
 (Greenland and Faroese surveys, catches and samples), see

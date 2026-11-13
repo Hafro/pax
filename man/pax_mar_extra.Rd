@@ -3,6 +3,8 @@
 \name{pax_mar_extra}
 \alias{pax_mar_extra}
 \alias{pax_mar_landings_vessel}
+\alias{pax_mar_landings_landing}
+\alias{pax_mar_landings_ices}
 \alias{pax_mar_vessel}
 \alias{pax_mar_logbook_release}
 \alias{pax_mar_research_landings}
@@ -17,6 +19,10 @@
 \title{Import optional tables from the MAR database}
 \usage{
 pax_mar_landings_vessel(mar, species, year_start = NULL, year_end = NULL)
+
+pax_mar_landings_landing(mar, species, year_start = NULL, year_end = NULL)
+
+pax_mar_landings_ices(mar, species, year_start = NULL, year_end = NULL)
 
 pax_mar_vessel(mar)
 
@@ -88,11 +94,36 @@ Columns \code{source} (\code{"lods"} or \code{"fiskifelag"}; the two overlap in
 \code{vessel_id} (\code{skip_nr}), \code{gear_id} (landings gear code,
 \code{veidarfaeri}), \code{fishing_area} (\code{veidisvaedi}, e.g. \code{"I"} for
 Icelandic waters; the AGF areas mapped to these, see
-\link{agf_fishing_area}), \code{period} (quota period, mar's \code{timabil}, e.g.
+\link{agf_fishing_area}), \code{quota_species} (the quota species the landing
+counts against, \code{kfteg}, e.g. 30 Icelandic summer-spawning and 38
+Norwegian spring-spawning herring; the AGF stocks mapped to these, see
+\link{agf_stock}, 0 where none; \code{NA} for \code{fiskifelag}), \code{period} (quota period, mar's \code{timabil}, e.g.
 \code{"20242025"}; the year for \code{fiskifelag}), \code{fishing_year} (label as
 the old advice code, e.g. \code{"2024/2025"}, the calendar year before
 September 1991) and \code{catch} (ungutted, kg). From September 2007 the
 AGF landings, where \code{lods_oslaegt()} had the old register's}
+
+\subsection{pax_mar_landings_landing}{The landings register
+landing by landing (\code{mar::ln_landings()}, \code{ln_gear()} and
+\code{ln_catch()} of the mar parquet datasets, the Directorate of
+Fisheries' \code{kvoti.lods_slaegt} from September 1992 and
+\code{agf.aflagrunnur} from September 2007), one row per landing, landings
+gear and stock: \code{landing_id} (\code{l_id}), \code{landing_date}, \code{year},
+\code{month}, \code{vessel_id} (registration number), \code{port} (port of
+landing), \code{gear_no}, \code{agf} (\code{TRUE} for the AGF landings),
+\code{stock} (the AGF stock, e.g. \code{1992} for sea cucumber in
+Faxaflói), \code{stock_name} (from \link{agf_stock}) and \code{catch} (ungutted,
+kg). Used to split each landing between the areas fished on the
+vessel's logbook records of that day (sea cucumber). Without vessel
+names, buyers or sellers}
+
+\subsection{pax_mar_landings_ices}{ICES official catch
+statistics (\code{biota.ices_landed_catch} via
+\code{mar::ices_landed_catch()}), all areas and countries: \code{year},
+\code{species}, \code{country}, \code{ices_area} (area and subarea, e.g.
+\code{"2a2"}) and \code{catch} (kg). For the catch of other nations from
+straddling stocks; Icelandic catches are better taken from the landings
+register}
 
 \subsection{pax_mar_vessel}{The vessel register (AWS Postgres
 since October 2026, \code{mar::vessel()} and the current-state tables
@@ -169,7 +200,12 @@ degrees, as \code{mar::afli_stofn()}), \code{"rectangle"} and
 catch as this one: the old scripts joined \code{afli.afli} back on
 \code{visir} and \code{afli}, which repeats a row this many times),
 \code{"num_nets"} and \code{"mesh_size"} (\code{afli.lineha.dregin} and
-\code{moskvi}: nets hauled and mesh size of gillnet records)}
+\code{moskvi}: nets hauled and mesh size of gillnet records), \code{"date"}
+(the fishing day \code{vedags}, e.g. to match tows with landings by vessel
+and day), \code{"lat_raw"} and \code{"lon_raw"} (\code{afli.stofn.breidd} and
+\code{lengd} as stored, DDMM with varying decimals and without the
+rectangle fill of \code{"lat"}/\code{"lon"}, for scripts with their own
+conversion and filters)}
 
 \subsection{pax_logbook_old_columns}{The optional columns of
 \code{\link[=pax_mar_logbook_old]{pax_mar_logbook_old()}}}
@@ -186,7 +222,12 @@ position, as recorded), \code{gear_id}, \code{species}, \code{quantity} (kg) and
 \code{number_of_traps}, plus the optional \code{columns}
 (\code{\link[=pax_logbook_adb_columns]{pax_logbook_adb_columns()}}): \code{"sex"} (\code{adb_catch.sex_no}, e.g.
 lumpfish females and males), \code{"num_nets"} and \code{"mesh_size"}
-(\code{adb_line_net}: nets and mesh size of gillnet stations). Without
+(\code{adb_line_net}: nets and mesh size of gillnet stations),
+\code{"fishing_end"} (\code{adb_station.fishing_end}, e.g. the tow time of
+dredges), \code{"landing"} (\code{adb_trip.landing}, the landing time of the
+trip), \code{"trip_source"} (\code{adb_trip.source}, the system the trip
+came from, e.g. \code{"Trackwell raun"}) and \code{"depth"}
+(\code{adb_station.depth}, as recorded). Without
 vessel names, call signs or companies. The compiled logbooks round the
 catch of some records (whelk, up to 0.36 kg)}
 

@@ -109,7 +109,10 @@ mar_afli_stofn <- function(mar) {
 #'   ``vessel_id`` (``skip_nr``), ``gear_id`` (landings gear code,
 #'   ``veidarfaeri``), ``fishing_area`` (``veidisvaedi``, e.g. ``"I"`` for
 #'   Icelandic waters; the AGF areas mapped to these, see
-#'   [agf_fishing_area]), ``period`` (quota period, mar's ``timabil``, e.g.
+#'   [agf_fishing_area]), ``quota_species`` (the quota species the landing
+#'   counts against, ``kfteg``, e.g. 30 Icelandic summer-spawning and 38
+#'   Norwegian spring-spawning herring; the AGF stocks mapped to these, see
+#'   [agf_stock], 0 where none; ``NA`` for ``fiskifelag``), ``period`` (quota period, mar's ``timabil``, e.g.
 #'   ``"20242025"``; the year for ``fiskifelag``), ``fishing_year`` (label as
 #'   the old advice code, e.g. ``"2024/2025"``, the calendar year before
 #'   September 1991) and ``catch`` (ungutted, kg). From September 2007 the
@@ -123,7 +126,7 @@ pax_mar_landings_vessel <- function(
 ) {
   # NSE variables
   source <- year <- month <- vessel_id <- gear_id <- fishing_area <- NULL
-  period <- fishing_year <- catch <- NULL
+  period <- fishing_year <- catch <- quota_species <- stock_code <- NULL
 
   mar_landings_register(
     species,
@@ -131,6 +134,11 @@ pax_mar_landings_vessel <- function(
     year_end,
     sources = c("fiskifelag", "lods")
   ) |>
+    # The quota species (kfteg) is the register's stock code; the
+    # Fisheries Association's landings have none
+    dplyr::mutate(
+      quota_species = ifelse(source == "lods", stock_code, NA_real_)
+    ) |>
     dplyr::group_by(
       source,
       year,
@@ -139,6 +147,7 @@ pax_mar_landings_vessel <- function(
       vessel_id,
       gear_id,
       fishing_area,
+      quota_species,
       period,
       fishing_year
     ) |>
@@ -237,6 +246,46 @@ pax_mar_landings_landing <- function(
     ) |>
     dplyr::arrange(landing_date, landing_id) |>
     as.data.frame() |>
+    decorate_mar()
+}
+
+#' @return \subsection{pax_mar_landings_ices}{ICES official catch
+#'   statistics (``biota.ices_landed_catch`` via
+#'   ``mar::ices_landed_catch()``), all areas and countries: ``year``,
+#'   ``species``, ``country``, ``ices_area`` (area and subarea, e.g.
+#'   ``"2a2"``) and ``catch`` (kg). For the catch of other nations from
+#'   straddling stocks; Icelandic catches are better taken from the landings
+#'   register}
+#' @rdname pax_mar_extra
+pax_mar_landings_ices <- function(
+  mar,
+  species,
+  year_start = NULL,
+  year_end = NULL
+) {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+  tegund_nr <- year <- country <- area <- subarea <- landings <- NULL
+  out <- mar::ices_landed_catch(mar) |>
+    dplyr::filter(tegund_nr %in% local(species))
+  if (!is.null(year_start)) {
+    out <- dplyr::filter(out, year >= local(year_start))
+  }
+  if (!is.null(year_end)) {
+    out <- dplyr::filter(out, year <= local(year_end))
+  }
+  out |>
+    dplyr::group_by(
+      year,
+      species = tegund_nr,
+      country,
+      ices_area = paste0(area, dplyr::coalesce(subarea, ""))
+    ) |>
+    dplyr::summarise(catch = 1000 * sum(landings, na.rm = TRUE), .groups = "drop") |>
+    dplyr::collect() |>
+    dplyr::mutate(dplyr::across(c("year", "species", "catch"), as.numeric)) |>
+    dplyr::arrange(year, species, country, ices_area) |>
     decorate_mar()
 }
 

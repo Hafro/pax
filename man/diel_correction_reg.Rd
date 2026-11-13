@@ -20,7 +20,7 @@ Multipliers of the catch of golden redfish by time of the tow and length
 group in the spring (\code{fleet == "smb"}) and autumn (\code{"smh"}) surveys,
 refitted in 2022 on the surveys up to 2021 (spring survey from 1985,
 autumn survey from 1996), probably by
-\code{DAG/05-redfish/Surveys/R/05_ICE_Surveys_DielVariation.R}, and saved as
+\verb{DAG/05-redfish/Surveys/R/05_ICE_Surveys_DielVariation.R}, and saved as
 \code{Surveys/Data/DielVariation_05.rdata} ("05" is the species code). The
 model is the one of the 2012 analysis (\code{BWKNORTH2023/DielVariation}):
 for each length group a quasi-Poisson GLM of the numbers per tow on year,

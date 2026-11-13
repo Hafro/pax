@@ -100,8 +100,8 @@ gear code), \code{fishing_area} (\code{veidisvaedi}; the AGF code for
 
 \subsection{pax_mar_landings_port}{Landings by port of landing,
 aggregated (no vessel, seller or buyer), from the mar parquet datasets:
-\code{source} (\code{"register"}: the landings as \code{\link[=pax_mar_landings]{pax_mar_landings()}},
-without the ICES catches, by port; \code{"agf"}: the AGF landings from
+\code{source} (\code{"register"}: the landings as \code{\link[=pax_mar_landings]{pax_mar_landings()}} by
+port, all ICES areas, with the ICES official catches without port; \code{"agf"}: the AGF landings from
 September 2007, by port and AGF stock), \code{year}, \code{month},
 \code{species}, \code{port} (port number), \code{ices_area} (register only),
 \code{stock_code} and \code{stock_name} (\code{veidistofn},

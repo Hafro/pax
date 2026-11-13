@@ -24,9 +24,9 @@ pax_mar_landings(
   year_end = NULL
 )
 
-pax_mar_ldist(mar, species)
+pax_mar_ldist(mar, species, samples = NULL)
 
-pax_mar_aldist(mar, species)
+pax_mar_aldist(mar, species, samples = NULL)
 
 pax_mar_lw_coeffs(mar, species)
 
@@ -35,7 +35,8 @@ pax_mar_measurement(
   species,
   year_start = NULL,
   year_end = NULL,
-  measurement_type = NULL
+  measurement_type = NULL,
+  samples = NULL
 )
 
 pax_mar_quotatransfer(mar, species, quota_species = species)
@@ -75,6 +76,9 @@ pax_mar_strata_stations(mar)
 
 \item{ices_area_like}{Character vector of SQL LIKE patterns for filtering
 ICES areas, e.g. \code{"5a\%"}}
+
+\item{samples}{Optional dplyr query (on \code{mar}) with a column
+\code{synis_id}: only these samples, e.g. those of the station table}
 
 \item{measurement_type}{Character vector of measurement types to include,
 e.g. \code{c("LEN", "OTOL")}}
@@ -143,7 +147,11 @@ coefficients, filtered to the requested species}
 \subsection{pax_mar_measurement}{A dplyr query with columns
 \code{individual_id}, \code{sample_id}, \code{species}, \code{measurement_type},
 \code{length}, \code{age}, \code{sex}, \code{maturity_stage}, \code{weight_g},
-\code{gonad_weight}, \code{gut_weight}, \code{liver_weight}, and \code{count}}
+\code{gutted_weight} (\code{slaegt}, g), \code{gonad_weight}, \code{gut_weight},
+\code{liver_weight}, \code{circumference} (\code{ummal}), and \code{count}. For sea
+cucumbers \code{gut_weight} (\code{magi}) is the weight of the viscera and
+the circumference was recorded in \code{liver_weight} (\code{lifur}) until a
+column was added for it}
 
 \subsection{pax_mar_quotatransfer}{A data.frame of quota transfer
 records for the requested species, arranged by species and period: the

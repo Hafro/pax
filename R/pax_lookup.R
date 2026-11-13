@@ -434,3 +434,30 @@ data_update_landings_gear <- function(mar, path = "pax/data/landings_gear.rda") 
   save(landings_gear, file = path, compress = "xz")
   invisible(out)
 }
+
+# The maturity stage codes by species (biota.kynthroski), package data
+# maturity_stages:
+#   mar <- mar::connect_mar()
+#   pax:::data_update_maturity_stages(mar)
+data_update_maturity_stages <- function(mar, path = "pax/data/maturity_stages.rda") {
+  if (!requireNamespace("mar", quietly = TRUE)) {
+    stop("mar package not available, cannot import from DB")
+  }
+
+  # NSE variables
+  tegund_nr <- kynthroski_nr <- kynthroski <- lysing <- frekari_lysing <- NULL
+  species <- maturity_stage <- NULL
+
+  maturity_stages <- mar::les_kynthroska(mar) |>
+    dplyr::collect() |>
+    dplyr::transmute(
+      species = as.integer(tegund_nr),
+      maturity_stage = as.integer(kynthroski_nr),
+      stage = kynthroski,
+      description = lysing,
+      description_more = frekari_lysing
+    ) |>
+    dplyr::arrange(species, maturity_stage) |>
+    as.data.frame()
+  save(maturity_stages, file = path, compress = "xz")
+}
