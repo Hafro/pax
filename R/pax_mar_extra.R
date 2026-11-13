@@ -710,7 +710,7 @@ pax_logbook_old_columns <- function() {
 #'   [pax_mar_logbook_adb()]}
 #' @rdname pax_mar_extra
 pax_logbook_adb_columns <- function() {
-  c("sex", "num_nets", "mesh_size", "fishing_end", "landing", "trip_source")
+  c("sex", "num_nets", "mesh_size", "fishing_end", "landing", "trip_source", "depth")
 }
 
 #' @return \subsection{pax_mar_logbook_adb}{The electronic logbooks (ADB,
@@ -725,8 +725,9 @@ pax_logbook_adb_columns <- function() {
 #'   (``adb_line_net``: nets and mesh size of gillnet stations),
 #'   ``"fishing_end"`` (``adb_station.fishing_end``, e.g. the tow time of
 #'   dredges), ``"landing"`` (``adb_trip.landing``, the landing time of the
-#'   trip) and ``"trip_source"`` (``adb_trip.source``, the system the trip
-#'   came from, e.g. ``"Trackwell raun"``). Without
+#'   trip), ``"trip_source"`` (``adb_trip.source``, the system the trip
+#'   came from, e.g. ``"Trackwell raun"``) and ``"depth"``
+#'   (``adb_station.depth``, as recorded). Without
 #'   vessel names, call signs or companies. The compiled logbooks round the
 #'   catch of some records (whelk, up to 0.36 kg)}
 #' @rdname pax_mar_extra
@@ -764,7 +765,8 @@ pax_mar_logbook_adb <- function(
         mesh_size = if ("mesh_size" %in% columns) "mesh_size",
         fishing_end = if ("fishing_end" %in% columns) "fishing_end",
         landing = if ("landing" %in% columns) "landing",
-        trip_source = if ("trip_source" %in% columns) "source"
+        trip_source = if ("trip_source" %in% columns) "source",
+        depth = if ("depth" %in% columns) "depth"
       ))
     ) |>
     dplyr::collect()
@@ -790,6 +792,7 @@ pax_mar_logbook_adb <- function(
   if ("fishing_end" %in% columns) out$fishing_end <- raw$fishing_end
   if ("landing" %in% columns) out$landing <- raw$landing
   if ("trip_source" %in% columns) out$trip_source <- as.character(raw$trip_source)
+  if ("depth" %in% columns) out$depth <- num(raw$depth)
   if (!is.null(year_start)) out <- out[out$year >= year_start, ]
   if (!is.null(year_end)) out <- out[out$year <= year_end, ]
   decorate_mar(out)
