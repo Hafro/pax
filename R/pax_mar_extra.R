@@ -180,6 +180,7 @@ pax_mar_landings_landing <- function(
   # NSE variables
   g_id <- l_id <- species_no <- stock <- weight <- weight_unit <- NULL
   gear_no <- landing_date <- registration_no <- landing_port <- NULL
+  port_no <- date <- NULL
   l_source <- year <- month <- agf <- NULL
 
   out <- mar_with_parquet(mar::connect_landings, function(con) {
@@ -194,9 +195,11 @@ pax_mar_landings_landing <- function(
         mar::ln_landings(con) |>
           dplyr::select(
             l_id,
-            landing_date,
+            # date and port_no in the parquet since November 2026
+            # (were landing_date and landing_port)
+            landing_date = date,
             registration_no,
-            landing_port,
+            landing_port = port_no,
             l_source = source
           ),
         by = "l_id"
@@ -267,8 +270,18 @@ pax_mar_landings_ices <- function(
     stop("mar package not available, cannot import from DB")
   }
   tegund_nr <- year <- country <- area <- subarea <- landings <- NULL
-  out <- mar::ices_landed_catch(mar) |>
-    dplyr::filter(tegund_nr %in% local(species))
+  species_code <- NULL
+  # mar::ices_landed_catch() was removed from mar in October 2026: the
+  # Oracle table with the species codes matched as in pax_mar_landings()
+  out <- mar::tbl_mar(mar, 'biota.ices_landed_catch') |>
+    dplyr::collect() |>
+    dplyr::inner_join(
+      mar_ices_species_codes(mar) |>
+        dplyr::filter(tegund_nr %in% local(species)),
+      by = 'species_code',
+      relationship = 'many-to-many'
+    ) |>
+    dplyr::mutate(area = trimws(area), subarea = trimws(subarea))
   if (!is.null(year_start)) {
     out <- dplyr::filter(out, year >= local(year_start))
   }

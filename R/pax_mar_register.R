@@ -139,6 +139,7 @@ mar_landings_register <- function(
 ) {
   # NSE variables
   species_no <- weight <- weight_unit <- registration_no <- port <- NULL
+  port_no <- date <- NULL
   gear_no <- area <- stock <- year <- month <- source <- g_id <- l_id <- NULL
   landing_date <- landing_port <- l_source <- agf <- gear_name <- NULL
 
@@ -181,7 +182,8 @@ mar_landings_register <- function(
           year,
           month,
           vessel_id = registration_no,
-          port,
+          # port_no in the parquet since November 2026 (was port)
+          port = port_no,
           gear_no,
           gear_name,
           area,
@@ -211,9 +213,11 @@ mar_landings_register <- function(
           mar::ln_landings(con) |>
             dplyr::select(
               l_id,
-              landing_date,
+              # date and port_no in the parquet since November 2026
+              # (were landing_date and landing_port)
+              landing_date = date,
               registration_no,
-              landing_port,
+              landing_port = port_no,
               l_source = source
             ),
           by = "l_id"
@@ -372,12 +376,14 @@ mar_vessel_register <- function() {
 # Icelandic catches in 5a after 1965 and all 5a catches after 2013 left out
 # (the landings register has them). Columns year, land (country), ices_svaedi,
 # species, erlent_skip and catch (kg)
-mar_ices_landed_catch <- function(mar, species, year_start = NULL, year_end = NULL) {
+# MFRI species number (tegund_nr) of each species code of
+# biota.ices_landed_catch: the FAO 3-alpha code, with the codes ICES uses
+# for some species groups
+mar_ices_species_codes <- function(mar) {
   # NSE variables
-  tegund_nr <- fao_3alpha <- species_code <- landings <- area <- NULL
-  subarea <- country <- year <- NULL
+  tegund_nr <- fao_3alpha <- species_code <- NULL
 
-  tegund <- mar::les_tegund(mar) |>
+  mar::les_tegund(mar) |>
     dplyr::select(tegund_nr, fao_3alpha) |>
     dplyr::collect() |>
     dplyr::mutate(
@@ -399,6 +405,14 @@ mar_ices_landed_catch <- function(mar, species, year_start = NULL, year_end = NU
     ) |>
     dplyr::filter(!is.na(species_code)) |>
     dplyr::select(tegund_nr, species_code)
+}
+
+mar_ices_landed_catch <- function(mar, species, year_start = NULL, year_end = NULL) {
+  # NSE variables
+  tegund_nr <- fao_3alpha <- species_code <- landings <- area <- NULL
+  subarea <- country <- year <- NULL
+
+  tegund <- mar_ices_species_codes(mar)
   ices <- mar::tbl_mar(mar, 'biota.ices_landed_catch') |>
     dplyr::filter(!is.na(landings)) |>
     dplyr::collect() |>
