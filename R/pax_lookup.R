@@ -256,7 +256,7 @@ data_update_landings_gear <- function(mar, path = "pax/data/landings_gear.rda") 
   # NSE variables
   source <- gear_no <- gear_name <- gear_id <- w <- n <- l_id <- g_id <- NULL
   weight <- l_source <- l_source_id <- hofn <- komunr <- veidarf <- NULL
-  registration_no <- port <- species_no <- year <- month <- NULL
+  registration_no <- port <- port_no <- species_no <- year <- month <- NULL
 
   dominant <- function(x, by = c("source", "gear_no", "gear_name")) {
     x |>
@@ -280,7 +280,9 @@ data_update_landings_gear <- function(mar, path = "pax/data/landings_gear.rda") 
         "fiskifelagid.landed_catch_pre94"
       )) |>
       dplyr::group_by(
-        source, year, month, registration_no, port, species_no, gear_no,
+        source, year, month, registration_no,
+        # port_no in the parquet since November 2026 (was port)
+        port = port_no, species_no, gear_no,
         gear_name
       ) |>
       dplyr::summarise(w = sum(weight, na.rm = TRUE), .groups = "drop") |>
